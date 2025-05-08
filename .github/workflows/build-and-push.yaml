@@ -9,7 +9,7 @@ on:
       - main
   push:
     paths:
-      - '**''
+      - '**'
     branches:
       - main
 
