@@ -5,15 +5,15 @@ on:
   pull_request:
     paths:
       - .github/workflows/build-and-push.yaml
-      - **
+      - '**'
     branches:
-      - "main"
+      - main
   push:
     paths:
       - .github/workflows/build-and-push.yaml
-      - **
+      - '**''
     branches:
-      - "main"
+      - main
 
 permissions: write-all
 
