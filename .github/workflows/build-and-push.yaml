@@ -4,13 +4,11 @@ run-name: "VPC Agent updated by ${{ github.actor }} and run by ${{ github.trigge
 on:
   pull_request:
     paths:
-      - '.github/workflows/build-and-push.yaml'
       - '**'
     branches:
       - main
   push:
     paths:
-      - '.github/workflows/build-and-push.yaml'
       - '**''
     branches:
       - main
