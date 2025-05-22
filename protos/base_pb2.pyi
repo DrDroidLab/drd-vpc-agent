@@ -644,6 +644,11 @@ class _SourceModelTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper
     """Kubernetes Models"""
     KUBERNETES_SERVICE: _SourceModelType.ValueType  # 6002
     KUBERNETES_DEPLOYMENT: _SourceModelType.ValueType  # 6003
+    KUBERNETES_INGRESS: _SourceModelType.ValueType  # 6004
+    KUBERNETES_NETWORK_POLICY: _SourceModelType.ValueType  # 6005
+    KUBERNETES_HPA: _SourceModelType.ValueType  # 6006
+    KUBERNETES_REPLICASET: _SourceModelType.ValueType  # 6007
+    KUBERNETES_STATEFULSET: _SourceModelType.ValueType  # 6008
 
 class SourceModelType(_SourceModelType, metaclass=_SourceModelTypeEnumTypeWrapper): ...
 
@@ -757,6 +762,11 @@ KUBERNETES_NAMESPACE: SourceModelType.ValueType  # 6001
 """Kubernetes Models"""
 KUBERNETES_SERVICE: SourceModelType.ValueType  # 6002
 KUBERNETES_DEPLOYMENT: SourceModelType.ValueType  # 6003
+KUBERNETES_INGRESS: SourceModelType.ValueType  # 6004
+KUBERNETES_NETWORK_POLICY: SourceModelType.ValueType  # 6005
+KUBERNETES_HPA: SourceModelType.ValueType  # 6006
+KUBERNETES_REPLICASET: SourceModelType.ValueType  # 6007
+KUBERNETES_STATEFULSET: SourceModelType.ValueType  # 6008
 global___SourceModelType = SourceModelType
 
 @typing_extensions.final
