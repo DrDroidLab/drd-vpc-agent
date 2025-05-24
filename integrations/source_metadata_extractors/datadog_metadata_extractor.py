@@ -18,12 +18,13 @@ class DatadogSourceMetadataExtractor(SourceMetadataExtractor):
     def extract_services(self):
         model_type = SourceModelType.DATADOG_SERVICE
         model_data = {}
-        prod_env_tags = ['prod', 'production']
+        prod_env_tags = ['prod', 'production', 'prd', 'prod_env', 'production_env', 'production_environment',
+                         'prod_environment']
         for tag in prod_env_tags:
             try:
                 services = self.__dd_api_processor.fetch_service_map(tag)
             except Exception as e:
-                logger.error(f'Error fetching services for tag: {tag} - {e}')
+                logger.error(f'Error fetching datadog services for env: {tag} - {e}')
                 continue
             if not services:
                 continue
@@ -34,7 +35,7 @@ class DatadogSourceMetadataExtractor(SourceMetadataExtractor):
         try:
             all_metrics = self.__dd_api_processor.fetch_metrics().get('data', [])
         except Exception as e:
-            logger.error(f'Error fetching metrics: {e}')
+            logger.error(f'Error fetching datadog metrics: {e}')
             all_metrics = []
         if not all_metrics:
             return
@@ -44,13 +45,12 @@ class DatadogSourceMetadataExtractor(SourceMetadataExtractor):
                 tags = self.__dd_api_processor.fetch_metric_tags(mt['id']).get('data', {}).get('attributes', {}).get(
                     'tags', [])
             except Exception as e:
-                logger.error(f'Error fetching metric tags for metric: {mt["id"]} - {e}')
+                logger.error(f'Error fetching datadog metric tags for metric: {mt["id"]} - {e}')
                 tags = []
             family = mt['id'].split('.')[0]
             for tag in tags:
                 if tag.startswith('service:'):
                     service = tag.split(':')[1]
-                    logger.info(f'service: {service}')
                     metrics = service_metric_map.get(service, [])
                     essential_tags = [tag for tag in tags if tag.startswith('env:') or tag.startswith('service:')]
                     metrics.append({'id': mt['id'], 'type': mt['type'], 'family': family, 'tags': essential_tags})

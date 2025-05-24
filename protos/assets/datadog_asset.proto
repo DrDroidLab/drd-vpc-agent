@@ -3,11 +3,13 @@ package protos.connectors;
 
 import "google/protobuf/wrappers.proto";
 import "protos/base.proto";
+import "google/protobuf/struct.proto";
 
 message DatadogServiceAssetModel {
   message Metric {
     google.protobuf.StringValue metric_family = 1;
     google.protobuf.StringValue metric = 2;
+    repeated google.protobuf.StringValue tags = 3;
   }
   google.protobuf.StringValue service_name = 1;
   repeated string environments = 2;
@@ -22,6 +24,33 @@ message DatadogServiceAssetOptions {
   repeated DatadogServiceAssetOption services = 1;
 }
 
+message DatadogDashboardAssetOptions {
+  repeated string dashboards = 1;
+}
+
+
+message DatadogDashboardModel {
+  message Panel {
+    message Widget {
+      google.protobuf.StringValue response_type = 1;
+      google.protobuf.StringValue title = 2;
+      repeated google.protobuf.Struct queries = 3;
+      repeated google.protobuf.Struct formulas = 4;
+      google.protobuf.StringValue id = 5;
+      google.protobuf.StringValue widget_type = 6;
+    }
+    google.protobuf.StringValue title = 1;
+    repeated Widget widgets = 2;
+    google.protobuf.StringValue id = 3;
+  }
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue url = 2;
+  google.protobuf.StringValue title = 3;
+  google.protobuf.StringValue description = 4;
+  repeated Panel panels = 5;
+  repeated google.protobuf.Struct template_variables = 6;
+}
+
 message DatadogAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -29,6 +58,7 @@ message DatadogAssetModel {
   sfixed64 last_updated = 4;
   oneof asset {
     DatadogServiceAssetModel datadog_service = 5;
+    DatadogDashboardModel datadog_dashboard = 6;
   }
 }
 

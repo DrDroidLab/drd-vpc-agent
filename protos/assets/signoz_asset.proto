@@ -1,0 +1,130 @@
+syntax = "proto3";
+package protos.connectors;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
+import "protos/base.proto";
+import "protos/connectors/connector.proto";
+
+message SignozDashboardPanelModel {
+  message Query {
+    google.protobuf.StringValue id = 1;
+    google.protobuf.StringValue name = 2;
+    google.protobuf.StringValue query = 3;
+    google.protobuf.StringValue legend = 4;
+    google.protobuf.BoolValue disabled = 5;
+  }
+
+  message QueryData {
+    google.protobuf.Int32Value limit = 1;
+    google.protobuf.StringValue legend = 2;
+    google.protobuf.Struct filters = 3;
+    repeated google.protobuf.Struct group_by = 4;
+    repeated google.protobuf.Struct order_by = 5;
+    google.protobuf.BoolValue disabled = 6;
+    google.protobuf.StringValue reduceTo = 7;
+    repeated google.protobuf.Struct functions = 8;
+    google.protobuf.StringValue queryName = 9;
+    google.protobuf.StringValue dataSource = 10;
+    google.protobuf.StringValue expression = 11;
+    google.protobuf.Int32Value step_interval = 12;
+    google.protobuf.StringValue timeAggregation = 13;
+    google.protobuf.StringValue spaceAggregation = 14;
+    google.protobuf.StringValue aggregateOperator = 15;
+    google.protobuf.Struct aggregateAttribute = 16;
+  }
+
+  message QueryBuilder {
+    repeated QueryData query_data = 1;
+    repeated google.protobuf.Struct query_formulas = 2;
+  }
+
+  message PanelQuery {
+    google.protobuf.StringValue id = 1;
+    repeated Query promql = 2;
+    QueryBuilder builder = 3;
+    google.protobuf.StringValue query_type = 4;
+    repeated Query clickhouse_sql = 5;
+  }
+
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue title = 2;
+  google.protobuf.StringValue description = 3;
+  PanelQuery query = 4;
+  google.protobuf.StringValue panel_type = 5;
+  google.protobuf.StringValue opacity = 6;
+  google.protobuf.Int32Value soft_max = 7;
+  google.protobuf.Int32Value soft_min = 8;
+  google.protobuf.BoolValue fill_spans = 9;
+  google.protobuf.BoolValue is_stacked = 10;
+  google.protobuf.StringValue y_axis_unit = 11;
+  repeated google.protobuf.Struct thresholds = 12;
+  google.protobuf.Int32Value bucket_count = 13;
+  google.protobuf.Int32Value bucket_width = 14;
+  google.protobuf.Struct column_units = 15;
+  google.protobuf.StringValue null_zero_values = 16;
+  google.protobuf.StringValue time_preference = 17;
+  google.protobuf.BoolValue stacked_bar_chart = 18;
+  repeated google.protobuf.Struct selected_log_fields = 19;
+  repeated google.protobuf.Struct selected_traces_fields = 20;
+  google.protobuf.BoolValue merge_all_active_queries = 21;
+}
+
+message SignozDashboardVariableModel {
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue type = 4; // e.g., TEXTBOX, QUERY, etc.
+  google.protobuf.StringValue selected_value = 5; // Default/selected value
+}
+
+message SignozDashboardModel {
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue uuid = 2;
+  google.protobuf.StringValue url = 3;
+  google.protobuf.StringValue title = 4;
+  google.protobuf.StringValue description = 5;
+  repeated SignozDashboardPanelModel panels = 6;
+  repeated SignozDashboardVariableModel variables = 7;
+  google.protobuf.Int64Value created_at = 8;
+  google.protobuf.Int64Value updated_at = 9;
+  google.protobuf.StringValue tags = 10;
+}
+
+message SignozAlertModel {
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue description = 3;
+  google.protobuf.StringValue query = 4;
+  google.protobuf.StringValue condition = 5;  // e.g., ">", "<", "=="
+  google.protobuf.DoubleValue threshold = 6;
+  google.protobuf.StringValue severity = 7;  // e.g., "critical", "warning", "info"
+  google.protobuf.StringValue evaluation_window = 8;  // Time window for evaluation
+  google.protobuf.StringValue tags = 9;
+  google.protobuf.Int64Value created_at = 10;
+  google.protobuf.Int64Value updated_at = 11;
+  google.protobuf.BoolValue enabled = 12;
+}
+
+message SignozAssetModel {
+  google.protobuf.UInt64Value id = 1;
+  Source connector_type = 2;
+  SourceModelType type = 3;
+  sfixed64 last_updated = 4;
+  oneof asset {
+    SignozDashboardModel signoz_dashboard = 5;
+    SignozAlertModel signoz_alert = 6;
+  }
+}
+
+message SignozAssets {
+  repeated SignozAssetModel assets = 1;
+}
+
+message SignozDashboardAssetOptions {
+  repeated string dashboards = 1;
+}
+
+message SignozAlertAssetOptions {
+  repeated string alerts = 1;
+} 

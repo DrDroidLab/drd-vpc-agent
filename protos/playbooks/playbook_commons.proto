@@ -99,6 +99,9 @@ message PlaybookTaskResult {
   google.protobuf.Struct result_transformer_lambda_function_variable_set = 5;
   google.protobuf.StringValue proxy_execution_request_id = 6;
   PlaybookExecutionStatusType status = 7;
+  google.protobuf.StringValue approval_request_id = 9;
+  google.protobuf.StringValue approval_task_description = 10;
+  google.protobuf.StringValue widget_id = 11; // currently solving for datadog dashboards @vidushee
   oneof result {
     TimeseriesResult timeseries = 101;
     TableResult table = 102;

@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.loganalytics import LogAnalyticsManagementClient
@@ -47,7 +47,7 @@ class AzureApiProcessor(Processor):
         os.environ['AZURE_CLIENT_SECRET'] = self.__client_secret
         os.environ['AZURE_TENANT_ID'] = self.__tenant_id
         credential = DefaultAzureCredential()
-        return credential
+        return credential 
 
     def test_connection(self):
         try:
@@ -97,7 +97,7 @@ class AzureApiProcessor(Processor):
             if not resources:
                 logger.error("Azure Connection Error:: No Resources Found")
                 return None
-
+            
             # Only include resources that actually produce metrics
             metric_producing_types = [
                 "Microsoft.Compute/virtualMachines",
@@ -109,22 +109,29 @@ class AzureApiProcessor(Processor):
                 "Microsoft.Web/sites",
                 "Microsoft.Insights/components"
             ]
+            # valid_resources = [
+            #     resource.as_dict() for resource in resources
+            #     if resource.type in metric_producing_types
+            # ]
             valid_resources = []
             for resource in resources:
                 if resource.type in metric_producing_types:
                     resource_dict = resource.as_dict()
+
+                    # Get resource metrics
                     resource_id = resource.id
                     try:
                         metric_names = metrics_client.list_metric_definitions(resource_id)
                         metric_names = [metric.name for metric in metric_names]
                     except Exception as e:
-                        logger.error(f"Failed to fetch azure  metrics for resource {resource_id} with error: {e}")
+                        logger.error(f"Failed to fetch metrics for resource {resource_id} with error: {e}")
                         metric_names = []
+
                     resource_dict["available_metrics"] = {"metric_names": metric_names}
                     valid_resources.append(resource_dict)
             return valid_resources
         except Exception as e:
-            logger.error(f"Failed to fetch azure resources with error: {e}")
+            logger.error(f"Failed to fetch resources with error: {e}")
             return None
 
     def query_log_analytics(self, workspace_id, query, timespan=timedelta(hours=4)):
@@ -142,4 +149,76 @@ class AzureApiProcessor(Processor):
             return results
         except Exception as e:
             logger.error(f"Failed to query log analytics with error: {e}")
+            return None
+
+
+    # Vidushee was here
+    def query_metrics(self, resource_id, time_range, metric_names="Percentage CPU", aggregation="Average", granularity=300): # placeholer metric name
+        """
+        Function to fetch metrics from Azure Monitor.
+        
+        Parameters:
+            resource_id (str): The Azure resource ID to fetch metrics for.
+            metric_names (str): The names of the metric to retrieve.
+            timespan (timedelta): The time range for fetching metrics.
+            aggregation (str): The type of aggregation (e.g., 'Average', 'Total', 'Count', etc.).
+        
+        Returns:
+            dict: A dictionary containing the retrieved metrics.
+        """
+        try:
+            credentials = self.get_credentials()
+            if not credentials:
+                logger.error("Azure Connection Error:: Failed to get credentials")
+                return None
+    
+            # Create Metrics Query Client
+            client = MetricsQueryClient(credentials)
+            # Convert Unix timestamps (in seconds) to datetime
+            from_tr = datetime.fromtimestamp(time_range.time_geq, tz=timezone.utc)  # Convert start time to datetime
+            to_tr = datetime.fromtimestamp(time_range.time_lt, tz=timezone.utc)  # Convert end time to datetime
+
+            # total_seconds = (to_tr - from_tr).total_seconds()
+            # Compute granularity dynamically (max 12 points)
+            # granularity_seconds = total_seconds / 12  # Each interval should be total duration / 12
+            # Convert to ISO 8601 duration string
+            # if granularity_seconds < 60:
+            #     granularity = f"PT{int(granularity_seconds)}S"  # Seconds
+            # elif granularity_seconds < 3600:
+            #     granularity = f"PT{int(granularity_seconds / 60)}M"  # Minutes
+            # else:
+            #     granularity = f"PT{int(granularity_seconds / 3600)}H"  # Hours
+
+            # Ensure metric_names is always a list
+            if isinstance(metric_names, str):
+                metric_names = [m.strip() for m in metric_names.split(",")]  # Split by comma if needed
+
+            # Fetch metrics
+            response = client.query_resource(
+                resource_uri=resource_id,
+                metric_names=metric_names,
+                timespan=(from_tr, to_tr),
+                granularity=timedelta(seconds=granularity),
+                aggregations=[aggregation],
+            )
+            
+            # Convert response to a dictionary
+            if not response:
+                logger.error(f"Failed to fetch metrics with error: {response.text}")
+                return None
+
+            results = {}
+            for metric in response.metrics:
+                results[metric.name] = [
+                    {
+                        "timestamp": data.timestamp.isoformat(),
+                        "value": data.total if aggregation == "Total" else data.average
+                    }
+                    for data in metric.timeseries[0].data
+                ]
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Failed to fetch metrics with error: {e}")
             return None

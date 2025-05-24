@@ -1,0 +1,34 @@
+syntax = "proto3";
+package protos.connectors;
+
+import "google/protobuf/wrappers.proto";
+import "protos/base.proto";
+
+message PosthogPropertyAssetModel {
+  google.protobuf.StringValue id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.BoolValue is_numerical = 3;
+  google.protobuf.StringValue property_type = 4;
+  google.protobuf.BoolValue is_seen_on_filtered_events = 5;
+  repeated string tags = 6;
+}
+
+message PosthogPropertyAssetOptions {
+  repeated string names = 1;
+  repeated string property_types = 2;
+  repeated string tags = 3;
+}
+
+message PosthogAssetModel {
+  google.protobuf.UInt64Value id = 1;
+  Source connector_type = 2;
+  SourceModelType type = 3;
+  sfixed64 last_updated = 4;
+  oneof asset {
+    PosthogPropertyAssetModel posthog_property = 101;
+  }
+}
+
+message PosthogAssets {
+  repeated PosthogAssetModel assets = 1;
+} 

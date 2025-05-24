@@ -45,24 +45,51 @@ class NewRelicApplicationEntityAssetModel(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["golden_metric_name", b"golden_metric_name", "golden_metric_nrql_expression", b"golden_metric_nrql_expression", "golden_metric_unit", b"golden_metric_unit"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["golden_metric_name", b"golden_metric_name", "golden_metric_nrql_expression", b"golden_metric_nrql_expression", "golden_metric_unit", b"golden_metric_unit"]) -> None: ...
 
+    @typing_extensions.final
+    class APMDashboard(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        METRIC_NAME_FIELD_NUMBER: builtins.int
+        METRIC_UNIT_FIELD_NUMBER: builtins.int
+        METRIC_NRQL_EXPRESSION_FIELD_NUMBER: builtins.int
+        @property
+        def metric_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def metric_unit(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def metric_nrql_expression(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            metric_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            metric_unit: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            metric_nrql_expression: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["metric_name", b"metric_name", "metric_nrql_expression", b"metric_nrql_expression", "metric_unit", b"metric_unit"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["metric_name", b"metric_name", "metric_nrql_expression", b"metric_nrql_expression", "metric_unit", b"metric_unit"]) -> None: ...
+
     APPLICATION_ENTITY_GUID_FIELD_NUMBER: builtins.int
     APPLICATION_NAME_FIELD_NUMBER: builtins.int
     GOLDEN_METRICS_FIELD_NUMBER: builtins.int
+    APM_METRICS_FIELD_NUMBER: builtins.int
     @property
     def application_entity_guid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
     @property
     def application_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
     @property
     def golden_metrics(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicApplicationEntityAssetModel.GoldenMetric]: ...
+    @property
+    def apm_metrics(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicApplicationEntityAssetModel.APMDashboard]: ...
     def __init__(
         self,
         *,
         application_entity_guid: google.protobuf.wrappers_pb2.StringValue | None = ...,
         application_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
         golden_metrics: collections.abc.Iterable[global___NewRelicApplicationEntityAssetModel.GoldenMetric] | None = ...,
+        apm_metrics: collections.abc.Iterable[global___NewRelicApplicationEntityAssetModel.APMDashboard] | None = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["application_entity_guid", b"application_entity_guid", "application_name", b"application_name"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["application_entity_guid", b"application_entity_guid", "application_name", b"application_name", "golden_metrics", b"golden_metrics"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["apm_metrics", b"apm_metrics", "application_entity_guid", b"application_entity_guid", "application_name", b"application_name", "golden_metrics", b"golden_metrics"]) -> None: ...
 
 global___NewRelicApplicationEntityAssetModel = NewRelicApplicationEntityAssetModel
 
@@ -216,6 +243,143 @@ class NewRelicDashboardEntityAssetOptions(google.protobuf.message.Message):
 global___NewRelicDashboardEntityAssetOptions = NewRelicDashboardEntityAssetOptions
 
 @typing_extensions.final
+class NewRelicDashboardEntityAssetModelV2(google.protobuf.message.Message):
+    """V2 Dashboard Asset Model"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class PageWidgetV2(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        WIDGET_ID_FIELD_NUMBER: builtins.int
+        WIDGET_TITLE_FIELD_NUMBER: builtins.int
+        WIDGET_TYPE_FIELD_NUMBER: builtins.int
+        WIDGET_NRQL_EXPRESSIONS_FIELD_NUMBER: builtins.int
+        @property
+        def widget_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_title(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_type(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_nrql_expressions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[google.protobuf.wrappers_pb2.StringValue]: ...
+        def __init__(
+            self,
+            *,
+            widget_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_title: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_type: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_nrql_expressions: collections.abc.Iterable[google.protobuf.wrappers_pb2.StringValue] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["widget_id", b"widget_id", "widget_title", b"widget_title", "widget_type", b"widget_type"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["widget_id", b"widget_id", "widget_nrql_expressions", b"widget_nrql_expressions", "widget_title", b"widget_title", "widget_type", b"widget_type"]) -> None: ...
+
+    @typing_extensions.final
+    class DashboardPageV2(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        PAGE_GUID_FIELD_NUMBER: builtins.int
+        PAGE_NAME_FIELD_NUMBER: builtins.int
+        WIDGETS_FIELD_NUMBER: builtins.int
+        @property
+        def page_guid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def page_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widgets(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicDashboardEntityAssetModelV2.PageWidgetV2]: ...
+        def __init__(
+            self,
+            *,
+            page_guid: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            page_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widgets: collections.abc.Iterable[global___NewRelicDashboardEntityAssetModelV2.PageWidgetV2] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["page_guid", b"page_guid", "page_name", b"page_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["page_guid", b"page_guid", "page_name", b"page_name", "widgets", b"widgets"]) -> None: ...
+
+    DASHBOARD_GUID_FIELD_NUMBER: builtins.int
+    DASHBOARD_NAME_FIELD_NUMBER: builtins.int
+    PAGES_FIELD_NUMBER: builtins.int
+    @property
+    def dashboard_guid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def dashboard_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def pages(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicDashboardEntityAssetModelV2.DashboardPageV2]: ...
+    def __init__(
+        self,
+        *,
+        dashboard_guid: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        dashboard_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        pages: collections.abc.Iterable[global___NewRelicDashboardEntityAssetModelV2.DashboardPageV2] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["dashboard_guid", b"dashboard_guid", "dashboard_name", b"dashboard_name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dashboard_guid", b"dashboard_guid", "dashboard_name", b"dashboard_name", "pages", b"pages"]) -> None: ...
+
+global___NewRelicDashboardEntityAssetModelV2 = NewRelicDashboardEntityAssetModelV2
+
+@typing_extensions.final
+class NewRelicDashboardEntityAssetOptionsV2(google.protobuf.message.Message):
+    """V2 Dashboard Asset Options (Keeping the same structure for now, can adjust if needed later)"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class DashboardOptionsV2(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        @typing_extensions.final
+        class DashboardPageOptionsV2(google.protobuf.message.Message):
+            DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+            PAGE_GUID_FIELD_NUMBER: builtins.int
+            PAGE_NAME_FIELD_NUMBER: builtins.int
+            @property
+            def page_guid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+            @property
+            def page_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+            def __init__(
+                self,
+                *,
+                page_guid: google.protobuf.wrappers_pb2.StringValue | None = ...,
+                page_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["page_guid", b"page_guid", "page_name", b"page_name"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["page_guid", b"page_guid", "page_name", b"page_name"]) -> None: ...
+
+        DASHBOARD_GUID_FIELD_NUMBER: builtins.int
+        DASHBOARD_NAME_FIELD_NUMBER: builtins.int
+        PAGE_OPTIONS_FIELD_NUMBER: builtins.int
+        @property
+        def dashboard_guid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def dashboard_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def page_options(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicDashboardEntityAssetOptionsV2.DashboardOptionsV2.DashboardPageOptionsV2]: ...
+        def __init__(
+            self,
+            *,
+            dashboard_guid: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            dashboard_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            page_options: collections.abc.Iterable[global___NewRelicDashboardEntityAssetOptionsV2.DashboardOptionsV2.DashboardPageOptionsV2] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["dashboard_guid", b"dashboard_guid", "dashboard_name", b"dashboard_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["dashboard_guid", b"dashboard_guid", "dashboard_name", b"dashboard_name", "page_options", b"page_options"]) -> None: ...
+
+    DASHBOARDS_FIELD_NUMBER: builtins.int
+    @property
+    def dashboards(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___NewRelicDashboardEntityAssetOptionsV2.DashboardOptionsV2]: ...
+    def __init__(
+        self,
+        *,
+        dashboards: collections.abc.Iterable[global___NewRelicDashboardEntityAssetOptionsV2.DashboardOptionsV2] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dashboards", b"dashboards"]) -> None: ...
+
+global___NewRelicDashboardEntityAssetOptionsV2 = NewRelicDashboardEntityAssetOptionsV2
+
+@typing_extensions.final
 class NewRelicAssetModel(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -225,6 +389,7 @@ class NewRelicAssetModel(google.protobuf.message.Message):
     LAST_UPDATED_FIELD_NUMBER: builtins.int
     NEW_RELIC_ENTITY_APPLICATION_FIELD_NUMBER: builtins.int
     NEW_RELIC_ENTITY_DASHBOARD_FIELD_NUMBER: builtins.int
+    NEW_RELIC_ENTITY_DASHBOARD_V2_FIELD_NUMBER: builtins.int
     @property
     def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     connector_type: protos.base_pb2.Source.ValueType
@@ -234,6 +399,8 @@ class NewRelicAssetModel(google.protobuf.message.Message):
     def new_relic_entity_application(self) -> global___NewRelicApplicationEntityAssetModel: ...
     @property
     def new_relic_entity_dashboard(self) -> global___NewRelicDashboardEntityAssetModel: ...
+    @property
+    def new_relic_entity_dashboard_v2(self) -> global___NewRelicDashboardEntityAssetModelV2: ...
     def __init__(
         self,
         *,
@@ -243,10 +410,11 @@ class NewRelicAssetModel(google.protobuf.message.Message):
         last_updated: builtins.int = ...,
         new_relic_entity_application: global___NewRelicApplicationEntityAssetModel | None = ...,
         new_relic_entity_dashboard: global___NewRelicDashboardEntityAssetModel | None = ...,
+        new_relic_entity_dashboard_v2: global___NewRelicDashboardEntityAssetModelV2 | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "id", b"id", "new_relic_entity_application", b"new_relic_entity_application", "new_relic_entity_dashboard", b"new_relic_entity_dashboard"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "new_relic_entity_application", b"new_relic_entity_application", "new_relic_entity_dashboard", b"new_relic_entity_dashboard", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["new_relic_entity_application", "new_relic_entity_dashboard"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "id", b"id", "new_relic_entity_application", b"new_relic_entity_application", "new_relic_entity_dashboard", b"new_relic_entity_dashboard", "new_relic_entity_dashboard_v2", b"new_relic_entity_dashboard_v2"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "new_relic_entity_application", b"new_relic_entity_application", "new_relic_entity_dashboard", b"new_relic_entity_dashboard", "new_relic_entity_dashboard_v2", b"new_relic_entity_dashboard_v2", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["new_relic_entity_application", "new_relic_entity_dashboard", "new_relic_entity_dashboard_v2"] | None: ...
 
 global___NewRelicAssetModel = NewRelicAssetModel
 

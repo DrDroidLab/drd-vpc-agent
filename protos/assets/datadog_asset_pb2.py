@@ -13,25 +13,34 @@ _sym_db = _symbol_database.Default()
 
 from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 from protos import base_pb2 as protos_dot_base__pb2
+from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!protos/assets/datadog_asset.proto\x12\x11protos.connectors\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x11protos/base.proto\"\x96\x02\n\x18\x44\x61tadogServiceAssetModel\x12\x32\n\x0cservice_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x14\n\x0c\x65nvironments\x18\x02 \x03(\t\x12\x43\n\x07metrics\x18\x03 \x03(\x0b\x32\x32.protos.connectors.DatadogServiceAssetModel.Metric\x1ak\n\x06Metric\x12\x33\n\rmetric_family\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12,\n\x06metric\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\"\xd9\x01\n\x1a\x44\x61tadogServiceAssetOptions\x12Y\n\x08services\x18\x01 \x03(\x0b\x32G.protos.connectors.DatadogServiceAssetOptions.DatadogServiceAssetOption\x1a`\n\x19\x44\x61tadogServiceAssetOption\x12*\n\x04name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x17\n\x0fmetric_families\x18\x02 \x03(\t\"\xf3\x01\n\x11\x44\x61tadogAssetModel\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x12&\n\x0e\x63onnector_type\x18\x02 \x01(\x0e\x32\x0e.protos.Source\x12%\n\x04type\x18\x03 \x01(\x0e\x32\x17.protos.SourceModelType\x12\x14\n\x0clast_updated\x18\x04 \x01(\x10\x12\x46\n\x0f\x64\x61tadog_service\x18\x05 \x01(\x0b\x32+.protos.connectors.DatadogServiceAssetModelH\x00\x42\x07\n\x05\x61sset\"E\n\rDatadogAssets\x12\x34\n\x06\x61ssets\x18\x01 \x03(\x0b\x32$.protos.connectors.DatadogAssetModelb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!protos/assets/datadog_asset.proto\x12\x11protos.connectors\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x11protos/base.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc3\x02\n\x18\x44\x61tadogServiceAssetModel\x12\x32\n\x0cservice_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x14\n\x0c\x65nvironments\x18\x02 \x03(\t\x12\x43\n\x07metrics\x18\x03 \x03(\x0b\x32\x32.protos.connectors.DatadogServiceAssetModel.Metric\x1a\x97\x01\n\x06Metric\x12\x33\n\rmetric_family\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12,\n\x06metric\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12*\n\x04tags\x18\x03 \x03(\x0b\x32\x1c.google.protobuf.StringValue\"\xd9\x01\n\x1a\x44\x61tadogServiceAssetOptions\x12Y\n\x08services\x18\x01 \x03(\x0b\x32G.protos.connectors.DatadogServiceAssetOptions.DatadogServiceAssetOption\x1a`\n\x19\x44\x61tadogServiceAssetOption\x12*\n\x04name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x17\n\x0fmetric_families\x18\x02 \x03(\t\"2\n\x1c\x44\x61tadogDashboardAssetOptions\x12\x12\n\ndashboards\x18\x01 \x03(\t\"\x89\x06\n\x15\x44\x61tadogDashboardModel\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12)\n\x03url\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12+\n\x05title\x18\x03 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x31\n\x0b\x64\x65scription\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12>\n\x06panels\x18\x05 \x03(\x0b\x32..protos.connectors.DatadogDashboardModel.Panel\x12\x33\n\x12template_variables\x18\x06 \x03(\x0b\x32\x17.google.protobuf.Struct\x1a\xc5\x03\n\x05Panel\x12+\n\x05title\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x46\n\x07widgets\x18\x02 \x03(\x0b\x32\x35.protos.connectors.DatadogDashboardModel.Panel.Widget\x12(\n\x02id\x18\x03 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1a\x9c\x02\n\x06Widget\x12\x33\n\rresponse_type\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12+\n\x05title\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12(\n\x07queries\x18\x03 \x03(\x0b\x32\x17.google.protobuf.Struct\x12)\n\x08\x66ormulas\x18\x04 \x03(\x0b\x32\x17.google.protobuf.Struct\x12(\n\x02id\x18\x05 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x31\n\x0bwidget_type\x18\x06 \x01(\x0b\x32\x1c.google.protobuf.StringValue\"\xba\x02\n\x11\x44\x61tadogAssetModel\x12(\n\x02id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x12&\n\x0e\x63onnector_type\x18\x02 \x01(\x0e\x32\x0e.protos.Source\x12%\n\x04type\x18\x03 \x01(\x0e\x32\x17.protos.SourceModelType\x12\x14\n\x0clast_updated\x18\x04 \x01(\x10\x12\x46\n\x0f\x64\x61tadog_service\x18\x05 \x01(\x0b\x32+.protos.connectors.DatadogServiceAssetModelH\x00\x12\x45\n\x11\x64\x61tadog_dashboard\x18\x06 \x01(\x0b\x32(.protos.connectors.DatadogDashboardModelH\x00\x42\x07\n\x05\x61sset\"E\n\rDatadogAssets\x12\x34\n\x06\x61ssets\x18\x01 \x03(\x0b\x32$.protos.connectors.DatadogAssetModelb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.assets.datadog_asset_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _DATADOGSERVICEASSETMODEL._serialized_start=108
-  _DATADOGSERVICEASSETMODEL._serialized_end=386
-  _DATADOGSERVICEASSETMODEL_METRIC._serialized_start=279
-  _DATADOGSERVICEASSETMODEL_METRIC._serialized_end=386
-  _DATADOGSERVICEASSETOPTIONS._serialized_start=389
-  _DATADOGSERVICEASSETOPTIONS._serialized_end=606
-  _DATADOGSERVICEASSETOPTIONS_DATADOGSERVICEASSETOPTION._serialized_start=510
-  _DATADOGSERVICEASSETOPTIONS_DATADOGSERVICEASSETOPTION._serialized_end=606
-  _DATADOGASSETMODEL._serialized_start=609
-  _DATADOGASSETMODEL._serialized_end=852
-  _DATADOGASSETS._serialized_start=854
-  _DATADOGASSETS._serialized_end=923
+  _DATADOGSERVICEASSETMODEL._serialized_start=138
+  _DATADOGSERVICEASSETMODEL._serialized_end=461
+  _DATADOGSERVICEASSETMODEL_METRIC._serialized_start=310
+  _DATADOGSERVICEASSETMODEL_METRIC._serialized_end=461
+  _DATADOGSERVICEASSETOPTIONS._serialized_start=464
+  _DATADOGSERVICEASSETOPTIONS._serialized_end=681
+  _DATADOGSERVICEASSETOPTIONS_DATADOGSERVICEASSETOPTION._serialized_start=585
+  _DATADOGSERVICEASSETOPTIONS_DATADOGSERVICEASSETOPTION._serialized_end=681
+  _DATADOGDASHBOARDASSETOPTIONS._serialized_start=683
+  _DATADOGDASHBOARDASSETOPTIONS._serialized_end=733
+  _DATADOGDASHBOARDMODEL._serialized_start=736
+  _DATADOGDASHBOARDMODEL._serialized_end=1513
+  _DATADOGDASHBOARDMODEL_PANEL._serialized_start=1060
+  _DATADOGDASHBOARDMODEL_PANEL._serialized_end=1513
+  _DATADOGDASHBOARDMODEL_PANEL_WIDGET._serialized_start=1229
+  _DATADOGDASHBOARDMODEL_PANEL_WIDGET._serialized_end=1513
+  _DATADOGASSETMODEL._serialized_start=1516
+  _DATADOGASSETMODEL._serialized_end=1830
+  _DATADOGASSETS._serialized_start=1832
+  _DATADOGASSETS._serialized_end=1901
 # @@protoc_insertion_point(module_scope)

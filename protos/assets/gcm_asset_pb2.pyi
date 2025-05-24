@@ -79,6 +79,165 @@ class GcmMetricAssetOptions(google.protobuf.message.Message):
 global___GcmMetricAssetOptions = GcmMetricAssetOptions
 
 @typing_extensions.final
+class GcmDashboardEntityAssetModel(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class DashboardWidget(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        WIDGET_ID_FIELD_NUMBER: builtins.int
+        WIDGET_NAME_FIELD_NUMBER: builtins.int
+        WIDGET_TYPE_FIELD_NUMBER: builtins.int
+        WIDGET_QUERY_FIELD_NUMBER: builtins.int
+        @property
+        def widget_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_type(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_query(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            widget_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_type: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_query: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["widget_id", b"widget_id", "widget_name", b"widget_name", "widget_query", b"widget_query", "widget_type", b"widget_type"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["widget_id", b"widget_id", "widget_name", b"widget_name", "widget_query", b"widget_query", "widget_type", b"widget_type"]) -> None: ...
+
+    DASHBOARD_ID_FIELD_NUMBER: builtins.int
+    DASHBOARD_NAME_FIELD_NUMBER: builtins.int
+    WIDGETS_FIELD_NUMBER: builtins.int
+    @property
+    def dashboard_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def dashboard_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def widgets(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GcmDashboardEntityAssetModel.DashboardWidget]: ...
+    def __init__(
+        self,
+        *,
+        dashboard_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        dashboard_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        widgets: collections.abc.Iterable[global___GcmDashboardEntityAssetModel.DashboardWidget] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["dashboard_id", b"dashboard_id", "dashboard_name", b"dashboard_name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dashboard_id", b"dashboard_id", "dashboard_name", b"dashboard_name", "widgets", b"widgets"]) -> None: ...
+
+global___GcmDashboardEntityAssetModel = GcmDashboardEntityAssetModel
+
+@typing_extensions.final
+class GcmDashboardEntityAssetOptions(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class DashboardOptions(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        DASHBOARD_ID_FIELD_NUMBER: builtins.int
+        DASHBOARD_NAME_FIELD_NUMBER: builtins.int
+        WIDGET_NAMES_FIELD_NUMBER: builtins.int
+        @property
+        def dashboard_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def dashboard_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def widget_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+        def __init__(
+            self,
+            *,
+            dashboard_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            dashboard_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            widget_names: collections.abc.Iterable[builtins.str] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["dashboard_id", b"dashboard_id", "dashboard_name", b"dashboard_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["dashboard_id", b"dashboard_id", "dashboard_name", b"dashboard_name", "widget_names", b"widget_names"]) -> None: ...
+
+    DASHBOARDS_FIELD_NUMBER: builtins.int
+    @property
+    def dashboards(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GcmDashboardEntityAssetOptions.DashboardOptions]: ...
+    def __init__(
+        self,
+        *,
+        dashboards: collections.abc.Iterable[global___GcmDashboardEntityAssetOptions.DashboardOptions] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dashboards", b"dashboards"]) -> None: ...
+
+global___GcmDashboardEntityAssetOptions = GcmDashboardEntityAssetOptions
+
+@typing_extensions.final
+class GcmCloudRunServiceAssetModel(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class CloudRunMetric(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        METRIC_NAME_FIELD_NUMBER: builtins.int
+        AGGREGATIONS_FIELD_NUMBER: builtins.int
+        @property
+        def metric_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def aggregations(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[google.protobuf.wrappers_pb2.StringValue]: ...
+        def __init__(
+            self,
+            *,
+            metric_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            aggregations: collections.abc.Iterable[google.protobuf.wrappers_pb2.StringValue] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["metric_name", b"metric_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["aggregations", b"aggregations", "metric_name", b"metric_name"]) -> None: ...
+
+    SERVICE_NAME_FIELD_NUMBER: builtins.int
+    REGION_FIELD_NUMBER: builtins.int
+    PROJECT_ID_FIELD_NUMBER: builtins.int
+    METRICS_FIELD_NUMBER: builtins.int
+    @property
+    def service_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def region(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def project_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def metrics(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GcmCloudRunServiceAssetModel.CloudRunMetric]: ...
+    def __init__(
+        self,
+        *,
+        service_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        region: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        project_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        metrics: collections.abc.Iterable[global___GcmCloudRunServiceAssetModel.CloudRunMetric] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["project_id", b"project_id", "region", b"region", "service_name", b"service_name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["metrics", b"metrics", "project_id", b"project_id", "region", b"region", "service_name", b"service_name"]) -> None: ...
+
+global___GcmCloudRunServiceAssetModel = GcmCloudRunServiceAssetModel
+
+@typing_extensions.final
+class GcmCloudRunServiceAssetOptions(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    SERVICE_NAMES_FIELD_NUMBER: builtins.int
+    REGIONS_FIELD_NUMBER: builtins.int
+    @property
+    def service_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    @property
+    def regions(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    def __init__(
+        self,
+        *,
+        service_names: collections.abc.Iterable[builtins.str] | None = ...,
+        regions: collections.abc.Iterable[builtins.str] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["regions", b"regions", "service_names", b"service_names"]) -> None: ...
+
+global___GcmCloudRunServiceAssetOptions = GcmCloudRunServiceAssetOptions
+
+@typing_extensions.final
 class GcmAssetModel(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -87,6 +246,8 @@ class GcmAssetModel(google.protobuf.message.Message):
     TYPE_FIELD_NUMBER: builtins.int
     LAST_UPDATED_FIELD_NUMBER: builtins.int
     GCM_METRIC_FIELD_NUMBER: builtins.int
+    GCM_DASHBOARD_FIELD_NUMBER: builtins.int
+    GCM_CLOUD_RUN_SERVICE_DASHBOARD_FIELD_NUMBER: builtins.int
     @property
     def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     connector_type: protos.base_pb2.Source.ValueType
@@ -94,6 +255,10 @@ class GcmAssetModel(google.protobuf.message.Message):
     last_updated: builtins.int
     @property
     def gcm_metric(self) -> global___GcmMetricAssetModel: ...
+    @property
+    def gcm_dashboard(self) -> global___GcmDashboardEntityAssetModel: ...
+    @property
+    def gcm_cloud_run_service_dashboard(self) -> global___GcmCloudRunServiceAssetModel: ...
     def __init__(
         self,
         *,
@@ -102,10 +267,12 @@ class GcmAssetModel(google.protobuf.message.Message):
         type: protos.base_pb2.SourceModelType.ValueType = ...,
         last_updated: builtins.int = ...,
         gcm_metric: global___GcmMetricAssetModel | None = ...,
+        gcm_dashboard: global___GcmDashboardEntityAssetModel | None = ...,
+        gcm_cloud_run_service_dashboard: global___GcmCloudRunServiceAssetModel | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "gcm_metric", b"gcm_metric", "id", b"id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "gcm_metric", b"gcm_metric", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["gcm_metric"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "gcm_cloud_run_service_dashboard", b"gcm_cloud_run_service_dashboard", "gcm_dashboard", b"gcm_dashboard", "gcm_metric", b"gcm_metric", "id", b"id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "gcm_cloud_run_service_dashboard", b"gcm_cloud_run_service_dashboard", "gcm_dashboard", b"gcm_dashboard", "gcm_metric", b"gcm_metric", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["gcm_metric", "gcm_dashboard", "gcm_cloud_run_service_dashboard"] | None: ...
 
 global___GcmAssetModel = GcmAssetModel
 

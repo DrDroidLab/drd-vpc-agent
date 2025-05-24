@@ -157,6 +157,58 @@ class GithubSourceManager(SourceManager):
                               default_value=Literal(type=LiteralType.STRING, string=StringValue(value='main')))
                 ]
             },
+            Github.TaskType.CREATE_PULL_REQUEST: {
+                'executor': self.create_pull_request,
+                'model_types': [SourceModelType.GITHUB_REPOSITORY],
+                'result_type': PlaybookTaskResultType.API_RESPONSE,
+                'display_name': 'Create Pull Request',
+                'category': 'Code Repository',
+                'form_fields': [
+                    FormField(key_name=StringValue(value="repo"),
+                              display_name=StringValue(value="Repository"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TYPING_DROPDOWN_FT),
+                    FormField(key_name=StringValue(value="title"),
+                              display_name=StringValue(value="PR Title"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT),
+                    FormField(key_name=StringValue(value="body"),
+                              display_name=StringValue(value="PR Description"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.MULTILINE_FT),
+                    FormField(key_name=StringValue(value="head_branch"),
+                              display_name=StringValue(value="Source Branch"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT),
+                    FormField(key_name=StringValue(value="base_branch"),
+                              display_name=StringValue(value="Target Branch (defaults to main branch)"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
+                    FormField(key_name=StringValue(value="committer_name"),
+                              display_name=StringValue(value="Committer Name"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
+                    FormField(key_name=StringValue(value="committer_email"),
+                              display_name=StringValue(value="Committer Email"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
+                    FormField(key_name=StringValue(value="commit_message"),
+                              display_name=StringValue(value="Commit Message"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
+                    FormField(key_name=StringValue(value="files"),
+                              display_name=StringValue(value="Files to Update (JSON array of {path, content} objects)"),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.CODE_EDITOR_FT,
+                              is_optional=True,
+                              default_value=Literal(type=LiteralType.STRING, string=StringValue(
+                                  value='[{"path": "path/to/file1.js", "content": "content of file1"},{"path": "path/to/file2.js", "content": "content of file2"}]')))
+                ]
+            }
         }
 
     def get_connector_processor(self, github_connector, **kwargs):
@@ -287,3 +339,58 @@ class GithubSourceManager(SourceManager):
             )
         except Exception as e:
             raise Exception(f"Error while executing Github fetch_recent_merges task: {e}")
+
+    def create_pull_request(self, time_range: TimeRange, github_task: Github,
+                            github_connector: ConnectorProto):
+        try:
+            task = github_task.create_pull_request
+            repo = task.repo.value
+            title = task.title.value
+            body = task.body.value
+            head_branch = task.head_branch.value
+            base_branch = task.base_branch.value if task.HasField('base_branch') else None
+
+            # Extract new fields
+            files_to_update = []
+            if task.files:
+                for file_update in task.files:
+                    files_to_update.append({
+                        'path': file_update.path.value,
+                        'content': file_update.content.value
+                    })
+
+            committer_name = task.committer_name.value if task.HasField('committer_name') else None
+            committer_email = task.committer_email.value if task.HasField('committer_email') else None
+            commit_message = task.commit_message.value if task.HasField('commit_message') else None
+
+            processor = self.get_connector_processor(github_connector)
+            all_repos = processor.list_all_repos()
+            all_repo_names = [repo['name'] for repo in all_repos]
+            if repo not in all_repo_names:
+                raise Exception(f"Repository {repo} not found")
+
+            pr_details = processor.create_pull_request(repo=repo, title=title, body=body, head=head_branch,
+                                                       base=base_branch,
+                                                       files_to_update=files_to_update if files_to_update else None,
+                                                       commit_message=commit_message, committer_name=committer_name,
+                                                       committer_email=committer_email)
+            if not pr_details:
+                return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT, text=TextResult(
+                    output=StringValue(value=f"Failed to create PR in repository {repo}")), source=self.source)
+
+            # Check for error message
+            if 'error' in pr_details:
+                error_msg = pr_details['error']
+                # Make error message more user-friendly
+                if "No commits between" in error_msg:
+                    error_msg = "Branch exists but has no commits. Add commits before creating PR"
+                return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT,
+                                          text=TextResult(output=StringValue(value=error_msg)), source=self.source)
+
+            response_struct = dict_to_proto({"pr_number": pr_details['number'], "pr_url": pr_details['html_url']},
+                                            Struct)
+            pr_output = ApiResponseResult(response_body=response_struct)
+            return PlaybookTaskResult(type=PlaybookTaskResultType.API_RESPONSE, source=self.source,
+                                      api_response=pr_output)
+        except Exception as e:
+            raise Exception(f"Error while executing Github create_pull_request task: {e}")

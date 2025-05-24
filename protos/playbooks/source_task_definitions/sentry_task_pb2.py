@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n:protos/playbooks/source_task_definitions/sentry_task.proto\x12\x10protos.playbooks\x1a\x1egoogle/protobuf/wrappers.proto\"\xd5\x04\n\x06Sentry\x12/\n\x04type\x18\x01 \x01(\x0e\x32!.protos.playbooks.Sentry.TaskType\x12\x43\n\x10\x66\x65tch_issue_info\x18\x02 \x01(\x0b\x32\'.protos.playbooks.Sentry.FetchIssueInfoH\x00\x12K\n\x14\x66\x65tch_project_events\x18\x03 \x01(\x0b\x32+.protos.playbooks.Sentry.FetchProjectEventsH\x00\x12I\n\x13\x66\x65tch_recent_errors\x18\x04 \x01(\x0b\x32*.protos.playbooks.Sentry.FetchRecentErrorsH\x00\x1a@\n\x0e\x46\x65tchIssueInfo\x12.\n\x08issue_id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1aH\n\x12\x46\x65tchProjectEvents\x12\x32\n\x0cproject_slug\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1aG\n\x11\x46\x65tchRecentErrors\x12\x32\n\x0cproject_slug\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\"`\n\x08TaskType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x14\n\x10\x46\x45TCH_ISSUE_INFO\x10\x01\x12\x18\n\x14\x46\x45TCH_PROJECT_EVENTS\x10\x02\x12\x17\n\x13\x46\x45TCH_RECENT_ERRORS\x10\x03\x42\x06\n\x04taskb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n:protos/playbooks/source_task_definitions/sentry_task.proto\x12\x10protos.playbooks\x1a\x1egoogle/protobuf/wrappers.proto\"\xc4\t\n\x06Sentry\x12/\n\x04type\x18\x01 \x01(\x0e\x32!.protos.playbooks.Sentry.TaskType\x12M\n\x16\x66\x65tch_issue_info_by_id\x18\x02 \x01(\x0b\x32+.protos.playbooks.Sentry.FetchIssueInfoByIdH\x00\x12K\n\x14\x66\x65tch_project_events\x18\x03 \x01(\x0b\x32+.protos.playbooks.Sentry.FetchProjectEventsH\x00\x12I\n\x13\x66\x65tch_recent_errors\x18\x04 \x01(\x0b\x32*.protos.playbooks.Sentry.FetchRecentErrorsH\x00\x12M\n\x16\x66\x65tch_event_info_by_id\x18\x05 \x01(\x0b\x32+.protos.playbooks.Sentry.FetchEventInfoByIdH\x00\x12x\n-fetch_list_of_recent_events_with_search_query\x18\x06 \x01(\x0b\x32?.protos.playbooks.Sentry.FetchListOfRecentEventsWithSearchQueryH\x00\x1a\x44\n\x12\x46\x65tchIssueInfoById\x12.\n\x08issue_id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1aH\n\x12\x46\x65tchProjectEvents\x12\x32\n\x0cproject_slug\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1aG\n\x11\x46\x65tchRecentErrors\x12\x32\n\x0cproject_slug\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1ax\n\x12\x46\x65tchEventInfoById\x12.\n\x08\x65vent_id\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x32\n\x0cproject_slug\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1a\xc5\x01\n&FetchListOfRecentEventsWithSearchQuery\x12\x32\n\x0cproject_slug\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12+\n\x05query\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12:\n\x15max_events_to_analyse\x18\x03 \x01(\x0b\x32\x1b.google.protobuf.Int64Value\"\xb5\x01\n\x08TaskType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x1a\n\x16\x46\x45TCH_ISSUE_INFO_BY_ID\x10\x01\x12\x18\n\x14\x46\x45TCH_PROJECT_EVENTS\x10\x02\x12\x17\n\x13\x46\x45TCH_RECENT_ERRORS\x10\x03\x12\x1a\n\x16\x46\x45TCH_EVENT_INFO_BY_ID\x10\x04\x12\x31\n-FETCH_LIST_OF_RECENT_EVENTS_WITH_SEARCH_QUERY\x10\x05\x42\x06\n\x04taskb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.playbooks.source_task_definitions.sentry_task_pb2', globals())
@@ -22,13 +22,17 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _SENTRY._serialized_start=113
-  _SENTRY._serialized_end=710
-  _SENTRY_FETCHISSUEINFO._serialized_start=393
-  _SENTRY_FETCHISSUEINFO._serialized_end=457
-  _SENTRY_FETCHPROJECTEVENTS._serialized_start=459
-  _SENTRY_FETCHPROJECTEVENTS._serialized_end=531
-  _SENTRY_FETCHRECENTERRORS._serialized_start=533
-  _SENTRY_FETCHRECENTERRORS._serialized_end=604
-  _SENTRY_TASKTYPE._serialized_start=606
-  _SENTRY_TASKTYPE._serialized_end=702
+  _SENTRY._serialized_end=1333
+  _SENTRY_FETCHISSUEINFOBYID._serialized_start=604
+  _SENTRY_FETCHISSUEINFOBYID._serialized_end=672
+  _SENTRY_FETCHPROJECTEVENTS._serialized_start=674
+  _SENTRY_FETCHPROJECTEVENTS._serialized_end=746
+  _SENTRY_FETCHRECENTERRORS._serialized_start=748
+  _SENTRY_FETCHRECENTERRORS._serialized_end=819
+  _SENTRY_FETCHEVENTINFOBYID._serialized_start=821
+  _SENTRY_FETCHEVENTINFOBYID._serialized_end=941
+  _SENTRY_FETCHLISTOFRECENTEVENTSWITHSEARCHQUERY._serialized_start=944
+  _SENTRY_FETCHLISTOFRECENTEVENTSWITHSEARCHQUERY._serialized_end=1141
+  _SENTRY_TASKTYPE._serialized_start=1144
+  _SENTRY_TASKTYPE._serialized_end=1325
 # @@protoc_insertion_point(module_scope)

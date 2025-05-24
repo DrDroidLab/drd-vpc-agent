@@ -12,11 +12,44 @@ from utils.time_utils import current_milli_time
 logger = logging.getLogger(__name__)
 
 
-class AWSBoto3ApiProcessor(Processor):
-    def __init__(self, client_type: str, region: str, aws_access_key: str = None, aws_secret_key: str = None,
-                 aws_assumed_role_arn: str = None):
+def generate_aws_access_secret_session_key(aws_assumed_role_arn, aws_drd_cloud_role_arn):
+    default_session = boto3.setup_default_session(aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                                                  aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                                                  region_name=settings.AWS_REGION)
+    uuid = str(current_milli_time())
+    role_session_name = "drd_session" + uuid
+    sts_client = boto3.client('sts', aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                              aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY, region_name=settings.AWS_REGION)
 
-        if (not aws_access_key or not aws_secret_key) and not aws_assumed_role_arn:
+    assumed_role = sts_client.assume_role(
+        RoleArn=aws_drd_cloud_role_arn,
+        RoleSessionName=role_session_name
+    )
+
+    aws_access_key_id = assumed_role['Credentials']['AccessKeyId']
+    aws_secret_access_key = assumed_role['Credentials']['SecretAccessKey']
+    aws_session_token = assumed_role['Credentials']['SessionToken']
+    region_name = 'us-west-2'
+
+    assumed_client = boto3.client('sts', aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key, aws_session_token=aws_session_token,
+                                  region_name=region_name)
+
+    # Assume the Prodigal role
+    assumed_role_2 = assumed_client.assume_role(
+        RoleArn=aws_assumed_role_arn,
+        RoleSessionName="client_session"
+    )
+
+    return {'aws_access_key': assumed_role_2['Credentials']['AccessKeyId'],
+            'aws_secret_key': assumed_role_2['Credentials']['SecretAccessKey'],
+            'aws_session_token': assumed_role_2['Credentials']['SessionToken']}
+
+class AWSBoto3ApiProcessor(Processor):
+    def __init__(self, client_type, region, aws_access_key=None, aws_secret_key=None, aws_assumed_role_arn=None,
+                 aws_drd_cloud_role_arn=None):
+
+        if (not aws_access_key or not aws_secret_key) and not (aws_assumed_role_arn or not aws_drd_cloud_role_arn):
             raise Exception("Received invalid AWS Credentials")
 
         self.client_type = client_type
@@ -25,7 +58,10 @@ class AWSBoto3ApiProcessor(Processor):
         self.region = region
         self.__aws_session_token = None
         if aws_assumed_role_arn:
-            raise Exception("Assumed role is not implemented")
+            credentials = generate_aws_access_secret_session_key(aws_assumed_role_arn, aws_drd_cloud_role_arn)
+            self.__aws_access_key = credentials['aws_access_key']
+            self.__aws_secret_key = credentials['aws_secret_key']
+            self.__aws_session_token = credentials['aws_session_token']
 
     def get_connection(self):
         try:
@@ -69,15 +105,32 @@ class AWSBoto3ApiProcessor(Processor):
                 f"Exception occurred while fetching cloudwatch alarms for alarm_names: {alarm_names} with error: {e}")
             raise e
 
-    def cloudwatch_list_metrics(self):
+    def cloudwatch_describe_all_alarms(self):
         try:
-            all_metrics = []
             client = self.get_connection()
-            paginator = client.get_paginator('list_metrics')
-            for response in paginator.paginate():
-                metrics = response['Metrics']
-                all_metrics.extend(metrics)
-            return all_metrics
+            response = client.describe_alarms()
+
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'MetricAlarms': response.get('MetricAlarms', []),
+                    'CompositeAlarms': response.get('CompositeAlarms', [])
+                }
+            else:
+                logger.warning(
+                    f"Unexpected response when fetching all CloudWatch alarms. Status code: {response['ResponseMetadata']['HTTPStatusCode']}")
+                return {'MetricAlarms': [], 'CompositeAlarms': []}
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching all CloudWatch alarms. Error: {e}")
+            raise e
+
+    def cloudwatch_list_metrics(self, namespace, token=None):
+        try:
+            client = self.get_connection()
+            if token:
+                metrics = client.list_metrics(NextToken=token, Namespace=namespace)
+            else:
+                metrics = client.list_metrics(Namespace=namespace)
+            return metrics
         except Exception as e:
             logger.error(f"Exception occurred while fetching cloudwatch metrics with error: {e}")
             raise e
@@ -113,6 +166,20 @@ class AWSBoto3ApiProcessor(Processor):
             logger.error(f"Exception occurred while fetching log groups with error: {e}")
             raise e
 
+    def logs_describe_log_group_queries(self):
+        try:
+            client = self.get_connection()
+            paginator = client.get_paginator('describe_queries')
+            all_queries = []
+
+            for page in paginator.paginate():
+                all_queries.extend(page['queries'])
+
+            return all_queries
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching log queries with error: {e}")
+            raise e
+
     def logs_filter_events(self, log_group, query_pattern, start_time, end_time):
         try:
             client = self.get_connection()
@@ -142,6 +209,121 @@ class AWSBoto3ApiProcessor(Processor):
         except Exception as e:
             logger.error(f"Exception occurred while fetching logs for log_group: {log_group} with error: {e}")
             raise e
+
+    def rds_describe_instances(self, db_instance_identifier=None):
+        try:
+            client = self.get_connection()
+            if db_instance_identifier:
+                rds_instances = client.describe_db_instances(DBInstanceIdentifier=db_instance_identifier)
+            else:
+                rds_instances = client.describe_db_instances()
+            return rds_instances
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching RDS instances with error: {e}")
+            raise e
+
+    def pi_describe_db_dimension_keys(self, resource_uri, performance_insights_metric='db.load.avg'):
+        end_time = datetime.now()
+        start_time = end_time - timedelta(days=1)
+        client = self.get_connection()
+        response = client.describe_dimension_keys(
+            ServiceType='RDS',
+            Identifier=resource_uri,
+            Metric=performance_insights_metric,
+            StartTime=start_time,
+            EndTime=end_time,
+            GroupBy={
+                'Group': 'db'
+            }
+        )
+        keys = response['Keys']
+        all_db_names = []
+        for k in keys:
+            if 'Dimensions' in k:
+                for key, value in k['Dimensions'].items():
+                    if key == 'db.name':
+                        all_db_names.append(value)
+        return list(set(all_db_names))
+
+    def pi_get_long_running_queries(self, resource_uri, query_end_time, start_minutes_ago=60, service_type='RDS'):
+        end_time = query_end_time if query_end_time else datetime.now()
+        start_time = end_time - timedelta(minutes=start_minutes_ago)
+        client = self.get_connection()
+        try:
+            response = client.describe_dimension_keys(
+                ServiceType=service_type,
+                Identifier=resource_uri,
+                StartTime=start_time,
+                EndTime=end_time,
+                Metric='db.load.avg',
+                PeriodInSeconds=300,
+                GroupBy={
+                    "Dimensions": ["db.sql_tokenized.id", "db.sql_tokenized.statement"],
+                    "Group": "db.sql_tokenized",
+                },
+                AdditionalMetrics=[
+                    "db.sql_tokenized.stats.sum_timer_wait_per_call.avg",
+                    "db.sql_tokenized.stats.sum_rows_examined_per_call.avg",
+                ],
+            )
+            query_data = []
+            for dimension in response.get('Keys', []):
+                sql = dimension.get('Dimensions', {}).get('db.sql_tokenized.statement', 'Unknown')
+                additional_metrics = dimension.get('AdditionalMetrics', {})
+                total_rows_examined = additional_metrics.get('db.sql_tokenized.stats.sum_rows_examined_per_call.avg', 0)
+                total_wait_time_ms = additional_metrics.get('db.sql_tokenized.stats.sum_timer_wait_per_call.avg', 0)
+                query_data.append({
+                    'sql': sql,
+                    'total_query_time_ms': total_wait_time_ms,
+                    'total_rows_examined': total_rows_examined,
+                })
+            query_data.sort(key=lambda x: x['total_query_time_ms'], reverse=True)
+            return query_data
+        except Exception as e:
+            print(f"Error fetching long-running queries: {e}")
+        return []
+
+    def pi_list_dimension_details(self, resource_uri, metric_type='db.sql_tokenized.stats'):
+        try:
+            client = self.get_connection()
+            response = client.list_available_resource_metrics(
+                ServiceType='RDS',
+                Identifier=resource_uri,
+                MetricTypes=[
+                    metric_type,
+                ],
+            )
+            return response
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching PI dimension details with error: {e}")
+            raise e
+
+    # CloudWatch Dashboard Methods
+    def cloudwatch_list_dashboards(self):
+        """List all CloudWatch dashboards in the configured region."""
+        try:
+            client = self.get_connection()
+            dashboards = []
+            paginator = client.get_paginator('list_dashboards')
+
+            for page in paginator.paginate():
+                if 'DashboardEntries' in page:
+                    dashboards.extend(page['DashboardEntries'])
+
+            return dashboards
+        except Exception as e:
+            logger.error(f"Exception occurred while listing CloudWatch dashboards with error: {e}")
+            return []
+
+    def cloudwatch_get_dashboard(self, dashboard_name: str):
+        """Get details of a specific CloudWatch dashboard by name."""
+        try:
+            client = self.get_connection()
+            response = client.get_dashboard(DashboardName=dashboard_name)
+            return response
+        except Exception as e:
+            logger.error(f"Exception occurred while getting CloudWatch dashboard '{dashboard_name}': {e}")
+            return None
 
     # ECS Methods
     def list_all_clusters(self):
@@ -427,42 +609,3 @@ class AWSBoto3ApiProcessor(Processor):
         except requests.RequestException as e:
             print(f"[ERROR] Failed to download file: {e}")
             return None
-        
-    # RDS Methods
-    def pi_get_long_running_queries(self, resource_uri, query_end_time, start_minutes_ago=60, service_type='RDS'):
-        end_time = query_end_time if query_end_time else datetime.now()
-        start_time = end_time - timedelta(minutes=start_minutes_ago)
-        client = self.get_connection()
-        try:
-            response = client.describe_dimension_keys(
-                ServiceType=service_type,
-                Identifier=resource_uri,
-                StartTime=start_time,
-                EndTime=end_time,
-                Metric='db.load.avg',
-                PeriodInSeconds=300,
-                GroupBy={
-                    "Dimensions": ["db.sql_tokenized.id", "db.sql_tokenized.statement"],
-                    "Group": "db.sql_tokenized",
-                },
-                AdditionalMetrics=[
-                    "db.sql_tokenized.stats.sum_timer_wait_per_call.avg",
-                    "db.sql_tokenized.stats.sum_rows_examined_per_call.avg",
-                ],
-            )
-            query_data = []
-            for dimension in response.get('Keys', []):
-                sql = dimension.get('Dimensions', {}).get('db.sql_tokenized.statement', 'Unknown')
-                additional_metrics = dimension.get('AdditionalMetrics', {})
-                total_rows_examined = additional_metrics.get('db.sql_tokenized.stats.sum_rows_examined_per_call.avg', 0)
-                total_wait_time_ms = additional_metrics.get('db.sql_tokenized.stats.sum_timer_wait_per_call.avg', 0)
-                query_data.append({
-                    'sql': sql,
-                    'total_query_time_ms': total_wait_time_ms,
-                    'total_rows_examined': total_rows_examined,
-                })
-            query_data.sort(key=lambda x: x['total_query_time_ms'], reverse=True)
-            return query_data
-        except Exception as e:
-            print(f"Error fetching long-running queries: {e}")
-        return []

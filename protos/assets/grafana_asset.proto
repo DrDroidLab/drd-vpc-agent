@@ -85,6 +85,19 @@ message GrafanaDashboardAssetOptions {
   repeated GrafanaDashboardOptions dashboards = 1;
 }
 
+message GrafanaAlertRuleAssetModel {
+  google.protobuf.UInt64Value alert_rule_id = 1;
+  google.protobuf.Struct alert_rule_json = 2;
+}
+
+message GrafanaAlertRuleAssetOptions {
+  message GrafanaAlertRuleOptions {
+    google.protobuf.StringValue alert_rule_uid = 1;
+    google.protobuf.StringValue alert_rule_title = 2;
+  }
+  repeated GrafanaAlertRuleOptions alert_rules = 1;
+}
+
 message GrafanaAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -93,6 +106,7 @@ message GrafanaAssetModel {
   oneof asset {
     GrafanaTargetMetricPromQlAssetModel grafana_target_metric_promql = 5;
     GrafanaDatasourceAssetModel grafana_prometheus_datasource = 6;
+    GrafanaAlertRuleAssetModel grafana_alert_rule = 7;
     GrafanaDashboardAssetModel grafana_dashboard = 8;
   }
 }

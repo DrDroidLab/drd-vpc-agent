@@ -56,6 +56,71 @@ class AzureWorkspaceAssetOptions(google.protobuf.message.Message):
 global___AzureWorkspaceAssetOptions = AzureWorkspaceAssetOptions
 
 @typing_extensions.final
+class AvailableMetrics(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    METRIC_NAMES_FIELD_NUMBER: builtins.int
+    @property
+    def metric_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    def __init__(
+        self,
+        *,
+        metric_names: collections.abc.Iterable[builtins.str] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["metric_names", b"metric_names"]) -> None: ...
+
+global___AvailableMetrics = AvailableMetrics
+
+@typing_extensions.final
+class AzureResourceAssetModel(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    RESOURCE_ID_FIELD_NUMBER: builtins.int
+    NAME_FIELD_NUMBER: builtins.int
+    TYPE_FIELD_NUMBER: builtins.int
+    LOCATION_FIELD_NUMBER: builtins.int
+    AVAILABLE_METRICS_FIELD_NUMBER: builtins.int
+    @property
+    def resource_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def type(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def location(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def available_metrics(self) -> global___AvailableMetrics: ...
+    def __init__(
+        self,
+        *,
+        resource_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        type: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        location: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        available_metrics: global___AvailableMetrics | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["available_metrics", b"available_metrics", "location", b"location", "name", b"name", "resource_id", b"resource_id", "type", b"type"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["available_metrics", b"available_metrics", "location", b"location", "name", b"name", "resource_id", b"resource_id", "type", b"type"]) -> None: ...
+
+global___AzureResourceAssetModel = AzureResourceAssetModel
+
+@typing_extensions.final
+class AzureResourceAssetOptions(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    RESOURCES_FIELD_NUMBER: builtins.int
+    @property
+    def resources(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___AzureResourceAssetModel]: ...
+    def __init__(
+        self,
+        *,
+        resources: collections.abc.Iterable[global___AzureResourceAssetModel] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["resources", b"resources"]) -> None: ...
+
+global___AzureResourceAssetOptions = AzureResourceAssetOptions
+
+@typing_extensions.final
 class AzureAssetModel(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -64,6 +129,7 @@ class AzureAssetModel(google.protobuf.message.Message):
     TYPE_FIELD_NUMBER: builtins.int
     LAST_UPDATED_FIELD_NUMBER: builtins.int
     AZURE_WORKSPACE_FIELD_NUMBER: builtins.int
+    AZURE_RESOURCE_FIELD_NUMBER: builtins.int
     @property
     def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     connector_type: protos.base_pb2.Source.ValueType
@@ -71,6 +137,8 @@ class AzureAssetModel(google.protobuf.message.Message):
     last_updated: builtins.int
     @property
     def azure_workspace(self) -> global___AzureWorkspaceAssetModel: ...
+    @property
+    def azure_resource(self) -> global___AzureResourceAssetModel: ...
     def __init__(
         self,
         *,
@@ -79,10 +147,11 @@ class AzureAssetModel(google.protobuf.message.Message):
         type: protos.base_pb2.SourceModelType.ValueType = ...,
         last_updated: builtins.int = ...,
         azure_workspace: global___AzureWorkspaceAssetModel | None = ...,
+        azure_resource: global___AzureResourceAssetModel | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "azure_workspace", b"azure_workspace", "id", b"id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "azure_workspace", b"azure_workspace", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["azure_workspace"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "azure_resource", b"azure_resource", "azure_workspace", b"azure_workspace", "id", b"id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "azure_resource", b"azure_resource", "azure_workspace", b"azure_workspace", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["azure_workspace", "azure_resource"] | None: ...
 
 global___AzureAssetModel = AzureAssetModel
 

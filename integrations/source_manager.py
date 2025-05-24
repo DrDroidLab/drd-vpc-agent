@@ -64,7 +64,7 @@ class SourceManager:
     def get_task_type_callable_map(self):
         return self.task_type_callable_map
 
-    def get_active_connectors(self, connector_name: str) -> [ConnectorProto]:
+    def get_active_connectors(self, connector_name: str, connector_id: int) -> [ConnectorProto]:
         loaded_connections = settings.LOADED_CONNECTIONS
         if not loaded_connections:
             raise Exception("No loaded connections found")
@@ -73,7 +73,7 @@ class SourceManager:
             raise Exception(f"No loaded connections found for connector: {connector_name}")
 
         connector_proto: ConnectorProto = credential_yaml_to_connector_proto(connector_name,
-                                                                             loaded_connections[connector_name])
+                                                                             loaded_connections[connector_name], connector_id)
         return connector_proto
 
     def get_resolved_task(self, global_variable_set: Struct, input_task: PlaybookTask):
@@ -135,7 +135,8 @@ class SourceManager:
                 if not task_connector_source.name or not task_connector_source.name.value:
                     raise Exception("Connector name not found in task")
                 connector_name = task_connector_source.name.value
-                active_connector = self.get_active_connectors(connector_name)
+                connector_id = task_connector_source.id.value
+                active_connector = self.get_active_connectors(connector_name, connector_id)
                 source_connector_proto = active_connector
             resolved_task, resolved_source_task, task_local_variable_map = self.get_resolved_task(global_variable_set,
                                                                                                   task)

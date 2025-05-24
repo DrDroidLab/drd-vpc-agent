@@ -26,6 +26,7 @@ class Connector(google.protobuf.message.Message):
     TYPE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     KEYS_FIELD_NUMBER: builtins.int
+    ID_FIELD_NUMBER: builtins.int
     @property
     def account_id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     type: protos.base_pb2.Source.ValueType
@@ -33,6 +34,8 @@ class Connector(google.protobuf.message.Message):
     def name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
     @property
     def keys(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ConnectorKey]: ...
+    @property
+    def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     def __init__(
         self,
         *,
@@ -40,9 +43,10 @@ class Connector(google.protobuf.message.Message):
         type: protos.base_pb2.Source.ValueType = ...,
         name: google.protobuf.wrappers_pb2.StringValue | None = ...,
         keys: collections.abc.Iterable[global___ConnectorKey] | None = ...,
+        id: google.protobuf.wrappers_pb2.UInt64Value | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["account_id", b"account_id", "name", b"name"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["account_id", b"account_id", "keys", b"keys", "name", b"name", "type", b"type"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["account_id", b"account_id", "id", b"id", "name", b"name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["account_id", b"account_id", "id", b"id", "keys", b"keys", "name", b"name", "type", b"type"]) -> None: ...
 
 global___Connector = Connector
 

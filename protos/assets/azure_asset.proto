@@ -3,6 +3,7 @@ package protos.connectors;
 
 import "google/protobuf/wrappers.proto";
 import "protos/base.proto";
+import "google/protobuf/struct.proto";
 
 
 message AzureWorkspaceAssetModel {
@@ -14,6 +15,22 @@ message AzureWorkspaceAssetOptions {
   repeated AzureWorkspaceAssetModel workspaces = 1;
 }
 
+message AvailableMetrics {
+    repeated string metric_names = 1;
+}
+
+message AzureResourceAssetModel {
+  google.protobuf.StringValue resource_id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue type = 3;
+  google.protobuf.StringValue location = 4;
+  AvailableMetrics available_metrics = 5;
+}
+
+message AzureResourceAssetOptions {
+  repeated AzureResourceAssetModel resources = 1;
+}
+
 message AzureAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -22,6 +39,7 @@ message AzureAssetModel {
 
   oneof asset {
     AzureWorkspaceAssetModel azure_workspace = 5;
+    AzureResourceAssetModel azure_resource = 6;
   }
 }
 

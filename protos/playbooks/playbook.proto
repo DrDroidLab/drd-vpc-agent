@@ -39,6 +39,8 @@ import "protos/playbooks/source_task_definitions/sentry_task.proto";
 import "protos/playbooks/source_task_definitions/github_actions_task.proto";
 import "protos/playbooks/source_task_definitions/argocd_task.proto";
 import "protos/playbooks/source_task_definitions/jira_task.proto";
+import "protos/playbooks/source_task_definitions/signoz_task.proto";
+import "protos/playbooks/source_task_definitions/posthog_task.proto";
 
 
 // Playbook Task Protos
@@ -102,6 +104,8 @@ message PlaybookTask {
     Jira jira_cloud = 131;
     Lambda lambda = 132;
     DrdProxyAgent drd_proxy_agent = 133;
+    PostHog posthog = 136;
+    Signoz signoz = 137;
   }
 }
 

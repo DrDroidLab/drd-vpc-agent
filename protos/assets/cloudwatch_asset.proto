@@ -2,6 +2,7 @@ syntax = "proto3";
 package protos.connectors;
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
 import "protos/base.proto";
 
 message CloudwatchLogGroupAssetModel {
@@ -9,8 +10,17 @@ message CloudwatchLogGroupAssetModel {
   repeated string log_groups = 2;
 }
 
+message CloudwatchLogGroupQueryAssetModel {
+  google.protobuf.StringValue log_group = 1;
+  repeated string queries = 2;
+}
+
 message CloudwatchLogGroupAssetOptions {
   repeated string regions = 1;
+}
+
+message CloudwatchLogGroupQueryAssetOptions {
+  repeated string log_groups = 1;
 }
 
 message CloudwatchMetricAssetModel {
@@ -33,6 +43,73 @@ message CloudwatchMetricAssetOptions {
   repeated string namespaces = 1;
 }
 
+message CloudwatchAlarmAssetModel {
+  google.protobuf.StringValue alarm_name = 1;
+  google.protobuf.Struct alarm = 2;
+}
+
+message CloudwatchAlarmAssetOptions {
+  repeated string alarm_names = 1;
+}
+
+// ECS asset models integrated into CloudWatch
+message EcsClusterAssetOptions {
+  repeated string clusters = 1; // Names of clusters
+}
+
+message EcsTaskAssetOptions {
+  repeated string tasks = 1; // ARNs of tasks
+}
+
+message EcsServiceAssetOptions {
+  repeated string services = 1; // ARNs of services
+}
+
+message EcsClusterAssetModel {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue arn = 2;
+  google.protobuf.StringValue status = 3;
+  google.protobuf.StringValue region = 4;
+}
+
+message EcsTaskAssetModel {
+  google.protobuf.StringValue arn = 1;
+  google.protobuf.StringValue cluster_name = 2;
+  google.protobuf.StringValue cluster_arn = 3;
+  google.protobuf.StringValue task_definition_arn = 4;
+  google.protobuf.StringValue status = 5;
+  google.protobuf.StringValue container_name = 6;
+}
+
+message EcsServiceAssetModel {
+  google.protobuf.StringValue arn = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue cluster_name = 3;
+  google.protobuf.StringValue cluster_arn = 4;
+  google.protobuf.StringValue status = 5;
+}
+
+message CloudwatchMetricWidget {
+  google.protobuf.StringValue namespace = 1;
+  google.protobuf.StringValue metric_name = 2;
+  repeated google.protobuf.Struct dimensions = 3;
+  google.protobuf.StringValue statistic = 4;
+  google.protobuf.StringValue unit = 5;
+  google.protobuf.Int32Value period = 6;
+  google.protobuf.StringValue region = 7;
+  google.protobuf.StringValue widget_title = 8;
+}
+
+message CloudwatchDashboardAssetModel {
+  google.protobuf.StringValue dashboard_name = 1;
+  google.protobuf.StringValue dashboard_arn = 2;
+  repeated CloudwatchMetricWidget widgets = 3;
+}
+
+message CloudwatchDashboardAssetOptions {
+  repeated string dashboard_names = 1;
+}
+
 message CloudwatchAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -42,6 +119,14 @@ message CloudwatchAssetModel {
   oneof asset {
     CloudwatchLogGroupAssetModel cloudwatch_log_group = 5;
     CloudwatchMetricAssetModel cloudwatch_metric = 6;
+    CloudwatchLogGroupQueryAssetModel cloudwatch_log_group_query = 7;
+    CloudwatchAlarmAssetModel cloudwatch_alarm = 8;
+    // ECS assets integrated into CloudWatch
+    EcsClusterAssetModel ecs_cluster = 9;
+    EcsTaskAssetModel ecs_task = 10;
+    EcsServiceAssetModel ecs_service = 11;
+    // Cloudwatch Dashboard
+    CloudwatchDashboardAssetModel cloudwatch_dashboard = 12;
   }
 }
 

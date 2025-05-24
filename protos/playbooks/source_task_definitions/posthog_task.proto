@@ -1,0 +1,21 @@
+syntax = "proto3";
+package protos.playbooks;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
+
+message PostHog {
+  message HogQLQueryTask {
+    google.protobuf.StringValue query = 1;
+  }
+
+  enum TaskType {
+    UNKNOWN = 0;
+    HOGQL_QUERY = 1;
+  }
+
+  TaskType type = 1;
+  oneof task {
+    HogQLQueryTask hogql_query = 2;
+  }
+}

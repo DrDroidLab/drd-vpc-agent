@@ -158,6 +158,37 @@ class JiraSourceManager(SourceManager):
                         form_field_type=FormFieldType.TEXT_FT
                     )
                 ]
+            },
+            Jira.TaskType.ADD_COMMENT: {
+                'executor': self.add_comment,
+                'model_types': [],
+                'result_type': PlaybookTaskResultType.API_RESPONSE,
+                'display_name': 'Add Comment to JIRA Ticket',
+                'category': 'Task',
+                'form_fields': [
+                    FormField(
+                        key_name=StringValue(value="ticket_key"),
+                        display_name=StringValue(value="Ticket Key"),
+                        description=StringValue(value='Enter JIRA ticket key (e.g., PROJ-123)'),
+                        data_type=LiteralType.STRING,
+                        form_field_type=FormFieldType.TEXT_FT
+                    ),
+                    FormField(
+                        key_name=StringValue(value="comment_text"),
+                        display_name=StringValue(value="Comment"),
+                        description=StringValue(value='Enter comment text'),
+                        data_type=LiteralType.STRING,
+                        form_field_type=FormFieldType.MULTILINE_FT
+                    ),
+                    FormField(
+                        key_name=StringValue(value="image_urls"),
+                        display_name=StringValue(value="Image URLs"),
+                        description=StringValue(value='Enter URLs for images to include in the comment'),
+                        data_type=LiteralType.STRING,
+                        form_field_type=FormFieldType.STRING_ARRAY_FT,
+                        is_optional=True,
+                    )
+                ]
             }
         }
 
@@ -480,3 +511,85 @@ class JiraSourceManager(SourceManager):
             logger.error(error_msg, exc_info=True)
             return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT,
                                       text=TextResult(output=StringValue(value=error_msg)), source=self.source)
+
+    def add_comment(self, time_range: TimeRange, jira_task: Jira,
+                    jira_connector: ConnectorProto):
+        try:
+            if not jira_connector:
+                logger.error("Task execution Failed: No JIRA source found")
+                raise ValueError("No JIRA source found")
+
+            task = jira_task.add_comment
+
+            # Extract and validate fields
+            ticket_key = task.ticket_key.value
+            comment_text = task.comment_text.value
+            image_urls = [url.value for url in task.image_urls] if hasattr(task, 'image_urls') else []
+
+            # Validate required fields
+            if not ticket_key or not comment_text:
+                missing_fields = []
+                if not ticket_key: missing_fields.append("ticket_key")
+                if not comment_text: missing_fields.append("comment_text")
+                error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+                logger.error(error_msg)
+                return PlaybookTaskResult(
+                    type=PlaybookTaskResultType.TEXT,
+                    text=TextResult(output=StringValue(value=error_msg)),
+                    source=self.source
+                )
+
+            # Get JIRA processor
+            jira_processor = self.get_connector_processor(jira_connector)
+
+            # Log attempt to add comment
+            logger.info(f"Attempting to add comment to JIRA ticket {ticket_key}")
+
+            # Add the comment
+            result = jira_processor.add_comment(
+                ticket_key=ticket_key,
+                comment_text=comment_text,
+                image_urls=image_urls
+            )
+
+            if not result:
+                error_msg = "JIRA API returned no result when adding comment"
+                logger.error(error_msg)
+                return PlaybookTaskResult(
+                    type=PlaybookTaskResultType.TEXT,
+                    text=TextResult(output=StringValue(value=error_msg)),
+                    source=self.source
+                )
+
+            # Extract comment information from the result
+            comment_id = result.get('id', 'Unknown')
+            author = result.get('author', {}).get('displayName', 'Unknown')
+
+            # Prepare the response
+            response_dict = {
+                'ticket_key': ticket_key,
+                'comment_id': comment_id,
+                'author': author,
+                'status': 'Comment Added'
+            }
+
+            logger.info(f"Successfully added comment to JIRA ticket {ticket_key}")
+
+            response_struct = dict_to_proto(response_dict, Struct)
+            jira_output = ApiResponseResult(response_body=response_struct)
+
+            return PlaybookTaskResult(
+                type=PlaybookTaskResultType.API_RESPONSE,
+                source=self.source,
+                api_response=jira_output
+            )
+
+        except Exception as e:
+            error_msg = f"Exception occurred while adding comment to JIRA ticket: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+
+            return PlaybookTaskResult(
+                type=PlaybookTaskResultType.TEXT,
+                text=TextResult(output=StringValue(value=error_msg)),
+                source=self.source
+            )

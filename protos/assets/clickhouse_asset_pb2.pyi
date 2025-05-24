@@ -52,6 +52,100 @@ class ClickhouseDatabaseAssetOptions(google.protobuf.message.Message):
 global___ClickhouseDatabaseAssetOptions = ClickhouseDatabaseAssetOptions
 
 @typing_extensions.final
+class ClickhouseColumnModel(google.protobuf.message.Message):
+    """Column model for tables"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    NAME_FIELD_NUMBER: builtins.int
+    DATA_TYPE_FIELD_NUMBER: builtins.int
+    IS_NULLABLE_FIELD_NUMBER: builtins.int
+    DEFAULT_VALUE_FIELD_NUMBER: builtins.int
+    DESCRIPTION_FIELD_NUMBER: builtins.int
+    @property
+    def name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def data_type(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def is_nullable(self) -> google.protobuf.wrappers_pb2.BoolValue: ...
+    @property
+    def default_value(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def description(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    def __init__(
+        self,
+        *,
+        name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        data_type: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        is_nullable: google.protobuf.wrappers_pb2.BoolValue | None = ...,
+        default_value: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        description: google.protobuf.wrappers_pb2.StringValue | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["data_type", b"data_type", "default_value", b"default_value", "description", b"description", "is_nullable", b"is_nullable", "name", b"name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["data_type", b"data_type", "default_value", b"default_value", "description", b"description", "is_nullable", b"is_nullable", "name", b"name"]) -> None: ...
+
+global___ClickhouseColumnModel = ClickhouseColumnModel
+
+@typing_extensions.final
+class ClickhouseTableAssetModel(google.protobuf.message.Message):
+    """Table asset"""
+
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    TABLE_NAME_FIELD_NUMBER: builtins.int
+    DATABASE_NAME_FIELD_NUMBER: builtins.int
+    ENGINE_FIELD_NUMBER: builtins.int
+    DESCRIPTION_FIELD_NUMBER: builtins.int
+    SIZE_FIELD_NUMBER: builtins.int
+    COLUMNS_FIELD_NUMBER: builtins.int
+    @property
+    def table_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def database_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def engine(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def description(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def size(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def columns(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ClickhouseColumnModel]: ...
+    def __init__(
+        self,
+        *,
+        table_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        database_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        engine: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        description: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        size: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        columns: collections.abc.Iterable[global___ClickhouseColumnModel] | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["database_name", b"database_name", "description", b"description", "engine", b"engine", "size", b"size", "table_name", b"table_name"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["columns", b"columns", "database_name", b"database_name", "description", b"description", "engine", b"engine", "size", b"size", "table_name", b"table_name"]) -> None: ...
+
+global___ClickhouseTableAssetModel = ClickhouseTableAssetModel
+
+@typing_extensions.final
+class ClickhouseTableAssetOptions(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    TABLES_FIELD_NUMBER: builtins.int
+    DATABASES_FIELD_NUMBER: builtins.int
+    @property
+    def tables(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    @property
+    def databases(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    def __init__(
+        self,
+        *,
+        tables: collections.abc.Iterable[builtins.str] | None = ...,
+        databases: collections.abc.Iterable[builtins.str] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["databases", b"databases", "tables", b"tables"]) -> None: ...
+
+global___ClickhouseTableAssetOptions = ClickhouseTableAssetOptions
+
+@typing_extensions.final
 class ClickhouseAssetModel(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -60,6 +154,7 @@ class ClickhouseAssetModel(google.protobuf.message.Message):
     TYPE_FIELD_NUMBER: builtins.int
     LAST_UPDATED_FIELD_NUMBER: builtins.int
     CLICKHOUSE_DATABASE_FIELD_NUMBER: builtins.int
+    CLICKHOUSE_TABLE_FIELD_NUMBER: builtins.int
     @property
     def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
     connector_type: protos.base_pb2.Source.ValueType
@@ -67,6 +162,8 @@ class ClickhouseAssetModel(google.protobuf.message.Message):
     last_updated: builtins.int
     @property
     def clickhouse_database(self) -> global___ClickhouseDatabaseAssetModel: ...
+    @property
+    def clickhouse_table(self) -> global___ClickhouseTableAssetModel: ...
     def __init__(
         self,
         *,
@@ -75,10 +172,11 @@ class ClickhouseAssetModel(google.protobuf.message.Message):
         type: protos.base_pb2.SourceModelType.ValueType = ...,
         last_updated: builtins.int = ...,
         clickhouse_database: global___ClickhouseDatabaseAssetModel | None = ...,
+        clickhouse_table: global___ClickhouseTableAssetModel | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "clickhouse_database", b"clickhouse_database", "id", b"id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "clickhouse_database", b"clickhouse_database", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["clickhouse_database"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "clickhouse_database", b"clickhouse_database", "clickhouse_table", b"clickhouse_table", "id", b"id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "clickhouse_database", b"clickhouse_database", "clickhouse_table", b"clickhouse_table", "connector_type", b"connector_type", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["clickhouse_database", "clickhouse_table"] | None: ...
 
 global___ClickhouseAssetModel = ClickhouseAssetModel
 

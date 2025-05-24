@@ -354,6 +354,9 @@ class PlaybookTaskResult(google.protobuf.message.Message):
     RESULT_TRANSFORMER_LAMBDA_FUNCTION_VARIABLE_SET_FIELD_NUMBER: builtins.int
     PROXY_EXECUTION_REQUEST_ID_FIELD_NUMBER: builtins.int
     STATUS_FIELD_NUMBER: builtins.int
+    APPROVAL_REQUEST_ID_FIELD_NUMBER: builtins.int
+    APPROVAL_TASK_DESCRIPTION_FIELD_NUMBER: builtins.int
+    WIDGET_ID_FIELD_NUMBER: builtins.int
     TIMESERIES_FIELD_NUMBER: builtins.int
     TABLE_FIELD_NUMBER: builtins.int
     API_RESPONSE_FIELD_NUMBER: builtins.int
@@ -371,6 +374,13 @@ class PlaybookTaskResult(google.protobuf.message.Message):
     @property
     def proxy_execution_request_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
     status: global___PlaybookExecutionStatusType.ValueType
+    @property
+    def approval_request_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def approval_task_description(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+    @property
+    def widget_id(self) -> google.protobuf.wrappers_pb2.StringValue:
+        """currently solving for datadog dashboards @vidushee"""
     @property
     def timeseries(self) -> global___TimeseriesResult: ...
     @property
@@ -393,6 +403,9 @@ class PlaybookTaskResult(google.protobuf.message.Message):
         result_transformer_lambda_function_variable_set: google.protobuf.struct_pb2.Struct | None = ...,
         proxy_execution_request_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
         status: global___PlaybookExecutionStatusType.ValueType = ...,
+        approval_request_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        approval_task_description: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        widget_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
         timeseries: global___TimeseriesResult | None = ...,
         table: global___TableResult | None = ...,
         api_response: global___ApiResponseResult | None = ...,
@@ -400,8 +413,8 @@ class PlaybookTaskResult(google.protobuf.message.Message):
         text: global___TextResult | None = ...,
         logs: global___TableResult | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["api_response", b"api_response", "bash_command_output", b"bash_command_output", "error", b"error", "logs", b"logs", "proxy_execution_request_id", b"proxy_execution_request_id", "result", b"result", "result_transformer_lambda_function_variable_set", b"result_transformer_lambda_function_variable_set", "table", b"table", "task_local_variable_set", b"task_local_variable_set", "text", b"text", "timeseries", b"timeseries"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["api_response", b"api_response", "bash_command_output", b"bash_command_output", "error", b"error", "logs", b"logs", "proxy_execution_request_id", b"proxy_execution_request_id", "result", b"result", "result_transformer_lambda_function_variable_set", b"result_transformer_lambda_function_variable_set", "source", b"source", "status", b"status", "table", b"table", "task_local_variable_set", b"task_local_variable_set", "text", b"text", "timeseries", b"timeseries", "type", b"type"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["api_response", b"api_response", "approval_request_id", b"approval_request_id", "approval_task_description", b"approval_task_description", "bash_command_output", b"bash_command_output", "error", b"error", "logs", b"logs", "proxy_execution_request_id", b"proxy_execution_request_id", "result", b"result", "result_transformer_lambda_function_variable_set", b"result_transformer_lambda_function_variable_set", "table", b"table", "task_local_variable_set", b"task_local_variable_set", "text", b"text", "timeseries", b"timeseries", "widget_id", b"widget_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["api_response", b"api_response", "approval_request_id", b"approval_request_id", "approval_task_description", b"approval_task_description", "bash_command_output", b"bash_command_output", "error", b"error", "logs", b"logs", "proxy_execution_request_id", b"proxy_execution_request_id", "result", b"result", "result_transformer_lambda_function_variable_set", b"result_transformer_lambda_function_variable_set", "source", b"source", "status", b"status", "table", b"table", "task_local_variable_set", b"task_local_variable_set", "text", b"text", "timeseries", b"timeseries", "type", b"type", "widget_id", b"widget_id"]) -> None: ...
     def WhichOneof(self, oneof_group: typing_extensions.Literal["result", b"result"]) -> typing_extensions.Literal["timeseries", "table", "api_response", "bash_command_output", "text", "logs"] | None: ...
 
 global___PlaybookTaskResult = PlaybookTaskResult

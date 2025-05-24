@@ -11,9 +11,16 @@ message NewRelicApplicationEntityAssetModel {
     google.protobuf.StringValue golden_metric_nrql_expression = 3;
   }
 
+  message APMDashboard {
+    google.protobuf.StringValue metric_name = 1;
+    google.protobuf.StringValue metric_unit = 2;
+    google.protobuf.StringValue metric_nrql_expression = 3;
+  }
+
   google.protobuf.StringValue application_entity_guid = 1;
   google.protobuf.StringValue application_name = 2;
   repeated GoldenMetric golden_metrics = 3;
+  repeated APMDashboard apm_metrics = 4;
 }
 
 message NewRelicApplicationEntityAssetOptions {
@@ -52,6 +59,40 @@ message NewRelicDashboardEntityAssetOptions {
   repeated DashboardOptions dashboards = 1;
 }
 
+// V2 Dashboard Asset Model
+message NewRelicDashboardEntityAssetModelV2 {
+  message PageWidgetV2 {
+    google.protobuf.StringValue widget_id = 1;
+    google.protobuf.StringValue widget_title = 2;
+    google.protobuf.StringValue widget_type = 3;
+    repeated google.protobuf.StringValue widget_nrql_expressions = 4;
+  }
+
+  message DashboardPageV2 {
+    google.protobuf.StringValue page_guid = 1;
+    google.protobuf.StringValue page_name = 2;
+    repeated PageWidgetV2 widgets = 3;
+  }
+
+  google.protobuf.StringValue dashboard_guid = 1;
+  google.protobuf.StringValue dashboard_name = 2;
+  repeated DashboardPageV2 pages = 3;
+}
+
+// V2 Dashboard Asset Options (Keeping the same structure for now, can adjust if needed later)
+message NewRelicDashboardEntityAssetOptionsV2 {
+  message DashboardOptionsV2 {
+    message DashboardPageOptionsV2 {
+      google.protobuf.StringValue page_guid = 1;
+      google.protobuf.StringValue page_name = 2;
+    }
+    google.protobuf.StringValue dashboard_guid = 1;
+    google.protobuf.StringValue dashboard_name = 2;
+    repeated DashboardPageOptionsV2 page_options = 4;
+  }
+  repeated DashboardOptionsV2 dashboards = 1;
+}
+
 message NewRelicAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -61,6 +102,7 @@ message NewRelicAssetModel {
   oneof asset {
     NewRelicApplicationEntityAssetModel new_relic_entity_application = 5;
     NewRelicDashboardEntityAssetModel new_relic_entity_dashboard = 6;
+    NewRelicDashboardEntityAssetModelV2 new_relic_entity_dashboard_v2 = 7;
   }
 }
 

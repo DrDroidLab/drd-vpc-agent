@@ -3,7 +3,9 @@
 isort:skip_file
 """
 import builtins
+import collections.abc
 import google.protobuf.descriptor
+import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import google.protobuf.wrappers_pb2
@@ -33,6 +35,7 @@ class Github(google.protobuf.message.Message):
         UPDATE_FILE: Github._TaskType.ValueType  # 3
         FETCH_RECENT_COMMITS: Github._TaskType.ValueType  # 4
         FETCH_RECENT_MERGES: Github._TaskType.ValueType  # 5
+        CREATE_PULL_REQUEST: Github._TaskType.ValueType  # 6
 
     class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper): ...
     UNKNOWN: Github.TaskType.ValueType  # 0
@@ -41,6 +44,7 @@ class Github(google.protobuf.message.Message):
     UPDATE_FILE: Github.TaskType.ValueType  # 3
     FETCH_RECENT_COMMITS: Github.TaskType.ValueType  # 4
     FETCH_RECENT_MERGES: Github.TaskType.ValueType  # 5
+    CREATE_PULL_REQUEST: Github.TaskType.ValueType  # 6
 
     @typing_extensions.final
     class FetchRelatedCommits(google.protobuf.message.Message):
@@ -193,12 +197,79 @@ class Github(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["branch", b"branch", "owner", b"owner", "repo", b"repo"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["branch", b"branch", "owner", b"owner", "repo", b"repo"]) -> None: ...
 
+    @typing_extensions.final
+    class FileUpdate(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        PATH_FIELD_NUMBER: builtins.int
+        CONTENT_FIELD_NUMBER: builtins.int
+        @property
+        def path(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def content(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            path: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            content: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["content", b"content", "path", b"path"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["content", b"content", "path", b"path"]) -> None: ...
+
+    @typing_extensions.final
+    class CreatePullRequest(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        REPO_FIELD_NUMBER: builtins.int
+        TITLE_FIELD_NUMBER: builtins.int
+        BODY_FIELD_NUMBER: builtins.int
+        HEAD_BRANCH_FIELD_NUMBER: builtins.int
+        BASE_BRANCH_FIELD_NUMBER: builtins.int
+        FILES_FIELD_NUMBER: builtins.int
+        COMMIT_MESSAGE_FIELD_NUMBER: builtins.int
+        COMMITTER_NAME_FIELD_NUMBER: builtins.int
+        COMMITTER_EMAIL_FIELD_NUMBER: builtins.int
+        @property
+        def repo(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def title(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def body(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def head_branch(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def base_branch(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def files(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___Github.FileUpdate]: ...
+        @property
+        def commit_message(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def committer_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def committer_email(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            repo: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            title: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            body: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            head_branch: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            base_branch: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            files: collections.abc.Iterable[global___Github.FileUpdate] | None = ...,
+            commit_message: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            committer_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            committer_email: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["base_branch", b"base_branch", "body", b"body", "commit_message", b"commit_message", "committer_email", b"committer_email", "committer_name", b"committer_name", "head_branch", b"head_branch", "repo", b"repo", "title", b"title"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["base_branch", b"base_branch", "body", b"body", "commit_message", b"commit_message", "committer_email", b"committer_email", "committer_name", b"committer_name", "files", b"files", "head_branch", b"head_branch", "repo", b"repo", "title", b"title"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     FETCH_RELATED_COMMITS_FIELD_NUMBER: builtins.int
     FETCH_FILE_FIELD_NUMBER: builtins.int
     UPDATE_FILE_FIELD_NUMBER: builtins.int
     FETCH_RECENT_COMMITS_FIELD_NUMBER: builtins.int
     FETCH_RECENT_MERGES_FIELD_NUMBER: builtins.int
+    CREATE_PULL_REQUEST_FIELD_NUMBER: builtins.int
     type: global___Github.TaskType.ValueType
     @property
     def fetch_related_commits(self) -> global___Github.FetchRelatedCommits: ...
@@ -210,6 +281,8 @@ class Github(google.protobuf.message.Message):
     def fetch_recent_commits(self) -> global___Github.FetchRecentCommits: ...
     @property
     def fetch_recent_merges(self) -> global___Github.FetchRecentMerges: ...
+    @property
+    def create_pull_request(self) -> global___Github.CreatePullRequest: ...
     def __init__(
         self,
         *,
@@ -219,9 +292,10 @@ class Github(google.protobuf.message.Message):
         update_file: global___Github.UpdateFile | None = ...,
         fetch_recent_commits: global___Github.FetchRecentCommits | None = ...,
         fetch_recent_merges: global___Github.FetchRecentMerges | None = ...,
+        create_pull_request: global___Github.CreatePullRequest | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["fetch_file", b"fetch_file", "fetch_recent_commits", b"fetch_recent_commits", "fetch_recent_merges", b"fetch_recent_merges", "fetch_related_commits", b"fetch_related_commits", "task", b"task", "update_file", b"update_file"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["fetch_file", b"fetch_file", "fetch_recent_commits", b"fetch_recent_commits", "fetch_recent_merges", b"fetch_recent_merges", "fetch_related_commits", b"fetch_related_commits", "task", b"task", "type", b"type", "update_file", b"update_file"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["fetch_related_commits", "fetch_file", "update_file", "fetch_recent_commits", "fetch_recent_merges"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["create_pull_request", b"create_pull_request", "fetch_file", b"fetch_file", "fetch_recent_commits", b"fetch_recent_commits", "fetch_recent_merges", b"fetch_recent_merges", "fetch_related_commits", b"fetch_related_commits", "task", b"task", "update_file", b"update_file"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["create_pull_request", b"create_pull_request", "fetch_file", b"fetch_file", "fetch_recent_commits", b"fetch_recent_commits", "fetch_recent_merges", b"fetch_recent_merges", "fetch_related_commits", b"fetch_related_commits", "task", b"task", "type", b"type", "update_file", b"update_file"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["fetch_related_commits", "fetch_file", "update_file", "fetch_recent_commits", "fetch_recent_merges", "create_pull_request"] | None: ...
 
 global___Github = Github

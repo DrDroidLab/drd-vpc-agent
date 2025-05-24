@@ -12,13 +12,59 @@ message PostgresDatabaseAssetOptions {
   repeated string databases = 1;
 }
 
+// Column model for tables and views
+message PostgresColumnModel {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue data_type = 2;
+  google.protobuf.BoolValue is_nullable = 3;
+  google.protobuf.StringValue default_value = 4;
+  google.protobuf.BoolValue is_primary_key = 5;
+  google.protobuf.StringValue description = 6;
+  google.protobuf.Int64Value max_length = 7;
+  google.protobuf.Int32Value precision = 8;
+  google.protobuf.Int32Value scale = 9;
+}
+
+// Foreign key model for table relationships
+message PostgresForeignKeyModel {
+  google.protobuf.StringValue column_name = 1;
+  google.protobuf.StringValue foreign_schema = 2;
+  google.protobuf.StringValue foreign_table = 3;
+  google.protobuf.StringValue foreign_column = 4;
+}
+
+// Index model for table performance structures
+message PostgresIndexModel {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue type = 2;
+  google.protobuf.BoolValue is_unique = 3;
+  repeated string columns = 4;
+}
+
+// Table asset
+message PostgresTableAssetModel {
+  google.protobuf.StringValue database_name = 1;
+  google.protobuf.StringValue table_name = 2;
+  google.protobuf.StringValue schema_name = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.StringValue size = 5;
+  repeated PostgresColumnModel columns = 6;
+  repeated string primary_keys = 7;
+  repeated PostgresIndexModel indexes = 8;
+}
+
+message PostgresTableAssetOptions {
+  repeated string tables = 1;
+  repeated string schemas = 2;
+}
+
 message PostgresAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
   SourceModelType type = 3;
   sfixed64 last_updated = 4;
   oneof asset {
-    PostgresDatabaseAssetModel postgres_database = 5;
+    PostgresTableAssetModel postgres_table = 5;
   }
 }
 

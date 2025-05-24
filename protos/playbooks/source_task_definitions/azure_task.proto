@@ -8,6 +8,7 @@ message Azure {
   enum TaskType {
     UNKNOWN = 0;
     FILTER_LOG_EVENTS = 1;
+    FETCH_METRICS = 2;
   }
 
   message FilterLogEvents {
@@ -16,8 +17,17 @@ message Azure {
     google.protobuf.StringValue timespan = 3;
   }
 
+  message FetchMetrics {
+    google.protobuf.StringValue resource_id = 1;
+    google.protobuf.StringValue metric_names = 2;
+    google.protobuf.StringValue timespan = 3;
+    google.protobuf.StringValue aggregation = 4;
+    google.protobuf.StringValue granularity = 5;
+  }
+
   TaskType type = 1;
   oneof task {
     FilterLogEvents filter_log_events = 2;
+    FetchMetrics fetch_metrics = 3;
   }
 }

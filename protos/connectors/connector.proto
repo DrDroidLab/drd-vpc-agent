@@ -9,6 +9,7 @@ message Connector {
   Source type = 2;
   google.protobuf.StringValue name = 3;
   repeated ConnectorKey keys = 4;
+  google.protobuf.UInt64Value id = 5;
 
 }
 

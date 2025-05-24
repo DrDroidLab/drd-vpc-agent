@@ -29,10 +29,12 @@ class Azure(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         UNKNOWN: Azure._TaskType.ValueType  # 0
         FILTER_LOG_EVENTS: Azure._TaskType.ValueType  # 1
+        FETCH_METRICS: Azure._TaskType.ValueType  # 2
 
     class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper): ...
     UNKNOWN: Azure.TaskType.ValueType  # 0
     FILTER_LOG_EVENTS: Azure.TaskType.ValueType  # 1
+    FETCH_METRICS: Azure.TaskType.ValueType  # 2
 
     @typing_extensions.final
     class FilterLogEvents(google.protobuf.message.Message):
@@ -57,19 +59,54 @@ class Azure(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["filter_query", b"filter_query", "timespan", b"timespan", "workspace_id", b"workspace_id"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["filter_query", b"filter_query", "timespan", b"timespan", "workspace_id", b"workspace_id"]) -> None: ...
 
+    @typing_extensions.final
+    class FetchMetrics(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        RESOURCE_ID_FIELD_NUMBER: builtins.int
+        METRIC_NAMES_FIELD_NUMBER: builtins.int
+        TIMESPAN_FIELD_NUMBER: builtins.int
+        AGGREGATION_FIELD_NUMBER: builtins.int
+        GRANULARITY_FIELD_NUMBER: builtins.int
+        @property
+        def resource_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def metric_names(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def timespan(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def aggregation(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def granularity(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            resource_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            metric_names: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            timespan: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            aggregation: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            granularity: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["aggregation", b"aggregation", "granularity", b"granularity", "metric_names", b"metric_names", "resource_id", b"resource_id", "timespan", b"timespan"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["aggregation", b"aggregation", "granularity", b"granularity", "metric_names", b"metric_names", "resource_id", b"resource_id", "timespan", b"timespan"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     FILTER_LOG_EVENTS_FIELD_NUMBER: builtins.int
+    FETCH_METRICS_FIELD_NUMBER: builtins.int
     type: global___Azure.TaskType.ValueType
     @property
     def filter_log_events(self) -> global___Azure.FilterLogEvents: ...
+    @property
+    def fetch_metrics(self) -> global___Azure.FetchMetrics: ...
     def __init__(
         self,
         *,
         type: global___Azure.TaskType.ValueType = ...,
         filter_log_events: global___Azure.FilterLogEvents | None = ...,
+        fetch_metrics: global___Azure.FetchMetrics | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["filter_log_events", b"filter_log_events", "task", b"task"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["filter_log_events", b"filter_log_events", "task", b"task", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["filter_log_events"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["fetch_metrics", b"fetch_metrics", "filter_log_events", b"filter_log_events", "task", b"task"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["fetch_metrics", b"fetch_metrics", "filter_log_events", b"filter_log_events", "task", b"task", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["filter_log_events", "fetch_metrics"] | None: ...
 
 global___Azure = Azure

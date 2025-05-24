@@ -1,5 +1,5 @@
 from django.conf import settings
-from google.protobuf.wrappers_pb2 import StringValue
+from google.protobuf.wrappers_pb2 import StringValue, UInt64Value
 
 from protos.base_pb2 import Source, SourceKeyType
 from protos.connectors.connector_pb2 import Connector, ConnectorKey
@@ -279,12 +279,40 @@ def generate_credentials_dict(connector_type, connector_keys):
                 credentials_dict['crumb'] = False
                 if conn_key.key.value.lower() == 'true':
                     credentials_dict['crumb'] = True
+    elif connector_type == Source.POSTHOG:
+        for conn_key in connector_keys:
+            if conn_key.key_type == SourceKeyType.POSTHOG_API_KEY:
+                credentials_dict['personal_api_key'] = conn_key.key.value
+            if conn_key.key_type == SourceKeyType.POSTHOG_APP_HOST:
+                credentials_dict['posthog_host'] = conn_key.key.value
+            if conn_key.key_type == SourceKeyType.POSTHOG_PROJECT_ID:
+                credentials_dict['project_id'] = conn_key.key.value
+
+    elif connector_type == Source.SIGNOZ:
+        for conn_key in connector_keys:
+            if conn_key.key_type == SourceKeyType.SIGNOZ_API_URL:
+                credentials_dict['signoz_api_url'] = conn_key.key.value
+            if conn_key.key_type == SourceKeyType.SIGNOZ_API_TOKEN:
+                credentials_dict['signoz_api_token'] = conn_key.key.value
+    
+    elif connector_type == Source.SENTRY:
+        for conn_key in connector_keys:
+            if conn_key.key_type == SourceKeyType.SENTRY_API_KEY:
+                credentials_dict['api_key'] = conn_key.key.value
+            if conn_key.key_type == SourceKeyType.SENTRY_ORG_SLUG:
+                credentials_dict['org_slug'] = conn_key.key.value
+
+    elif connector_type == Source.GITHUB_ACTIONS:
+        for conn_key in connector_keys:
+            if conn_key.key_type == SourceKeyType.GITHUB_ACTIONS_TOKEN:
+                credentials_dict['api_key'] = conn_key.key.value
+
     else:
         return None
     return credentials_dict
 
 
-def credential_yaml_to_connector_proto(connector_name, credential_yaml):
+def credential_yaml_to_connector_proto(connector_name, credential_yaml, connector_id=None):
     if 'type' not in credential_yaml:
         raise Exception(f'Type not found in credential yaml for connector: {connector_name}')
 
@@ -590,17 +618,17 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml):
                 key=StringValue(value=credential_yaml['cluster_token'])
             ))
     elif c_type == 'ARGOCD':
-        if 'server' not in credential_yaml or 'token' not in credential_yaml:
+        if 'argocd_server' not in credential_yaml or 'argocd_token' not in credential_yaml:
             raise Exception(f'Api Server or Token not found in credential yaml for ArgoCd source in '
                             f'connector: {connector_name}')
         c_source = Source.ARGOCD
         c_keys.append(ConnectorKey(
             key_type=SourceKeyType.ARGOCD_SERVER,
-            key=StringValue(value=credential_yaml['server'])
+            key=StringValue(value=credential_yaml['argocd_server'])
         ))
         c_keys.append(ConnectorKey(
             key_type=SourceKeyType.ARGOCD_TOKEN,
-            key=StringValue(value=credential_yaml['token'])
+            key=StringValue(value=credential_yaml['argocd_token'])
         ))
     elif c_type == 'JIRA_CLOUD':
         if 'jira_cloud_api_key' not in credential_yaml or 'jira_domain' not in credential_yaml or 'jira_email' not in credential_yaml:
@@ -672,6 +700,126 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml):
                 key_type=SourceKeyType.SSL_VERIFY,
                 key=StringValue(value=credential_yaml['verify_certs'])
             ))
+
+    elif c_type == 'POSTHOG':
+        if 'api_key' not in credential_yaml or 'app_host' not in credential_yaml or 'project_id' not in credential_yaml:
+            raise Exception(f'Api key, app host or project id not found in credential yaml for posthog source in connector: {connector_name}')
+        c_source = Source.POSTHOG
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.POSTHOG_API_KEY,
+            key=StringValue(value=credential_yaml['api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.POSTHOG_APP_HOST,
+            key=StringValue(value=credential_yaml['app_host'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.POSTHOG_PROJECT_ID,
+            key=StringValue(value=credential_yaml['project_id'])
+        ))
+
+    elif c_type == 'SIGNOZ':
+        if 'signoz_api_url' not in credential_yaml or 'signoz_api_token' not in credential_yaml:
+            raise Exception(f'Signoz api url or token not found in credential yaml for signoz source in connector: {connector_name}')
+        c_source = Source.SIGNOZ
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.SIGNOZ_API_URL,
+            key=StringValue(value=credential_yaml['signoz_api_url'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.SIGNOZ_API_TOKEN,
+            key=StringValue(value=credential_yaml['signoz_api_token'])
+        ))
+
+    elif c_type == 'SENTRY':
+        if 'api_key' not in credential_yaml or 'org_slug' not in credential_yaml:
+            raise Exception(f'Api key or org slug not found in credential yaml for sentry source in connector: {connector_name}')
+        c_source = Source.SENTRY
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.SENTRY_API_KEY,
+            key=StringValue(value=credential_yaml['api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.SENTRY_ORG_SLUG,
+            key=StringValue(value=credential_yaml['org_slug'])
+        ))
+    
+    elif c_type == 'NEW_RELIC':
+        if 'api_key' not in credential_yaml or 'app_id' not in credential_yaml or 'api_domain' not in credential_yaml:
+            raise Exception(f'Api key, app id or api domain not found in credential yaml for new relic source in connector: {connector_name}')
+        c_source = Source.NEW_RELIC
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.NEWRELIC_API_KEY,
+            key=StringValue(value=credential_yaml['api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.NEWRELIC_APP_ID,
+            key=StringValue(value=credential_yaml['app_id'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.NEWRELIC_API_DOMAIN,
+            key=StringValue(value=credential_yaml['api_domain'])
+        ))
+    elif c_type == 'GCM':
+        if 'project_id' not in credential_yaml or 'service_account_json' not in credential_yaml:
+            raise Exception(f'Project id or service account json not found in credential yaml for gcm source in connector: {connector_name}')
+        c_source = Source.GCM
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.GCM_PROJECT_ID,
+            key=StringValue(value=credential_yaml['project_id'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.GCM_SERVICE_ACCOUNT_JSON,
+            key=StringValue(value=credential_yaml['service_account_json'])
+        ))
+    elif c_type == 'AZURE':
+        if 'client_id' not in credential_yaml or 'client_secret' not in credential_yaml or 'tenant_id' not in credential_yaml or 'subscription_id' not in credential_yaml:
+            raise Exception(f'Client id, client secret, tenant id or subscription id not found in credential yaml for azure source in connector: {connector_name}')
+        c_source = Source.AZURE
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.AZURE_CLIENT_ID,
+            key=StringValue(value=credential_yaml['client_id'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.AZURE_CLIENT_SECRET,
+            key=StringValue(value=credential_yaml['client_secret'])
+        ))  
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.AZURE_TENANT_ID,
+            key=StringValue(value=credential_yaml['tenant_id'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.AZURE_SUBSCRIPTION_ID,
+            key=StringValue(value=credential_yaml['subscription_id'])
+        ))
+    elif c_type == 'GITHUB_ACTIONS':
+        if 'token' not in credential_yaml:
+            raise Exception(f'Token not found in credential yaml for github actions source in connector: {connector_name}')
+        c_source = Source.GITHUB_ACTIONS
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.GITHUB_ACTIONS_TOKEN,
+            key=StringValue(value=credential_yaml['token'])
+        ))
+    elif c_type == 'DATADOG':
+        if 'dd_api_key' not in credential_yaml or 'dd_app_key' not in credential_yaml or 'dd_api_domain' not in credential_yaml:
+            raise Exception(f'Api key, app key or api domain not found in credential yaml for datadog source in connector: {connector_name}')
+        c_source = Source.DATADOG
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.DATADOG_API_KEY, 
+            key=StringValue(value=credential_yaml['dd_api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.DATADOG_APP_KEY,
+            key=StringValue(value=credential_yaml['dd_app_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.DATADOG_API_DOMAIN,
+            key=StringValue(value=credential_yaml['dd_api_domain'])
+        ))
     else:
         raise Exception(f'Invalid type in credential yaml for connector: {connector_name}')
-    return Connector(type=c_source, name=StringValue(value=connector_name), keys=c_keys)
+    
+    if connector_id:
+        return Connector(type=c_source, name=StringValue(value=connector_name), keys=c_keys, id=UInt64Value(value=connector_id))
+    else:
+        return Connector(type=c_source, name=StringValue(value=connector_name), keys=c_keys)

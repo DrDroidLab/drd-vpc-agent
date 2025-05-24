@@ -20,6 +20,45 @@ message GcmMetricAssetOptions {
   repeated string metric_types = 1;
 }
 
+message GcmDashboardEntityAssetModel {
+  message DashboardWidget {
+    google.protobuf.StringValue widget_id = 1;
+    google.protobuf.StringValue widget_name = 2;
+    google.protobuf.StringValue widget_type = 3;
+    google.protobuf.StringValue widget_query = 4;
+  }
+
+  google.protobuf.StringValue dashboard_id = 1;
+  google.protobuf.StringValue dashboard_name = 2;
+  repeated DashboardWidget widgets = 3;
+}
+
+message GcmDashboardEntityAssetOptions {
+  message DashboardOptions {
+    google.protobuf.StringValue dashboard_id = 1;
+    google.protobuf.StringValue dashboard_name = 2;
+    repeated string widget_names = 3;
+  }
+  repeated DashboardOptions dashboards = 1;
+}
+
+message GcmCloudRunServiceAssetModel {
+  message CloudRunMetric {
+    google.protobuf.StringValue metric_name = 1;
+    repeated google.protobuf.StringValue aggregations = 2;
+  }
+
+  google.protobuf.StringValue service_name = 1;
+  google.protobuf.StringValue region = 2;
+  google.protobuf.StringValue project_id = 3;
+  repeated CloudRunMetric metrics = 4;
+}
+
+message GcmCloudRunServiceAssetOptions {
+  repeated string service_names = 1;
+  repeated string regions = 2;
+}
+
 message GcmAssetModel {
   google.protobuf.UInt64Value id = 1;
   Source connector_type = 2;
@@ -28,6 +67,8 @@ message GcmAssetModel {
 
   oneof asset {
     GcmMetricAssetModel gcm_metric = 6;
+    GcmDashboardEntityAssetModel gcm_dashboard = 7;
+    GcmCloudRunServiceAssetModel gcm_cloud_run_service_dashboard = 8;
   }
 }
 

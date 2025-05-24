@@ -9,7 +9,8 @@ from integrations.source_manangers.bash_source_manager import BashSourceManager
 from integrations.source_manangers.big_query_source_manager import BigQuerySourceManager
 from integrations.source_manangers.clickhouse_source_manager import ClickhouseSourceManager
 from integrations.source_manangers.cloudwatch_source_manager import CloudwatchSourceManager
-from integrations.source_manangers.datadog_oauth_soruce_manager import DatadogSourceManager
+from integrations.source_manangers.datadog_source_manager import DatadogSourceManager
+from integrations.source_manangers.datadog_oauth_soruce_manager import DatadogSourceManager as DatadogOauthSourceManager
 from integrations.source_manangers.documentation_source_manager import DocumentationSourceManager
 from integrations.source_manangers.eks_source_manager import EksSourceManager
 from integrations.source_manangers.elastic_search_source_manager import ElasticSearchSourceManager
@@ -32,7 +33,10 @@ from integrations.source_manangers.sql_database_connection_source_manager import
 from integrations.source_manangers.zenduty_source_manager import ZendutySourceManager
 from integrations.source_manangers.argocd_source_manager import ArgoCDSourceManager
 from integrations.source_manangers.jira_source_manager import JiraSourceManager
-
+from integrations.source_manangers.posthog_source_manager import PosthogSourceManager
+from integrations.source_manangers.signoz_source_manager import SignozSourceManager
+from integrations.source_manangers.sentry_source_manager import SentrySourceManager
+from integrations.source_manangers.github_actions_source_manager import GithubActionsSourceManager
 from protos.base_pb2 import Source
 from protos.connectors.connector_pb2 import Connector as ConnectorProto
 from protos.playbooks.playbook_commons_pb2 import PlaybookTaskResult
@@ -82,6 +86,7 @@ source_facade = SourceFacade()
 source_facade.register(Source.CLOUDWATCH, CloudwatchSourceManager())
 source_facade.register(Source.EKS, EksSourceManager())
 source_facade.register(Source.DATADOG, DatadogSourceManager())
+source_facade.register(Source.DATADOG_OAUTH, DatadogOauthSourceManager())
 source_facade.register(Source.NEW_RELIC, NewRelicSourceManager())
 source_facade.register(Source.GRAFANA, GrafanaSourceManager())
 source_facade.register(Source.GRAFANA_MIMIR, MimirSourceManager())
@@ -112,3 +117,8 @@ source_facade.register(Source.GITHUB, GithubSourceManager())
 source_facade.register(Source.ARGOCD, ArgoCDSourceManager())
 source_facade.register(Source.JIRA_CLOUD, JiraSourceManager())
 source_facade.register(Source.JENKINS, JenkinsSourceManager())
+
+source_facade.register(Source.POSTHOG, PosthogSourceManager())
+source_facade.register(Source.SIGNOZ, SignozSourceManager())
+source_facade.register(Source.SENTRY, SentrySourceManager())
+source_facade.register(Source.GITHUB_ACTIONS, GithubActionsSourceManager())

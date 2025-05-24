@@ -25,27 +25,55 @@ class JenkinsSourceMetadataExtractor(SourceMetadataExtractor):
             if jobs_response is not True:
                 logger.error("Jenkins connection test failed.")
                 return model_data
-            url = f"{self.jenkins_processor.config['url']}/api/json?tree=jobs[name]"
-            response = self.jenkins_processor._make_request_with_crumb('GET', url)
-            if response.status_code != 200:
-                logger.error(f"Failed to fetch Jenkins jobs: {response.status_code}, {response.text}")
+
+            # Get all jobs recursively (including those in folders)
+            all_jobs = self.jenkins_processor.get_all_jobs_recursive()
+            
+            if not all_jobs:
+                logger.error("No jobs found or error occurred while fetching jobs.")
                 return model_data
-            jobs = response.json().get('jobs', [])
-            for job in jobs:
-                try:
-                    job_name = job.get("name", "")
-                    job_class = job.get("_class", "")
-                    if job_name:
-                        parameters = self.jenkins_processor.get_job_parameters(job_name)
-                        model_data[job_name] = {"name": job_name, "class": job_class, "parameters": parameters}
-                    if len(model_data) > 5:
-                        model_data_copy = deepcopy(model_data)
-                        self.create_or_update_model_metadata(model_type, model_data_copy)
-                        model_data = {}
-                except KeyError as e:
-                    logger.error(f"Missing key {e} in job: {job}")
+
+            print(f"Found {len(all_jobs)} total Jenkins jobs/folders", flush=True)
+            
+            # Process jobs in groups by path depth to ensure parent folders are processed first
+            # Group jobs by their depth in the folder hierarchy
+            jobs_by_depth = {}
+            for job in all_jobs:
+                job_full_path = job.get("full_path", "")
+                depth = len(job_full_path.split('/')) - 1
+                if depth not in jobs_by_depth:
+                    jobs_by_depth[depth] = []
+                jobs_by_depth[depth].append(job)
+            
+            # Process jobs in order from shallowest to deepest
+            for depth in sorted(jobs_by_depth.keys()):
+                jobs_at_depth = jobs_by_depth[depth]
+                print(f"Processing {len(jobs_at_depth)} items at depth {depth}", flush=True)
+                
+                for job in jobs_at_depth:
+                    try:
+                        job_name = job.get("name", "")
+                        job_class = job.get("class", "")
+                        job_full_path = job.get("full_path", "")
+                        
+                        is_folder = "folder" in job_class.lower() or "directory" in job_class.lower()
+                        
+                        if job_full_path:
+                            # Get parameters for this job (only for non-folders)
+                            parameters = [] if is_folder else self.jenkins_processor.get_job_parameters(job_full_path)
+                            
+                            # Use full_path as the unique identifier, but keep the simple name
+                            model_data[job_full_path] = {
+                                "name": job_name,
+                                "full_path": job_full_path,
+                                "class": job_class,
+                                "parameters": parameters
+                            }
+                    except KeyError as e:
+                        logger.error(f"Missing key {e} in job: {job}")
         except Exception as e:
             logger.error(f'Error extracting Jenkins jobs: {e}')
+
         if len(model_data) > 0:
             self.create_or_update_model_metadata(model_type, model_data)
-        return model_data
+

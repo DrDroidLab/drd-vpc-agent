@@ -303,6 +303,10 @@ integrations_connector_type_connector_keys_map = {
         [
             SourceKeyType.GCM_PROJECT_ID,
             SourceKeyType.GCM_PRIVATE_KEY,
+        ],
+        [
+            SourceKeyType.GCM_PROJECT_ID,
+            SourceKeyType.GCM_SERVICE_ACCOUNT_JSON,
         ]
     ],
     Source.SMTP: [
@@ -376,6 +380,31 @@ integrations_connector_type_connector_keys_map = {
             SourceKeyType.JENKINS_API_TOKEN
         ],
     ],
+    Source.ARGOCD: [
+        [
+            SourceKeyType.ARGOCD_SERVER,
+            SourceKeyType.ARGOCD_TOKEN,
+        ]
+    ],
+    Source.POSTHOG: [
+        [
+            SourceKeyType.POSTHOG_API_KEY,
+            SourceKeyType.POSTHOG_APP_HOST,
+            SourceKeyType.POSTHOG_PROJECT_ID,
+        ]
+    ],
+    Source.GITHUB_ACTIONS: [
+        [
+            SourceKeyType.GITHUB_ACTIONS_TOKEN,
+        ]
+    ],
+    Source.JIRA_CLOUD: [
+        [
+            SourceKeyType.JIRA_CLOUD_API_KEY,
+            SourceKeyType.JIRA_EMAIL,
+            SourceKeyType.JIRA_DOMAIN,
+        ]
+    ],
 }
 integrations_connector_type_display_name_map = {
     Source.SLACK: 'SLACK',
@@ -415,6 +444,7 @@ integrations_connector_type_display_name_map = {
     Source.GITHUB_ACTIONS: 'GITHUB ACTIONS',
     Source.ARGOCD: 'ARGOCD',
     Source.ROLLBAR: 'ROLLBAR',
+    Source.POSTHOG: 'POSTHOG',
 }
 
 model_type_display_name_maps = {
@@ -484,5 +514,61 @@ masked_keys_types = [SourceKeyType.DATADOG_APP_KEY,
                      SourceKeyType.CUSTOM_STRATEGIES_ACCOUNT_ID,
                      SourceKeyType.KUBERNETES_CLUSTER_TOKEN,
                      SourceKeyType.KUBERNETES_CLUSTER_CERTIFICATE_AUTHORITY_DATA,
-                     SourceKeyType.REMOTE_SERVER_PEM
+                     SourceKeyType.REMOTE_SERVER_PEM,
+                     SourceKeyType.POSTHOG_API_KEY,
                      ]
+
+
+GCM_SERVICE_DASHBOARD_QUERIES = {
+        "Billable container instance time": {
+            "sum": "fetch cloud_run_revision | metric 'run.googleapis.com/container/billable_instance_time' | align rate(1m) | every 1m | group_by [resource.service_name], [value_billable_instance_time_sum: sum(value.billable_instance_time)]",
+        },
+        "Container startup latency": {
+            "50": "fetch cloud_run_revision | metric 'run.googleapis.com/container/startup_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_startup_latencies_percentile: percentile(value.startup_latencies, 50)]",
+            "95": "fetch cloud_run_revision | metric 'run.googleapis.com/container/startup_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_startup_latencies_percentile: percentile(value.startup_latencies, 95)]",
+            "99": "fetch cloud_run_revision | metric 'run.googleapis.com/container/startup_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_startup_latencies_percentile: percentile(value.startup_latencies, 99)]",
+        },
+        "Container CPU utilisation": {
+            "50": "fetch cloud_run_revision | metric 'run.googleapis.com/container/cpu/utilizations' | group_by 1m, [value_cpu_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_cpu_utilizations_aggregate_percentile: percentile(value_cpu_utilizations_aggregate, 50)]",
+            "95": "fetch cloud_run_revision | metric 'run.googleapis.com/container/cpu/utilizations' | group_by 1m, [value_cpu_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_cpu_utilizations_aggregate_percentile: percentile(value_cpu_utilizations_aggregate, 95)]",
+            "99": "fetch cloud_run_revision | metric 'run.googleapis.com/container/cpu/utilizations' | group_by 1m, [value_cpu_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_cpu_utilizations_aggregate_percentile: percentile(value_cpu_utilizations_aggregate, 99)]",
+        },
+        "Container memory utilisation": {
+            "50": "fetch cloud_run_revision | metric 'run.googleapis.com/container/memory/utilizations' | group_by 1m, [value_memory_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_memory_utilizations_aggregate_percentile: percentile(value_memory_utilizations_aggregate, 50)]",
+            "95": "fetch cloud_run_revision | metric 'run.googleapis.com/container/memory/utilizations' | group_by 1m, [value_memory_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_memory_utilizations_aggregate_percentile: percentile(value_memory_utilizations_aggregate, 95)]",
+            "99": "fetch cloud_run_revision | metric 'run.googleapis.com/container/memory/utilizations' | group_by 1m, [value_memory_utilizations_aggregate: aggregate(value.utilizations)] | every 1m | group_by [resource.service_name], [value_memory_utilizations_aggregate_percentile: percentile(value_memory_utilizations_aggregate, 99)]",
+        },
+        "Sent bytes": {
+            "sum": "fetch cloud_run_revision | metric 'run.googleapis.com/container/network/sent_bytes_count'| align rate(1m) | every 1m",
+        },
+        "Received bytes": {
+            "sum": "fetch cloud_run_revision | metric 'run.googleapis.com/container/network/received_bytes_count' | align rate(1m) | every 1m",
+        },
+        "Request count": {
+            "sum": "fetch cloud_run_revision | metric 'run.googleapis.com/request_count' | align rate(1m) | every 1m | group_by [metric.response_code_class], [value_request_count_aggregate: aggregate(value.request_count)]",
+        },
+        "Request latencies": {
+            "50": "fetch cloud_run_revision | metric 'run.googleapis.com/request_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_request_latencies_percentile: percentile(value.request_latencies, 50)]",
+            "95": "fetch cloud_run_revision | metric 'run.googleapis.com/request_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_request_latencies_percentile: percentile(value.request_latencies, 95)]",
+            "99": "fetch cloud_run_revision | metric 'run.googleapis.com/request_latencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_request_latencies_percentile: percentile(value.request_latencies, 99)]",
+        },
+        "Container instance count": {
+            "max": "fetch cloud_run_revision | metric 'run.googleapis.com/container/instance_count' | group_by 1m, [value_instance_count_max: max(value.instance_count)] | every 1m | group_by [resource.service_name, metric.state], [value_instance_count_max_aggregate: aggregate(value_instance_count_max)]",
+        },
+        "Maximum concurrent requests": {
+            "50": "fetch cloud_run_revision | metric 'run.googleapis.com/container/max_request_concurrencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_max_request_concurrencies_percentile: percentile(value.max_request_concurrencies, 50)]",
+            "95": "fetch cloud_run_revision | metric 'run.googleapis.com/container/max_request_concurrencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_max_request_concurrencies_percentile: percentile(value.max_request_concurrencies, 95)]",
+            "99": "fetch cloud_run_revision | metric 'run.googleapis.com/container/max_request_concurrencies' | align delta(1m) | every 1m | group_by [resource.service_name], [value_max_request_concurrencies_percentile: percentile(value.max_request_concurrencies, 99)]",
+        },
+    }
+
+NEWRELIC_APM_QUERIES = {
+    "Web transactions time": "SELECT sum(apm.service.overview.web * 1000) FROM Metric WHERE (entity.guid = {}) FACET `segmentName` LIMIT MAX TIMESERIES",
+    "Apdex score": "SELECT apdex(apm.service.apdex) as 'App server' , apdex(apm.service.apdex.user) as 'End user' FROM Metric WHERE (entity.guid = {}) LIMIT MAX TIMESERIES",
+    "Error rate": "SELECT sum(apm.service.error.count['count']) / count(apm.service.transaction.duration) AS 'Web errors' FROM Metric WHERE (entity.guid = {}) AND (transactionType = 'Web') LIMIT MAX TIMESERIES",
+    "Error User Impact": "SELECT uniqueCount(newrelic.error.group.userImpact) as 'Total' FROM Metric WHERE (entity.guid = {}) AND ((`error.expected` != true AND metricName = 'newrelic.error.group.userImpact')) LIMIT MAX TIMESERIES",
+    "Throughput": "SELECT rate(count(apm.service.transaction.duration), 1 minute) as 'Web throughput' FROM Metric WHERE (entity.guid = {}) AND (transactionType = 'Web') LIMIT MAX TIMESERIES ",
+    "Logs": "SELECT count(apm.service.logging.lines) as Metric FROM Metric WHERE (entity.guid = {}) FACET `severity` LIMIT MAX TIMESERIES ",
+    "Non-Web Transactions": "SELECT sum(apm.service.overview.other * 1000) FROM Metric WHERE (entity.guid = {}) FACET `segmentName` LIMIT MAX TIMESERIES",
+    "Average APM service transaction time (Non-Web)": "SELECT average(convert(apm.service.transaction.duration, unit, 'ms')) AS 'Response time' FROM Metric WHERE (entity.guid = {}) AND (transactionType = 'Other') LIMIT MAX TIMESERIES"
+}

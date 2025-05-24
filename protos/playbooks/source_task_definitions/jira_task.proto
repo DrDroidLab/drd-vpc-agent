@@ -11,6 +11,7 @@ message Jira {
     GET_USERS = 3;
     GET_TICKET = 4;
     SEARCH_TICKETS = 5;
+    ADD_COMMENT = 6;
   }
 
   message CreateTicket {
@@ -39,6 +40,12 @@ message Jira {
     google.protobuf.StringValue query = 1;
   }
 
+  message AddComment {
+    google.protobuf.StringValue ticket_key = 1;
+    google.protobuf.StringValue comment_text = 2;
+    repeated google.protobuf.StringValue image_urls = 3;
+  }
+
   TaskType type = 1;
   oneof task {
     CreateTicket create_ticket = 2;
@@ -46,5 +53,6 @@ message Jira {
     GetUsers get_users = 4;
     GetTicket get_ticket = 5;
     SearchTickets search_tickets = 6;
+    AddComment add_comment = 7;
   }
 }

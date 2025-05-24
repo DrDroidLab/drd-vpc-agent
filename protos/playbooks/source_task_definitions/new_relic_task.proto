@@ -14,6 +14,16 @@ message NewRelic {
     repeated uint32 timeseries_offsets = 6;
   }
 
+  message EntityApplicationAPMMetricExecutionTask {
+    google.protobuf.StringValue application_entity_guid = 1;
+    google.protobuf.StringValue application_entity_name = 2;
+    google.protobuf.StringValue apm_metric_name = 3;
+    google.protobuf.StringValue apm_metric_unit = 4;
+    google.protobuf.StringValue apm_metric_nrql_expression = 5;
+    repeated uint32 timeseries_offsets = 6;
+    google.protobuf.StringValue apm_metric_names = 7;
+  }
+
   message EntityDashboardWidgetNRQLMetricExecutionTask {
     google.protobuf.StringValue dashboard_guid = 1;
     google.protobuf.StringValue dashboard_name = 2;
@@ -27,6 +37,13 @@ message NewRelic {
     repeated uint32 timeseries_offsets = 10;
   }
 
+  message DashboardWidgetByIdTask {
+    google.protobuf.StringValue dashboard_name = 1;
+    google.protobuf.StringValue widget_id = 2;
+    google.protobuf.StringValue unit = 3;
+    repeated uint32 timeseries_offsets = 4;
+  }
+
   message NRQLMetricExecutionTask {
     google.protobuf.StringValue metric_name = 1;
     google.protobuf.StringValue nrql_expression = 2;
@@ -34,11 +51,22 @@ message NewRelic {
     repeated uint32 timeseries_offsets = 4;
   }
 
+  message FetchDashboardWidgetsTask {
+    google.protobuf.StringValue dashboard_name = 1;
+    google.protobuf.StringValue page_name = 2;
+    google.protobuf.StringValue widget_names = 3;
+    google.protobuf.StringValue unit = 4;
+    repeated uint32 timeseries_offsets = 5;
+  }
+
   enum TaskType {
     UNKNOWN = 0;
     ENTITY_APPLICATION_GOLDEN_METRIC_EXECUTION = 1;
     ENTITY_DASHBOARD_WIDGET_NRQL_METRIC_EXECUTION = 2;
     NRQL_METRIC_EXECUTION = 3;
+    DASHBOARD_MULTIPLE_WIDGETS = 4;
+    ENTITY_APPLICATION_APM_METRIC_EXECUTION = 5;
+    FETCH_DASHBOARD_WIDGETS = 6;
   }
 
   TaskType type = 1;
@@ -46,6 +74,9 @@ message NewRelic {
     EntityApplicationGoldenMetricExecutionTask entity_application_golden_metric_execution = 2;
     EntityDashboardWidgetNRQLMetricExecutionTask entity_dashboard_widget_nrql_metric_execution = 3;
     NRQLMetricExecutionTask nrql_metric_execution = 4;
+    DashboardWidgetByIdTask dashboard_multiple_widgets = 5;
+    EntityApplicationAPMMetricExecutionTask entity_application_apm_metric_execution = 6;
+    FetchDashboardWidgetsTask fetch_dashboard_widgets = 7;
   }
 }
 

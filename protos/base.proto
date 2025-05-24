@@ -181,6 +181,8 @@ enum Source {
   DRD_ALERT_WEBHOOK = 66;
   ROLLBAR = 67;
   LAMBDA = 68;
+  POSTHOG = 70;
+  SIGNOZ = 72;
 }
 
 enum SourceKeyType {
@@ -335,6 +337,13 @@ enum SourceKeyType {
   ARGOCD_TOKEN = 107;
 
   ROLLBAR_ACCESS_TOKEN = 108;
+
+  POSTHOG_API_KEY = 121;
+  POSTHOG_APP_HOST = 122;
+  POSTHOG_PROJECT_ID = 123;
+
+  SIGNOZ_API_URL = 136;
+  SIGNOZ_API_TOKEN = 137;
 }
 
 enum SourceModelType {
@@ -346,6 +355,7 @@ enum SourceModelType {
   NEW_RELIC_ENTITY_DASHBOARD = 4;
   NEW_RELIC_ENTITY_APPLICATION = 5;
   NEW_RELIC_NRQL = 6;
+  NEW_RELIC_ENTITY_DASHBOARD_V2 = 7;
 
   //Datadog Models
   DATADOG_MONITOR = 101;
@@ -360,6 +370,7 @@ enum SourceModelType {
   DATADOG_SERVICE = 110;
   DATADOG_METRIC = 111;
   DATADOG_QUERY = 112;
+  DATADOG_APM = 113;
 
   //Cloudwatch Models
   CLOUDWATCH_METRIC = 201;
@@ -378,6 +389,7 @@ enum SourceModelType {
 
   //Clickhouse Models
   CLICKHOUSE_DATABASE = 401;
+  CLICKHOUSE_TABLE = 402;
 
   //Slack Models
   SLACK_CHANNEL = 501;
@@ -388,12 +400,14 @@ enum SourceModelType {
 
   //Postgres Models
   POSTGRES_QUERY = 701;
+  POSTGRES_TABLE = 702;
 
   //EKS Models
   EKS_CLUSTER = 801;
 
   //Sql Database Connection Models
   SQL_DATABASE_CONNECTION_RAW_QUERY = 901;
+  SQL_DATABASE_TABLE = 902;
 
   //Azure Models
   AZURE_WORKSPACE = 1001;
@@ -420,6 +434,8 @@ enum SourceModelType {
 
   //GCM Models
   GCM_METRIC = 1701;
+  GCM_DASHBOARD = 1702;
+  GCM_CLOUD_RUN_SERVICE_DASHBOARD = 1703;
 
   //Zen Duty Models
   ZENDUTY_INCIDENT = 1801;

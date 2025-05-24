@@ -1,8 +1,7 @@
 import pytz
-import json
 import logging
 from datetime import datetime, timedelta, date
-from typing import Any, Optional
+from typing import Any
 
 from google.protobuf.wrappers_pb2 import StringValue, DoubleValue, UInt64Value, Int64Value
 from google.protobuf.struct_pb2 import Struct
@@ -15,9 +14,13 @@ from protos.playbooks.playbook_commons_pb2 import TimeseriesResult, LabelValuePa
     PlaybookTaskResultType, TableResult, TextResult, ApiResponseResult
 from protos.playbooks.source_task_definitions.cloudwatch_task_pb2 import Cloudwatch
 from protos.ui_definition_pb2 import FormField, FormFieldType
+from protos.assets.cloudwatch_asset_pb2 import CloudwatchDashboardAssetModel, CloudwatchDashboardAssetOptions, CloudwatchAssetModel
+from protos.assets.asset_pb2 import AccountConnectorAssetsModelFilters, AccountConnectorAssets
 from integrations.source_manager import SourceManager
 from utils.credentilal_utils import generate_credentials_dict
 from utils.proto_utils import proto_to_dict, dict_to_proto
+from utils.time_utils import calculate_timeseries_bucket_size
+from utils.playbooks_client import PrototypeClient
 
 logger = logging.getLogger(__name__)
 
@@ -137,16 +140,24 @@ class CloudwatchSourceManager(SourceManager):
                               description=StringValue(value='Add Metric'),
                               data_type=LiteralType.STRING,
                               form_field_type=FormFieldType.TYPING_DROPDOWN_MULTIPLE_FT),
+                    FormField(key_name=StringValue(value="period"),
+                              display_name=StringValue(value="Period(Seconds)"),
+                              description=StringValue(value='(Optional)Enter Period'),
+                              data_type=LiteralType.LONG,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
                     FormField(key_name=StringValue(value="statistic"),
                               display_name=StringValue(value="Metric Aggregation"),
                               description=StringValue(value='Select Aggregation Function'),
                               data_type=LiteralType.STRING,
-                              default_value=Literal(type=LiteralType.STRING, string=StringValue(value="Average")),
-                              valid_values=[Literal(type=LiteralType.STRING, string=StringValue(value="Average")),
-                                            Literal(type=LiteralType.STRING, string=StringValue(value="Sum")),
-                                            Literal(type=LiteralType.STRING, string=StringValue(value="SampleCount")),
-                                            Literal(type=LiteralType.STRING, string=StringValue(value="Maximum")),
-                                            Literal(type=LiteralType.STRING, string=StringValue(value="Minimum"))],
+                              default_value=Literal(type=LiteralType.STRING,
+                                                    string=StringValue(value="Average")),
+                              valid_values=[
+                                  Literal(type=LiteralType.STRING, string=StringValue(value="Average")),
+                                  Literal(type=LiteralType.STRING, string=StringValue(value="Sum")),
+                                  Literal(type=LiteralType.STRING, string=StringValue(value="SampleCount")),
+                                  Literal(type=LiteralType.STRING, string=StringValue(value="Maximum")),
+                                  Literal(type=LiteralType.STRING, string=StringValue(value="Minimum"))],
                               form_field_type=FormFieldType.DROPDOWN_FT),
                 ]
             },
@@ -190,6 +201,32 @@ class CloudwatchSourceManager(SourceManager):
                     'test_pi_describe_dimension_keys_permission': [{'client_type': 'pi'}]
                 }
             },
+            Cloudwatch.TaskType.FETCH_DASHBOARD: {
+                'executor': self.execute_fetch_dashboard,
+                'model_types': [SourceModelType.CLOUDWATCH_DASHBOARD],
+                'result_type': PlaybookTaskResultType.TIMESERIES,
+                'display_name': 'Fetch CloudWatch Dashboard Metrics',
+                'category': 'Dashboards',
+                'form_fields': [
+                    FormField(key_name=StringValue(value="dashboard_name"),
+                              display_name=StringValue(value="Dashboard Name"),
+                              description=StringValue(value='Select the CloudWatch Dashboard to fetch metrics from'),
+                              data_type=LiteralType.STRING,
+                              form_field_type=FormFieldType.TYPING_DROPDOWN_FT),
+                    FormField(key_name=StringValue(value="step"),
+                              display_name=StringValue(value="Step"),
+                              description=StringValue(value="Optional: Aggregation period in seconds (e.g., 60, 300). Defaults to dynamic calculation based on time range."),
+                              data_type=LiteralType.LONG,
+                              is_optional=True,
+                              form_field_type=FormFieldType.TEXT_FT),
+                    FormField(key_name=StringValue(value="period"),
+                              display_name=StringValue(value="Period(Seconds)"),
+                              description=StringValue(value='Optional: Enter Period'),
+                              data_type=LiteralType.LONG,
+                              form_field_type=FormFieldType.TEXT_FT,
+                              is_optional=True),
+                ]
+            },
             Cloudwatch.TaskType.FETCH_S3_FILE: {
                 'executor': self.execute_fetch_s3_file,
                 'model_types': [],
@@ -229,116 +266,149 @@ class CloudwatchSourceManager(SourceManager):
         except Exception as e:
             raise e
 
+    ########################################## CW Metric Execution Functions ####################################
+    def _fetch_single_metric_timeseries(self, cloudwatch_boto3_processor, namespace: str, metric_name: str,
+                                       start_time: datetime, end_time: datetime, period: int, statistic: str,
+                                       dimensions: list, metric_display_name: str, offset_seconds: int = 0):
+        """Helper to fetch timeseries data for a single metric config."""
+        try:
+            adjusted_start_time = start_time - timedelta(seconds=offset_seconds)
+            adjusted_end_time = end_time - timedelta(seconds=offset_seconds)
+
+            response = cloudwatch_boto3_processor.cloudwatch_get_metric_statistics(
+                namespace, metric_name, adjusted_start_time, adjusted_end_time, period, [statistic], dimensions
+            )
+
+            if not response or not response.get('Datapoints'):
+                dim_str = ', '.join([f"{d['Name']}:{d['Value']}" for d in dimensions])
+                logger.warning(f"No data returned from Cloudwatch for ns={namespace}, metric={metric_name}, "
+                               f"dims=[{dim_str}], stat={statistic}, period={period}s, offset={offset_seconds}s")
+                return None
+
+            # Sort datapoints by timestamp before creating the proto
+            datapoints = sorted(response['Datapoints'], key=lambda x: x['Timestamp'])
+
+            metric_datapoints = [
+                TimeseriesResult.LabeledMetricTimeseries.Datapoint(
+                    timestamp=int(
+                        item['Timestamp'].replace(tzinfo=pytz.UTC).timestamp() * 1000),
+                    value=DoubleValue(value=item[statistic])
+                ) for item in datapoints
+            ]
+
+            metric_unit = response['Datapoints'][0].get('Unit', '') if response['Datapoints'] else ''
+
+            metric_label_values = [
+                LabelValuePair(name=StringValue(value='namespace'), value=StringValue(value=namespace)),
+                LabelValuePair(name=StringValue(value='statistic'), value=StringValue(value=statistic)),
+                LabelValuePair(name=StringValue(value='offset_seconds'), value=StringValue(value=str(offset_seconds))),
+                LabelValuePair(name=StringValue(value='metric_display_name'), value=StringValue(value=metric_display_name))
+            ]
+            # Add dimension labels
+            for dim in dimensions:
+                 metric_label_values.append(LabelValuePair(name=StringValue(value=dim['Name']), value=StringValue(value=dim['Value'])))
+
+
+            return TimeseriesResult.LabeledMetricTimeseries(
+                metric_label_values=metric_label_values,
+                unit=StringValue(value=metric_unit),
+                datapoints=metric_datapoints
+            )
+
+        except Exception as e:
+            dim_str = ', '.join([f"{d['Name']}:{d['Value']}" for d in dimensions])
+            logger.error(f"Exception fetching metric: ns={namespace}, metric={metric_name}, dims=[{dim_str}], "
+                         f"stat={statistic}, display_name={metric_display_name}, period={period}s, offset={offset_seconds}s. Error: {e}")
+            return None
+
+
     def execute_metric_execution(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
                                  cloudwatch_connector: ConnectorProto):
         try:
             if not cloudwatch_connector:
                 raise Exception("Task execution Failed:: No Cloudwatch source found")
 
-            period = 300
             task = cloudwatch_task.metric_execution
             region = task.region.value
             metric_name = task.metric_name.value
             namespace = task.namespace.value
-            timeseries_offsets = task.timeseries_offsets
-            statistic = ['Average']
-            requested_statistic = 'Average'
-
+            timeseries_offsets = list(task.timeseries_offsets)
+            statistic = 'Average'
             if task.statistic and task.statistic.value in ['Average', 'Sum', 'SampleCount', 'Maximum', 'Minimum']:
-                statistic = [task.statistic.value]
-                requested_statistic = task.statistic.value
-            dimensions = [{'Name': td.name.value, 'Value': td.value.value} for td in task.dimensions]
+                statistic = task.statistic.value
+
+            # Convert dimensions from proto Struct to list of dicts
+            dimensions = [{'Name': d.name.value, 'Value': d.value.value} for d in task.dimensions]
 
             cloudwatch_boto3_processor = self.get_connector_processor(cloudwatch_connector, client_type='cloudwatch',
                                                                       region=region)
 
-            labeled_metric_timeseries = []
+            labeled_metric_timeseries_list = []
+            start_time_dt = datetime.utcfromtimestamp(time_range.time_geq).replace(tzinfo=pytz.UTC)
+            end_time_dt = datetime.utcfromtimestamp(time_range.time_lt).replace(tzinfo=pytz.UTC)
 
-            # Always get current time values
-            start_time = datetime.utcfromtimestamp(time_range.time_geq)
-            end_time = datetime.utcfromtimestamp(time_range.time_lt)
+            if task.period.value > 0:
+                calculated_period = task.period.value
+            else:
+                # Calculate dynamic period based on time range
+                total_seconds = time_range.time_lt - time_range.time_geq
+                calculated_period = calculate_timeseries_bucket_size(total_seconds) # No widget-defined period for this task
 
-            current_response = cloudwatch_boto3_processor.cloudwatch_get_metric_statistics(
-                namespace, metric_name, start_time, end_time, period, statistic, dimensions
+            # Fetch current timeseries (offset 0)
+            current_timeseries = self._fetch_single_metric_timeseries(
+                cloudwatch_boto3_processor, namespace, metric_name, start_time_dt, end_time_dt,
+                calculated_period, statistic, dimensions,
+                metric_display_name=f"{namespace}.{metric_name} ({statistic})",
+                offset_seconds=0
             )
-            if not current_response or not current_response['Datapoints']:
-                raise Exception("No data returned from Cloudwatch for current time range")
+            if current_timeseries:
+                labeled_metric_timeseries_list.append(current_timeseries)
+            else:
+                # If even the current data fails, return a message
+                dimension_str = ', '.join([f"{d['Name']}:{d['Value']}" for d in dimensions])
+                return PlaybookTaskResult(
+                    type=PlaybookTaskResultType.TEXT,
+                    text=TextResult(output=StringValue(
+                        value=f"No data returned from Cloudwatch for ns: {namespace}, metric: {metric_name}, "
+                              f"dims: [{dimension_str}], stat: {statistic}")),
+                    source=self.source)
 
-            current_metric_datapoints = [
-                TimeseriesResult.LabeledMetricTimeseries.Datapoint(
-                    timestamp=int(
-                        datetime.fromisoformat(str(item['Timestamp'])).replace(tzinfo=pytz.UTC).timestamp() * 1000),
-                    value=DoubleValue(value=item[requested_statistic])
-                ) for item in current_response['Datapoints']
-            ]
-
-            metric_unit = current_response['Datapoints'][0]['Unit'] if current_response['Datapoints'] else ''
-
-            labeled_metric_timeseries.append(
-                TimeseriesResult.LabeledMetricTimeseries(
-                    metric_label_values=[
-                        LabelValuePair(name=StringValue(value='namespace'), value=StringValue(value=namespace)),
-                        LabelValuePair(name=StringValue(value='statistic'),
-                                       value=StringValue(value=requested_statistic)),
-                        LabelValuePair(name=StringValue(value='offset_seconds'),
-                                       value=StringValue(value='0')),
-                    ],
-                    unit=StringValue(value=metric_unit),
-                    datapoints=current_metric_datapoints
+            # Fetch offset timeseries if specified
+            for offset in timeseries_offsets:
+                offset_timeseries = self._fetch_single_metric_timeseries(
+                    cloudwatch_boto3_processor, namespace, metric_name, start_time_dt, end_time_dt,
+                    calculated_period, statistic, dimensions,
+                    metric_display_name=f"{namespace}.{metric_name} ({statistic})",
+                    offset_seconds=offset
                 )
-            )
+                if offset_timeseries:
+                    labeled_metric_timeseries_list.append(offset_timeseries)
 
-            # Get offset values if specified
-            if timeseries_offsets:
-                offsets = [offset for offset in timeseries_offsets]
-                for offset in offsets:
-                    # Use offset directly as seconds
-                    adjusted_start_time = start_time - timedelta(seconds=offset)
-                    adjusted_end_time = end_time - timedelta(seconds=offset)
+            if not labeled_metric_timeseries_list:
+                # This case should ideally not be reached if current_timeseries succeeded, but as a safeguard
+                dimension_str = ', '.join([f"{d['Name']}:{d['Value']}" for d in dimensions])
+                return PlaybookTaskResult(
+                    type=PlaybookTaskResultType.TEXT,
+                    text=TextResult(output=StringValue(
+                        value=f"Failed to fetch any data for ns: {namespace}, metric: {metric_name}, "
+                              f"dims: [{dimension_str}], stat: {statistic}")),
+                    source=self.source)
 
-                    response = cloudwatch_boto3_processor.cloudwatch_get_metric_statistics(
-                        namespace, metric_name, adjusted_start_time, adjusted_end_time, period, statistic, dimensions
-                    )
-                    if not response or not response['Datapoints']:
-                        print(f"No data returned from Cloudwatch for offset {offset} seconds")
-                        continue
-
-                    metric_datapoints = [
-                        TimeseriesResult.LabeledMetricTimeseries.Datapoint(
-                            timestamp=int(datetime.fromisoformat(str(item['Timestamp'])).replace(
-                                tzinfo=pytz.UTC).timestamp() * 1000),
-                            value=DoubleValue(value=item[requested_statistic])
-                        ) for item in response['Datapoints']
-                    ]
-
-                    labeled_metric_timeseries.append(
-                        TimeseriesResult.LabeledMetricTimeseries(
-                            metric_label_values=[
-                                LabelValuePair(name=StringValue(value='namespace'), value=StringValue(value=namespace)),
-                                LabelValuePair(name=StringValue(value='statistic'),
-                                               value=StringValue(value=requested_statistic)),
-                                LabelValuePair(name=StringValue(value='offset_seconds'),
-                                               value=StringValue(value=str(offset))),
-                            ],
-                            unit=StringValue(value=metric_unit),
-                            datapoints=metric_datapoints
-                        )
-                    )
-
-            metric_metadata = f"{namespace} for region {region} "
+            metric_metadata = f"{namespace}.{metric_name} ({statistic}) for region {region} "
             for i in dimensions:
-                metric_metadata += f"{i['Name']}:{i['Value']},  "
+                metric_metadata += f"where {i['Name']}='{i['Value']}' "
+
             timeseries_result = TimeseriesResult(
                 metric_expression=StringValue(value=metric_name),
-                metric_name=StringValue(value=metric_metadata),
-                labeled_metric_timeseries=labeled_metric_timeseries
+                metric_name=StringValue(value=metric_metadata.strip()),
+                labeled_metric_timeseries=labeled_metric_timeseries_list
             )
 
-            task_result = PlaybookTaskResult(type=PlaybookTaskResultType.TIMESERIES, timeseries=timeseries_result,
-                                             source=self.source)
-            return task_result
+            return PlaybookTaskResult(type=PlaybookTaskResultType.TIMESERIES, timeseries=timeseries_result,
+                                      source=self.source)
         except Exception as e:
-            raise Exception(f"Error while executing Cloudwatch task: {e}")
+            logger.error(f"Error in execute_metric_execution: {e}", exc_info=True)
+            raise Exception(f"Error while executing Cloudwatch metric task: {e}")
 
     def execute_filter_log_events(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
                                   cloudwatch_connector: ConnectorProto):
@@ -364,7 +434,9 @@ class CloudwatchSourceManager(SourceManager):
 
             response = logs_boto3_processor.logs_filter_events(log_group, query_pattern, start_time, end_time)
             if not response:
-                raise Exception("No data returned from Cloudwatch Logs")
+                return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT, text=TextResult(output=StringValue(
+                    value=f"No logs returned from Cloudwatch for query: {query_pattern} on log group: {log_group}")),
+                                          source=self.source)
 
             table_rows: [TableResult.TableRow] = []
             for item in response:
@@ -387,7 +459,6 @@ class CloudwatchSourceManager(SourceManager):
             return task_result
         except Exception as e:
             raise Exception(f"Error while executing Cloudwatch task: {e}")
-        
 
     def execute_rds_get_sql_query_performance_stats(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
                                                     cloudwatch_connector: ConnectorProto):
@@ -434,7 +505,7 @@ class CloudwatchSourceManager(SourceManager):
             return task_result
         except Exception as e:
             raise Exception(f"Error while executing Cloudwatch task: {e}")
-        
+
     ########################################## ECS Task Functions ####################################
     def ecs_list_clusters(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
                           cloudwatch_connector: ConnectorProto):
@@ -607,8 +678,143 @@ class CloudwatchSourceManager(SourceManager):
             )
         except Exception as e:
             raise Exception(f"Error while executing ECS get_task_logs task: {e}")
-        
-########################################## CW Fetch S3 File Functions ####################################
+
+    ########################################## CW Fetch Dashboard Functions ####################################
+    def _get_step_interval(self, time_range: TimeRange, task_definition: Any) -> int:
+        """Calculates the step interval (period). Uses user-defined value if provided, otherwise calculates dynamically."""
+        if task_definition and task_definition.HasField("step") and task_definition.step.value:
+            # Ensure minimum period for CloudWatch is 60 seconds if user provides less
+            user_step = task_definition.step.value
+            if user_step < 60:
+                logger.warning(f"User provided step {user_step}s is less than CloudWatch minimum (60s). Using 60s.")
+                return 60
+            return user_step
+        else:
+            total_seconds = time_range.time_lt - time_range.time_geq
+            return calculate_timeseries_bucket_size(total_seconds)
+
+    def execute_fetch_dashboard(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
+                                cloudwatch_connector: ConnectorProto):
+        """Fetches all metrics defined in a CloudWatch Dashboard and returns them as a single TimeseriesResult."""
+        try:
+            if not cloudwatch_connector:
+                raise Exception("Task execution Failed:: No Cloudwatch source found")
+
+            task = cloudwatch_task.fetch_dashboard
+            dashboard_name = task.dashboard_name.value
+
+            if not dashboard_name:
+                 raise ValueError("Dashboard name is required for FETCH_DASHBOARD task")
+
+            dashboard_asset_filter = AccountConnectorAssetsModelFilters(
+                cloudwatch_dashboard_model_filters=CloudwatchDashboardAssetOptions(dashboard_names=[dashboard_name])
+            )
+            # Use PrototypeClient to fetch the Dashboard Asset
+            client = PrototypeClient()
+            assets_result: AccountConnectorAssets = client.get_connector_assets(
+                connector_type="CLOUDWATCH",
+                connector_id=cloudwatch_connector.id.value,
+                asset_type=SourceModelType.CLOUDWATCH_DASHBOARD,
+                filters=proto_to_dict(dashboard_asset_filter)
+            )
+            if not assets_result:
+                logger.error(f"Dashboard asset not found or empty for name: {dashboard_name}")
+                return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT, text=TextResult(output=StringValue(
+                    value=f"Could not find dashboard asset information for '{dashboard_name}'. Please ensure metadata extraction ran successfully.")))
+
+            dashboard_asset_model: CloudwatchAssetModel = assets_result.cloudwatch.assets[0]
+            dashboard_data: CloudwatchDashboardAssetModel = dashboard_asset_model.cloudwatch_dashboard
+
+            # 2. Iterate through widgets and fetch metrics, creating individual results
+            task_results = []
+            start_time_dt = datetime.utcfromtimestamp(time_range.time_geq).replace(tzinfo=pytz.UTC)
+            end_time_dt = datetime.utcfromtimestamp(time_range.time_lt).replace(tzinfo=pytz.UTC)
+
+            effective_period = self._get_step_interval(time_range, task) # Use helper to get period
+
+            # Keep track of unique boto processors per region needed
+            boto_processors = {}
+
+            for widget in dashboard_data.widgets:
+                namespace = widget.namespace.value
+                metric_name = widget.metric_name.value
+                # Convert Struct dimensions back to list of dicts {Name: ..., Value: ...}
+                dimensions = []
+                for dim_struct in widget.dimensions:
+                    dim_dict = proto_to_dict(dim_struct)
+                    # Ensure the structure is as expected
+                    if 'Name' in dim_dict and 'Value' in dim_dict:
+                         dimensions.append({'Name': dim_dict['Name'], 'Value': dim_dict['Value']})
+                    else:
+                        logger.warning(f"Skipping invalid dimension structure in widget for dashboard {dashboard_name}: {dim_dict}")
+                        continue # Skip this dimension if structure is wrong
+
+                statistic = widget.statistic.value if widget.HasField('statistic') else 'Average'
+
+                # Use widget region if specified, otherwise fallback to connector default
+                region = widget.region.value if widget.HasField('region') and widget.region.value else cloudwatch_connector.region # Fallback to connector region
+
+                if not namespace or not metric_name:
+                    logger.warning(f"Skipping widget in dashboard {dashboard_name} due to missing namespace or metric name.")
+                    continue
+
+                # Get or create boto3 processor for the required region
+                if region not in boto_processors:
+                     try:
+                        boto_processors[region] = self.get_connector_processor(cloudwatch_connector, client_type='cloudwatch', region=region)
+                     except Exception as e:
+                         logger.error(f"Failed to create boto3 processor for region {region}: {e}. Skipping metrics for this region.")
+                         boto_processors[region] = None # Mark as failed to avoid retries
+                         continue
+
+                if boto_processors[region] is None:
+                    continue # Skip if processor creation failed for this region
+
+                # Construct the desired display name using the widget title
+                display_name_for_legend = widget.widget_title.value if widget.HasField('widget_title') and widget.widget_title.value else f"{namespace}.{metric_name}"
+
+                labeled_timeseries = self._fetch_single_metric_timeseries(
+                    boto_processors[region], namespace, metric_name, start_time_dt, end_time_dt,
+                    effective_period, statistic, dimensions,
+                    metric_display_name=display_name_for_legend,
+                    offset_seconds=0
+                )
+
+                if labeled_timeseries:
+                    dim_str = ', '.join([f"{d['Name']}='{d['Value']}'" for d in dimensions])
+                    result_metric_name = f"{display_name_for_legend} ({statistic}) {dim_str} [{region}]"
+
+                    # Create a TimeseriesResult for this single metric
+                    single_timeseries_result = TimeseriesResult(
+                        metric_expression=StringValue(value=metric_name),
+                        metric_name=StringValue(value=result_metric_name),
+                        labeled_metric_timeseries=[labeled_timeseries]
+                    )
+
+                    # Create a PlaybookTaskResult for this specific timeseries
+                    single_task_result = PlaybookTaskResult(
+                        type=PlaybookTaskResultType.TIMESERIES,
+                        timeseries=single_timeseries_result,
+                        source=self.source
+                    )
+                    task_results.append(single_task_result)
+
+            if not task_results:
+                return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT, text=TextResult(output=StringValue(
+                    value=f"No metric data could be fetched for any widget in dashboard '{dashboard_name}'.")))
+
+            # Return the list of individual PlaybookTaskResults
+            return task_results
+
+        except ValueError as ve:
+             logger.error(f"Configuration error executing FETCH_DASHBOARD for '{cloudwatch_task.fetch_dashboard.dashboard_name.value}': {ve}")
+             return PlaybookTaskResult(type=PlaybookTaskResultType.TEXT, text=TextResult(output=StringValue(value=f"Configuration Error: {ve}")))
+        except Exception as e:
+            logger.error(f"Error executing FETCH_DASHBOARD for '{cloudwatch_task.fetch_dashboard.dashboard_name.value}': {e}", exc_info=True)
+            raise Exception(f"Error while fetching dashboard metrics: {e}")
+
+
+    ########################################## CW Fetch S3 File Functions ####################################
     def execute_fetch_s3_file(self, time_range: TimeRange, cloudwatch_task: Cloudwatch,
                               cloudwatch_connector: ConnectorProto):
         """Fetches the contents of an S3 file and returns them as a single TextResult."""

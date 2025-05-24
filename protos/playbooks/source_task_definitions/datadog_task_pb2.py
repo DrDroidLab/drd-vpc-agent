@@ -12,21 +12,32 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
+from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n;protos/playbooks/source_task_definitions/datadog_task.proto\x12\x10protos.playbooks\x1a\x1egoogle/protobuf/wrappers.proto\"\xc8\x05\n\x07\x44\x61tadog\x12\x30\n\x04type\x18\x01 \x01(\x0e\x32\".protos.playbooks.Datadog.TaskType\x12X\n\x18service_metric_execution\x18\x02 \x01(\x0b\x32\x34.protos.playbooks.Datadog.ServiceMetricExecutionTaskH\x00\x12T\n\x16query_metric_execution\x18\x03 \x01(\x0b\x32\x32.protos.playbooks.Datadog.QueryMetricExecutionTaskH\x00\x1a\x87\x02\n\x1aServiceMetricExecutionTask\x12\x32\n\x0cservice_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x36\n\x10\x65nvironment_name\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x33\n\rmetric_family\x18\x03 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12,\n\x06metric\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x1a\n\x12timeseries_offsets\x18\x05 \x03(\r\x1av\n\x18QueryMetricExecutionTask\x12\x0f\n\x07queries\x18\x01 \x03(\t\x12-\n\x07\x66ormula\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x1a\n\x12timeseries_offsets\x18\x03 \x03(\r\"Q\n\x08TaskType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x1c\n\x18SERVICE_METRIC_EXECUTION\x10\x01\x12\x1a\n\x16QUERY_METRIC_EXECUTION\x10\x02\x42\x06\n\x04taskb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n;protos/playbooks/source_task_definitions/datadog_task.proto\x12\x10protos.playbooks\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xfe\x11\n\x07\x44\x61tadog\x12\x30\n\x04type\x18\x01 \x01(\x0e\x32\".protos.playbooks.Datadog.TaskType\x12X\n\x18service_metric_execution\x18\x02 \x01(\x0b\x32\x34.protos.playbooks.Datadog.ServiceMetricExecutionTaskH\x00\x12T\n\x16query_metric_execution\x18\x03 \x01(\x0b\x32\x32.protos.playbooks.Datadog.QueryMetricExecutionTaskH\x00\x12N\n\x13log_query_execution\x18\x04 \x01(\x0b\x32/.protos.playbooks.Datadog.LogQueryExecutionTaskH\x00\x12\x61\n\x1dquery_dashboard_widget_metric\x18\x05 \x01(\x0b\x32\x38.protos.playbooks.Datadog.QueryDashboardWidgetMetricTaskH\x00\x12\x62\n\x1elog_count_by_service_execution\x18\x06 \x01(\x0b\x32\x38.protos.playbooks.Datadog.LogCountByServiceExecutionTaskH\x00\x12\\\n\x1a\x64\x61shboard_multiple_widgets\x18\x07 \x01(\x0b\x32\x36.protos.playbooks.Datadog.DashboardMultipleWidgetsTaskH\x00\x12\x37\n\tapm_query\x18\x08 \x01(\x0b\x32\".protos.playbooks.Datadog.APMQueryH\x00\x1a\xb7\x02\n\x1aServiceMetricExecutionTask\x12\x32\n\x0cservice_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x36\n\x10\x65nvironment_name\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x33\n\rmetric_family\x18\x03 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12,\n\x06metric\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x1a\n\x12timeseries_offsets\x18\x05 \x03(\r\x12.\n\x08interval\x18\x06 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x1a\x88\x01\n\x18QueryMetricExecutionTask\x12\x0f\n\x07queries\x18\x01 \x03(\t\x12-\n\x07\x66ormula\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x1a\n\x12timeseries_offsets\x18\x03 \x03(\r\x12\x10\n\x08interval\x18\x04 \x01(\r\x1a\xf3\x02\n\x1eQueryDashboardWidgetMetricTask\x12\x33\n\rresponse_type\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12(\n\x07queries\x18\x02 \x03(\x0b\x32\x17.google.protobuf.Struct\x12)\n\x08\x66ormulas\x18\x03 \x03(\x0b\x32\x17.google.protobuf.Struct\x12/\n\tdashboard\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12/\n\twidget_id\x18\x05 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x32\n\x0cwidget_title\x18\x06 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x31\n\x0bwidget_type\x18\x07 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1a\x44\n\x15LogQueryExecutionTask\x12+\n\x05query\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1aM\n\x1eLogCountByServiceExecutionTask\x12+\n\x05query\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1a\xb7\x02\n\x1c\x44\x61shboardMultipleWidgetsTask\x12\x34\n\x0e\x64\x61shboard_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12/\n\twidget_id\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12*\n\x04unit\x18\x03 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x1a\n\x12timeseries_offsets\x18\x04 \x03(\r\x12.\n\x08interval\x18\x05 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x12\x38\n\x12template_variables\x18\x06 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x1an\n\x08\x41PMQuery\x12\x32\n\x0cservice_name\x18\x01 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12.\n\x08interval\x18\x02 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\"\xe0\x01\n\x08TaskType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x1c\n\x18SERVICE_METRIC_EXECUTION\x10\x01\x12\x1a\n\x16QUERY_METRIC_EXECUTION\x10\x02\x12\x17\n\x13LOG_QUERY_EXECUTION\x10\x03\x12!\n\x1dQUERY_DASHBOARD_WIDGET_METRIC\x10\x04\x12\"\n\x1eLOG_COUNT_BY_SERVICE_EXECUTION\x10\x05\x12\x1e\n\x1a\x44\x41SHBOARD_MULTIPLE_WIDGETS\x10\x06\x12\r\n\tAPM_QUERY\x10\x07\x42\x06\n\x04taskb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'protos.playbooks.source_task_definitions.datadog_task_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _DATADOG._serialized_start=114
-  _DATADOG._serialized_end=826
-  _DATADOG_SERVICEMETRICEXECUTIONTASK._serialized_start=352
-  _DATADOG_SERVICEMETRICEXECUTIONTASK._serialized_end=615
-  _DATADOG_QUERYMETRICEXECUTIONTASK._serialized_start=617
-  _DATADOG_QUERYMETRICEXECUTIONTASK._serialized_end=735
-  _DATADOG_TASKTYPE._serialized_start=737
-  _DATADOG_TASKTYPE._serialized_end=818
+  _DATADOG._serialized_start=144
+  _DATADOG._serialized_end=2446
+  _DATADOG_SERVICEMETRICEXECUTIONTASK._serialized_start=812
+  _DATADOG_SERVICEMETRICEXECUTIONTASK._serialized_end=1123
+  _DATADOG_QUERYMETRICEXECUTIONTASK._serialized_start=1126
+  _DATADOG_QUERYMETRICEXECUTIONTASK._serialized_end=1262
+  _DATADOG_QUERYDASHBOARDWIDGETMETRICTASK._serialized_start=1265
+  _DATADOG_QUERYDASHBOARDWIDGETMETRICTASK._serialized_end=1636
+  _DATADOG_LOGQUERYEXECUTIONTASK._serialized_start=1638
+  _DATADOG_LOGQUERYEXECUTIONTASK._serialized_end=1706
+  _DATADOG_LOGCOUNTBYSERVICEEXECUTIONTASK._serialized_start=1708
+  _DATADOG_LOGCOUNTBYSERVICEEXECUTIONTASK._serialized_end=1785
+  _DATADOG_DASHBOARDMULTIPLEWIDGETSTASK._serialized_start=1788
+  _DATADOG_DASHBOARDMULTIPLEWIDGETSTASK._serialized_end=2099
+  _DATADOG_APMQUERY._serialized_start=2101
+  _DATADOG_APMQUERY._serialized_end=2211
+  _DATADOG_TASKTYPE._serialized_start=2214
+  _DATADOG_TASKTYPE._serialized_end=2438
 # @@protoc_insertion_point(module_scope)

@@ -1,0 +1,41 @@
+syntax = "proto3";
+package protos.playbooks;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
+
+message Signoz {
+  message ClickhouseQueryTask {
+    google.protobuf.StringValue query = 1;
+    google.protobuf.Int32Value step = 2;
+    google.protobuf.BoolValue fill_gaps = 3;
+    google.protobuf.StringValue panel_type = 4;
+  }
+
+  message BuilderQueryTask {
+    google.protobuf.StringValue builder_queries = 1;
+    google.protobuf.Int32Value step = 2;
+    google.protobuf.StringValue panel_type = 3;
+  }
+
+  message DashboardDataTask {
+    google.protobuf.StringValue dashboard_name = 1;
+    google.protobuf.Int32Value step = 2;
+    google.protobuf.StringValue panel_type = 3;
+    google.protobuf.StringValue variables_json = 4;
+  }
+
+  enum TaskType {
+    UNKNOWN = 0;
+    CLICKHOUSE_QUERY = 1;
+    BUILDER_QUERY = 2;
+    DASHBOARD_DATA = 3;
+  }
+
+  TaskType type = 1;
+  oneof task {
+    ClickhouseQueryTask clickhouse_query = 2;
+    BuilderQueryTask builder_query = 3;
+    DashboardDataTask dashboard_data = 4;
+  }
+} 

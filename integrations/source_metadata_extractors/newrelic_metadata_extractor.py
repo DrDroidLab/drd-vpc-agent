@@ -2,7 +2,7 @@ from integrations.source_metadata_extractor import SourceMetadataExtractor
 from integrations.source_api_processors.new_relic_graph_ql_processor import NewRelicGraphQlConnector
 from protos.base_pb2 import Source, SourceModelType
 from utils.logging_utils import log_function_call
-
+from utils.static_mappings import NEWRELIC_APM_QUERIES
 
 class NewrelicSourceMetadataExtractor(SourceMetadataExtractor):
 
@@ -128,14 +128,14 @@ class NewrelicSourceMetadataExtractor(SourceMetadataExtractor):
             else:
                 break
         dashboard_entity_guid = [entity['guid'] for entity in entities]
-        dashboard_entity_search = self.__gql_processor.get_all_dashboard_entities(dashboard_entity_guid)
-        if not dashboard_entity_search or len(dashboard_entity_search) == 0:
-            return
-
         model_data = {}
-        for entity in dashboard_entity_search:
-            entity_id = entity['guid']
-            model_data[entity_id] = entity
+        for i in range(0, len(dashboard_entity_guid), 25):
+            dashboard_entity_search = self.__gql_processor.get_all_dashboard_entities(dashboard_entity_guid[i:i + 25])
+            if not dashboard_entity_search or len(dashboard_entity_search) == 0:
+                continue
+            for entity in dashboard_entity_search:
+                entity_id = entity['guid']
+                model_data[entity_id] = entity
         if len(model_data) > 0:
             self.create_or_update_model_metadata(model_type, model_data)
 
@@ -167,6 +167,53 @@ class NewrelicSourceMetadataExtractor(SourceMetadataExtractor):
         model_data = {}
         for entity in entities:
             entity_guid = entity['guid']
+            entity['apm_summary'] = []
+            for metric_name, query in NEWRELIC_APM_QUERIES.items():
+                formatted_query = query.replace('{}', f"'{entity_guid}'")
+                apm_metric = {
+                    'name': metric_name,
+                    'unit': '',
+                    'query': formatted_query
+                }
+                entity['apm_summary'].append(apm_metric)
+            
             model_data[entity_guid] = entity
+        if len(model_data) > 0:
+            self.create_or_update_model_metadata(model_type, model_data)
+
+    def extract_dashboard_entity_v2(self):
+        model_type = SourceModelType.NEW_RELIC_ENTITY_DASHBOARD_V2  
+        cursor = 'null'
+        types = ['DASHBOARD']
+        entity_search = self.__gql_processor.get_all_entities(cursor, types)
+        if 'results' not in entity_search:
+            return
+        results = entity_search['results']
+        entities = []
+        if 'entities' in results:
+            entities.extend(results['entities'])
+        if 'nextCursor' in results:
+            cursor = results['nextCursor']
+        while cursor and cursor != 'null':
+            entity_search = self.__gql_processor.get_all_entities(cursor, types)
+            if 'results' in entity_search:
+                results = entity_search['results']
+                if 'entities' in results:
+                    entities.extend(results['entities'])
+                if 'nextCursor' in results:
+                    cursor = results['nextCursor']
+                else:
+                    cursor = None
+            else:
+                break
+        dashboard_entity_guid = [entity['guid'] for entity in entities]
+        model_data = {}
+        for i in range(0, len(dashboard_entity_guid), 25):
+            dashboard_entity_search = self.__gql_processor.get_all_dashboard_entities(dashboard_entity_guid[i:i + 25])
+            if not dashboard_entity_search or len(dashboard_entity_search) == 0:
+                continue
+            for entity in dashboard_entity_search:
+                entity_id = entity['guid']
+                model_data[entity_id] = entity
         if len(model_data) > 0:
             self.create_or_update_model_metadata(model_type, model_data)

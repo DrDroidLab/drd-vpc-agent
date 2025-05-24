@@ -8,6 +8,13 @@ message Gcm {
   message MqlExecution {
     google.protobuf.StringValue query = 1;
     repeated uint32 timeseries_offsets = 2;
+    google.protobuf.StringValue interval = 3;
+  }
+
+  message DashboardView {
+    google.protobuf.StringValue dashboard_id = 1;
+    google.protobuf.StringValue widget_name = 2;
+    google.protobuf.StringValue interval = 3;
   }
 
   message FilterLogEvents {
@@ -18,15 +25,34 @@ message Gcm {
     google.protobuf.StringValue page_token = 5;
   }
 
+message SheetsDataFetch {
+    google.protobuf.StringValue spreadsheet_name = 1;
+    google.protobuf.StringValue sheet_name = 2;
+    google.protobuf.Int64Value max_rows = 3;
+    google.protobuf.StringValue output_format = 4;
+  }
+
+  message CloudRunServiceDashboard {
+    google.protobuf.StringValue service_name = 1;
+    google.protobuf.StringValue region = 2;
+    google.protobuf.StringValue widget_name = 3;
+  }
+
   enum TaskType {
     UNKNOWN = 0;
     MQL_EXECUTION = 1;
     FILTER_LOG_EVENTS = 2;
+    DASHBOARD_VIEW = 3;
+    SHEETS_DATA_FETCH = 4;
+    CLOUD_RUN_SERVICE_DASHBOARD = 5;
   }
 
   TaskType type = 1;
   oneof task {
     MqlExecution mql_execution = 2;
     FilterLogEvents filter_log_events = 3;
+    DashboardView dashboard_view = 4;
+    SheetsDataFetch sheets_data_fetch = 5;
+    CloudRunServiceDashboard cloud_run_service_dashboard = 6;
   }
 }

@@ -3,7 +3,9 @@
 isort:skip_file
 """
 import builtins
+import collections.abc
 import google.protobuf.descriptor
+import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import google.protobuf.wrappers_pb2
@@ -33,6 +35,7 @@ class Jira(google.protobuf.message.Message):
         GET_USERS: Jira._TaskType.ValueType  # 3
         GET_TICKET: Jira._TaskType.ValueType  # 4
         SEARCH_TICKETS: Jira._TaskType.ValueType  # 5
+        ADD_COMMENT: Jira._TaskType.ValueType  # 6
 
     class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper): ...
     UNKNOWN: Jira.TaskType.ValueType  # 0
@@ -41,6 +44,7 @@ class Jira(google.protobuf.message.Message):
     GET_USERS: Jira.TaskType.ValueType  # 3
     GET_TICKET: Jira.TaskType.ValueType  # 4
     SEARCH_TICKETS: Jira.TaskType.ValueType  # 5
+    ADD_COMMENT: Jira.TaskType.ValueType  # 6
 
     @typing_extensions.final
     class CreateTicket(google.protobuf.message.Message):
@@ -147,12 +151,36 @@ class Jira(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["query", b"query"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["query", b"query"]) -> None: ...
 
+    @typing_extensions.final
+    class AddComment(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        TICKET_KEY_FIELD_NUMBER: builtins.int
+        COMMENT_TEXT_FIELD_NUMBER: builtins.int
+        IMAGE_URLS_FIELD_NUMBER: builtins.int
+        @property
+        def ticket_key(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def comment_text(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def image_urls(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[google.protobuf.wrappers_pb2.StringValue]: ...
+        def __init__(
+            self,
+            *,
+            ticket_key: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            comment_text: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            image_urls: collections.abc.Iterable[google.protobuf.wrappers_pb2.StringValue] | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["comment_text", b"comment_text", "ticket_key", b"ticket_key"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["comment_text", b"comment_text", "image_urls", b"image_urls", "ticket_key", b"ticket_key"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     CREATE_TICKET_FIELD_NUMBER: builtins.int
     ASSIGN_TICKET_FIELD_NUMBER: builtins.int
     GET_USERS_FIELD_NUMBER: builtins.int
     GET_TICKET_FIELD_NUMBER: builtins.int
     SEARCH_TICKETS_FIELD_NUMBER: builtins.int
+    ADD_COMMENT_FIELD_NUMBER: builtins.int
     type: global___Jira.TaskType.ValueType
     @property
     def create_ticket(self) -> global___Jira.CreateTicket: ...
@@ -164,6 +192,8 @@ class Jira(google.protobuf.message.Message):
     def get_ticket(self) -> global___Jira.GetTicket: ...
     @property
     def search_tickets(self) -> global___Jira.SearchTickets: ...
+    @property
+    def add_comment(self) -> global___Jira.AddComment: ...
     def __init__(
         self,
         *,
@@ -173,9 +203,10 @@ class Jira(google.protobuf.message.Message):
         get_users: global___Jira.GetUsers | None = ...,
         get_ticket: global___Jira.GetTicket | None = ...,
         search_tickets: global___Jira.SearchTickets | None = ...,
+        add_comment: global___Jira.AddComment | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["assign_ticket", b"assign_ticket", "create_ticket", b"create_ticket", "get_ticket", b"get_ticket", "get_users", b"get_users", "search_tickets", b"search_tickets", "task", b"task"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["assign_ticket", b"assign_ticket", "create_ticket", b"create_ticket", "get_ticket", b"get_ticket", "get_users", b"get_users", "search_tickets", b"search_tickets", "task", b"task", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["create_ticket", "assign_ticket", "get_users", "get_ticket", "search_tickets"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["add_comment", b"add_comment", "assign_ticket", b"assign_ticket", "create_ticket", b"create_ticket", "get_ticket", b"get_ticket", "get_users", b"get_users", "search_tickets", b"search_tickets", "task", b"task"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["add_comment", b"add_comment", "assign_ticket", b"assign_ticket", "create_ticket", b"create_ticket", "get_ticket", b"get_ticket", "get_users", b"get_users", "search_tickets", b"search_tickets", "task", b"task", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["create_ticket", "assign_ticket", "get_users", "get_ticket", "search_tickets", "add_comment"] | None: ...
 
 global___Jira = Jira

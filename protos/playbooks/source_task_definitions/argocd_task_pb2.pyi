@@ -30,11 +30,19 @@ class ArgoCD(google.protobuf.message.Message):
         UNKNOWN: ArgoCD._TaskType.ValueType  # 0
         FETCH_DEPLOYMENT_INFO: ArgoCD._TaskType.ValueType  # 1
         ROLLBACK_APPLICATION: ArgoCD._TaskType.ValueType  # 2
+        FETCH_REVISION_HISTORY: ArgoCD._TaskType.ValueType  # 3
+        SYNC_APPLICATION: ArgoCD._TaskType.ValueType  # 4
+        FETCH_APPLICATION_STATE: ArgoCD._TaskType.ValueType  # 5
+        GET_APPLICATION_HEALTH: ArgoCD._TaskType.ValueType  # 6
 
     class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper): ...
     UNKNOWN: ArgoCD.TaskType.ValueType  # 0
     FETCH_DEPLOYMENT_INFO: ArgoCD.TaskType.ValueType  # 1
     ROLLBACK_APPLICATION: ArgoCD.TaskType.ValueType  # 2
+    FETCH_REVISION_HISTORY: ArgoCD.TaskType.ValueType  # 3
+    SYNC_APPLICATION: ArgoCD.TaskType.ValueType  # 4
+    FETCH_APPLICATION_STATE: ArgoCD.TaskType.ValueType  # 5
+    GET_APPLICATION_HEALTH: ArgoCD.TaskType.ValueType  # 6
 
     @typing_extensions.final
     class FetchDeploymentInfo(google.protobuf.message.Message):
@@ -42,25 +50,63 @@ class ArgoCD(google.protobuf.message.Message):
 
         COUNT_FIELD_NUMBER: builtins.int
         APP_NAME_FIELD_NUMBER: builtins.int
-        TIME_SINCE_IN_MINUTES_FIELD_NUMBER: builtins.int
         @property
         def count(self) -> google.protobuf.wrappers_pb2.Int64Value: ...
         @property
         def app_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
-        @property
-        def time_since_in_minutes(self) -> google.protobuf.wrappers_pb2.Int64Value: ...
         def __init__(
             self,
             *,
             count: google.protobuf.wrappers_pb2.Int64Value | None = ...,
             app_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
-            time_since_in_minutes: google.protobuf.wrappers_pb2.Int64Value | None = ...,
         ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count", "time_since_in_minutes", b"time_since_in_minutes"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count", "time_since_in_minutes", b"time_since_in_minutes"]) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count"]) -> None: ...
 
     @typing_extensions.final
     class RollbackApplication(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        APP_NAME_FIELD_NUMBER: builtins.int
+        REVISION_FIELD_NUMBER: builtins.int
+        DEPLOYMENT_ID_FIELD_NUMBER: builtins.int
+        @property
+        def app_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def revision(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def deployment_id(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            app_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            revision: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            deployment_id: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "deployment_id", b"deployment_id", "revision", b"revision"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "deployment_id", b"deployment_id", "revision", b"revision"]) -> None: ...
+
+    @typing_extensions.final
+    class FetchRevisionHistory(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        COUNT_FIELD_NUMBER: builtins.int
+        APP_NAME_FIELD_NUMBER: builtins.int
+        @property
+        def count(self) -> google.protobuf.wrappers_pb2.Int64Value: ...
+        @property
+        def app_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            count: google.protobuf.wrappers_pb2.Int64Value | None = ...,
+            app_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "count", b"count"]) -> None: ...
+
+    @typing_extensions.final
+    class SyncApplication(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         APP_NAME_FIELD_NUMBER: builtins.int
@@ -78,23 +124,69 @@ class ArgoCD(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "version", b"version"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name", "version", b"version"]) -> None: ...
 
+    @typing_extensions.final
+    class FetchApplicationState(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        APP_NAME_FIELD_NUMBER: builtins.int
+        @property
+        def app_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            app_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name"]) -> None: ...
+
+    @typing_extensions.final
+    class GetApplicationHealth(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        APP_NAME_FIELD_NUMBER: builtins.int
+        @property
+        def app_name(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            app_name: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["app_name", b"app_name"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["app_name", b"app_name"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     FETCH_DEPLOYMENT_INFO_FIELD_NUMBER: builtins.int
     ROLLBACK_APPLICATION_FIELD_NUMBER: builtins.int
+    FETCH_REVISION_HISTORY_FIELD_NUMBER: builtins.int
+    SYNC_APPLICATION_FIELD_NUMBER: builtins.int
+    FETCH_APPLICATION_STATE_FIELD_NUMBER: builtins.int
+    GET_APPLICATION_HEALTH_FIELD_NUMBER: builtins.int
     type: global___ArgoCD.TaskType.ValueType
     @property
     def fetch_deployment_info(self) -> global___ArgoCD.FetchDeploymentInfo: ...
     @property
     def rollback_application(self) -> global___ArgoCD.RollbackApplication: ...
+    @property
+    def fetch_revision_history(self) -> global___ArgoCD.FetchRevisionHistory: ...
+    @property
+    def sync_application(self) -> global___ArgoCD.SyncApplication: ...
+    @property
+    def fetch_application_state(self) -> global___ArgoCD.FetchApplicationState: ...
+    @property
+    def get_application_health(self) -> global___ArgoCD.GetApplicationHealth: ...
     def __init__(
         self,
         *,
         type: global___ArgoCD.TaskType.ValueType = ...,
         fetch_deployment_info: global___ArgoCD.FetchDeploymentInfo | None = ...,
         rollback_application: global___ArgoCD.RollbackApplication | None = ...,
+        fetch_revision_history: global___ArgoCD.FetchRevisionHistory | None = ...,
+        sync_application: global___ArgoCD.SyncApplication | None = ...,
+        fetch_application_state: global___ArgoCD.FetchApplicationState | None = ...,
+        get_application_health: global___ArgoCD.GetApplicationHealth | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["fetch_deployment_info", b"fetch_deployment_info", "rollback_application", b"rollback_application", "task", b"task"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["fetch_deployment_info", b"fetch_deployment_info", "rollback_application", b"rollback_application", "task", b"task", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["fetch_deployment_info", "rollback_application"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["fetch_application_state", b"fetch_application_state", "fetch_deployment_info", b"fetch_deployment_info", "fetch_revision_history", b"fetch_revision_history", "get_application_health", b"get_application_health", "rollback_application", b"rollback_application", "sync_application", b"sync_application", "task", b"task"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["fetch_application_state", b"fetch_application_state", "fetch_deployment_info", b"fetch_deployment_info", "fetch_revision_history", b"fetch_revision_history", "get_application_health", b"get_application_health", "rollback_application", b"rollback_application", "sync_application", b"sync_application", "task", b"task", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["task", b"task"]) -> typing_extensions.Literal["fetch_deployment_info", "rollback_application", "fetch_revision_history", "sync_application", "fetch_application_state", "get_application_health"] | None: ...
 
 global___ArgoCD = ArgoCD

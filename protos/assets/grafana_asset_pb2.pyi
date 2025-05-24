@@ -359,6 +359,62 @@ class GrafanaDashboardAssetOptions(google.protobuf.message.Message):
 global___GrafanaDashboardAssetOptions = GrafanaDashboardAssetOptions
 
 @typing_extensions.final
+class GrafanaAlertRuleAssetModel(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    ALERT_RULE_ID_FIELD_NUMBER: builtins.int
+    ALERT_RULE_JSON_FIELD_NUMBER: builtins.int
+    @property
+    def alert_rule_id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
+    @property
+    def alert_rule_json(self) -> google.protobuf.struct_pb2.Struct: ...
+    def __init__(
+        self,
+        *,
+        alert_rule_id: google.protobuf.wrappers_pb2.UInt64Value | None = ...,
+        alert_rule_json: google.protobuf.struct_pb2.Struct | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["alert_rule_id", b"alert_rule_id", "alert_rule_json", b"alert_rule_json"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["alert_rule_id", b"alert_rule_id", "alert_rule_json", b"alert_rule_json"]) -> None: ...
+
+global___GrafanaAlertRuleAssetModel = GrafanaAlertRuleAssetModel
+
+@typing_extensions.final
+class GrafanaAlertRuleAssetOptions(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    @typing_extensions.final
+    class GrafanaAlertRuleOptions(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+        ALERT_RULE_UID_FIELD_NUMBER: builtins.int
+        ALERT_RULE_TITLE_FIELD_NUMBER: builtins.int
+        @property
+        def alert_rule_uid(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        @property
+        def alert_rule_title(self) -> google.protobuf.wrappers_pb2.StringValue: ...
+        def __init__(
+            self,
+            *,
+            alert_rule_uid: google.protobuf.wrappers_pb2.StringValue | None = ...,
+            alert_rule_title: google.protobuf.wrappers_pb2.StringValue | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["alert_rule_title", b"alert_rule_title", "alert_rule_uid", b"alert_rule_uid"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["alert_rule_title", b"alert_rule_title", "alert_rule_uid", b"alert_rule_uid"]) -> None: ...
+
+    ALERT_RULES_FIELD_NUMBER: builtins.int
+    @property
+    def alert_rules(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___GrafanaAlertRuleAssetOptions.GrafanaAlertRuleOptions]: ...
+    def __init__(
+        self,
+        *,
+        alert_rules: collections.abc.Iterable[global___GrafanaAlertRuleAssetOptions.GrafanaAlertRuleOptions] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["alert_rules", b"alert_rules"]) -> None: ...
+
+global___GrafanaAlertRuleAssetOptions = GrafanaAlertRuleAssetOptions
+
+@typing_extensions.final
 class GrafanaAssetModel(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -368,6 +424,7 @@ class GrafanaAssetModel(google.protobuf.message.Message):
     LAST_UPDATED_FIELD_NUMBER: builtins.int
     GRAFANA_TARGET_METRIC_PROMQL_FIELD_NUMBER: builtins.int
     GRAFANA_PROMETHEUS_DATASOURCE_FIELD_NUMBER: builtins.int
+    GRAFANA_ALERT_RULE_FIELD_NUMBER: builtins.int
     GRAFANA_DASHBOARD_FIELD_NUMBER: builtins.int
     @property
     def id(self) -> google.protobuf.wrappers_pb2.UInt64Value: ...
@@ -379,6 +436,8 @@ class GrafanaAssetModel(google.protobuf.message.Message):
     @property
     def grafana_prometheus_datasource(self) -> global___GrafanaDatasourceAssetModel: ...
     @property
+    def grafana_alert_rule(self) -> global___GrafanaAlertRuleAssetModel: ...
+    @property
     def grafana_dashboard(self) -> global___GrafanaDashboardAssetModel: ...
     def __init__(
         self,
@@ -389,11 +448,12 @@ class GrafanaAssetModel(google.protobuf.message.Message):
         last_updated: builtins.int = ...,
         grafana_target_metric_promql: global___GrafanaTargetMetricPromQlAssetModel | None = ...,
         grafana_prometheus_datasource: global___GrafanaDatasourceAssetModel | None = ...,
+        grafana_alert_rule: global___GrafanaAlertRuleAssetModel | None = ...,
         grafana_dashboard: global___GrafanaDashboardAssetModel | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "grafana_dashboard", b"grafana_dashboard", "grafana_prometheus_datasource", b"grafana_prometheus_datasource", "grafana_target_metric_promql", b"grafana_target_metric_promql", "id", b"id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "grafana_dashboard", b"grafana_dashboard", "grafana_prometheus_datasource", b"grafana_prometheus_datasource", "grafana_target_metric_promql", b"grafana_target_metric_promql", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["grafana_target_metric_promql", "grafana_prometheus_datasource", "grafana_dashboard"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["asset", b"asset", "grafana_alert_rule", b"grafana_alert_rule", "grafana_dashboard", b"grafana_dashboard", "grafana_prometheus_datasource", b"grafana_prometheus_datasource", "grafana_target_metric_promql", b"grafana_target_metric_promql", "id", b"id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset", b"asset", "connector_type", b"connector_type", "grafana_alert_rule", b"grafana_alert_rule", "grafana_dashboard", b"grafana_dashboard", "grafana_prometheus_datasource", b"grafana_prometheus_datasource", "grafana_target_metric_promql", b"grafana_target_metric_promql", "id", b"id", "last_updated", b"last_updated", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["asset", b"asset"]) -> typing_extensions.Literal["grafana_target_metric_promql", "grafana_prometheus_datasource", "grafana_alert_rule", "grafana_dashboard"] | None: ...
 
 global___GrafanaAssetModel = GrafanaAssetModel
 
