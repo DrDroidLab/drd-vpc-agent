@@ -111,10 +111,6 @@ class SourceManager:
             raise Exception(f"PlaybookSourceManager.get_source_task:: Form fields not found for task type: "
                             f"{task_type_name} in {source_str} source manager")
 
-        if not source_task_type_dict and self.task_type_callable_map[task_type]['form_fields']:
-            raise Exception(f"PlaybookSourceManager.get_source_task:: No definition for task type: {task_type_name} "
-                            f"found in task")
-
         # Resolve global variables in source_type_task_def
         form_fields = self.task_type_callable_map[task_type]['form_fields']
         resolved_source_task_type_dict, task_local_variable_map = resolve_global_variables(form_fields,
