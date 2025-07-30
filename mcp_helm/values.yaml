@@ -9,8 +9,8 @@ global:
 # Django MCP Server configuration
 mcpServer:
   image:
-    repository: dhruvdroidr2/k8s-playground-app
-    tag: test-uv-drd-v16
+    repository: public.ecr.aws/y9s1f3r5/drdroid/drd-vpc-agent
+    tag: mcp-latest
     pullPolicy: Always
   
   # Service configuration

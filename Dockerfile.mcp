@@ -1,0 +1,50 @@
+FROM python:3.12.3-alpine
+
+# Set environment variables
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV UV_CACHE_DIR=/tmp/uv-cache
+
+# Install system dependencies
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev \
+    mysql-dev \
+    mariadb-dev \
+    curl \
+    gcc \
+    musl-dev \
+    linux-headers
+
+# Install uv
+RUN pip install --no-cache-dir uv
+
+# Set work directory
+WORKDIR /code
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies using uv
+RUN uv pip install --system --no-cache -r requirements.txt
+
+# Copy project files
+COPY . /code/
+
+# Create a non-root user for security
+RUN adduser -D -s /bin/sh mcp && \
+    chown -R mcp:mcp /code
+
+# Switch to non-root user
+USER mcp
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Default command for MCP server
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 
