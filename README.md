@@ -1,3 +1,6 @@
+Note: For MCP Server mode, please switch to [mcp_main branch](https://github.com/DrDroidLab/drd-vpc-agent/tree/mcp_main)
+
+
 # Doctor Droid Python Proxy Agent
 
 The present repository contains the source code of the Doctor Droid Python Proxy Agent version 1.0.0.
