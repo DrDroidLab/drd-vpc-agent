@@ -894,7 +894,18 @@ class SignozSourceManager(SourceManager):
             result = signoz_api_processor.fetch_dashboards()
 
             if result:
-                response_struct = dict_to_proto(result, Struct)
+                # Handle different response formats from fetch_dashboards
+                if isinstance(result, list):
+                    # If result is a list of dashboards, wrap it in a dictionary
+                    response_data = {"dashboards": result}
+                elif isinstance(result, dict):
+                    # If result is already a dictionary, use it as is
+                    response_data = result
+                else:
+                    # Fallback: wrap in a generic structure
+                    response_data = {"data": result}
+                
+                response_struct = dict_to_proto(response_data, Struct)
                 return PlaybookTaskResult(
                     type=PlaybookTaskResultType.API_RESPONSE,
                     api_response=ApiResponseResult(response_body=response_struct),
@@ -934,7 +945,15 @@ class SignozSourceManager(SourceManager):
             result = signoz_api_processor.fetch_dashboard_details(dashboard_id)
 
             if result:
-                response_struct = dict_to_proto(result, Struct)
+                # Handle different response formats from fetch_dashboard_details
+                if isinstance(result, dict):
+                    # If result is already a dictionary, use it as is
+                    response_data = result
+                else:
+                    # Fallback: wrap in a generic structure
+                    response_data = {"data": result}
+                
+                response_struct = dict_to_proto(response_data, Struct)
                 return PlaybookTaskResult(
                     type=PlaybookTaskResultType.API_RESPONSE,
                     api_response=ApiResponseResult(response_body=response_struct),
@@ -970,7 +989,18 @@ class SignozSourceManager(SourceManager):
             result = signoz_api_processor.fetch_services(start_time, end_time, duration)
 
             if result:
-                response_struct = dict_to_proto(result, Struct)
+                # Handle different response formats from fetch_services
+                if isinstance(result, list):
+                    # If result is a list of services, wrap it in a dictionary
+                    response_data = {"services": result}
+                elif isinstance(result, dict):
+                    # If result is already a dictionary (e.g., error response), use it as is
+                    response_data = result
+                else:
+                    # Fallback: wrap in a generic structure
+                    response_data = {"data": result}
+                
+                response_struct = dict_to_proto(response_data, Struct)
                 return PlaybookTaskResult(
                     type=PlaybookTaskResultType.API_RESPONSE,
                     api_response=ApiResponseResult(response_body=response_struct),

@@ -549,7 +549,6 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any], tool_mapping: Di
         # Get connector name from loaded connections
         loaded_connections = settings.LOADED_CONNECTIONS
         connector_name = None
-        print("KEKW loaded_connections", loaded_connections)
         for c, metadata in loaded_connections.items():
             if metadata.get('id') == connector.id.value:
                 connector_name = c

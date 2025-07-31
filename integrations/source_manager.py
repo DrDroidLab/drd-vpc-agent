@@ -80,7 +80,6 @@ class SourceManager:
         loaded_connections = settings.LOADED_CONNECTIONS
         if not loaded_connections:
             raise Exception("No loaded connections found")
-        print("KEKW loads", loaded_connections)
         all_active_connections = []
         for c, metadata in loaded_connections.items():
             print(c, metadata)

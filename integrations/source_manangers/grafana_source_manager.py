@@ -679,7 +679,6 @@ class GrafanaSourceManager(SourceManager):
                 # Resolve Datasource
                 resolved_datasource = self._resolve_target_datasource(target_datasource_info, datasource_dict,
                                                                       template_vars_dict, panel_id, datasource_name_to_uid_map)
-                logger.info(f"Resolved datasource kekw: {resolved_datasource}")
                 # Skip target if datasource resolution fails
                 if not resolved_datasource and not expr.startswith(
                         "grafana"):  # Allow grafana expressions like grafana/alerting/list
@@ -687,7 +686,6 @@ class GrafanaSourceManager(SourceManager):
 
                 # Resolve Expression Variables
                 resolved_expr = self._resolve_template_variables_in_string(expr, template_vars_dict)
-                logger.info(f"Resolved expr kekw: {resolved_expr}")
                 if not resolved_expr:
                     continue  # Skip empty expressions
 
@@ -872,11 +870,9 @@ class GrafanaSourceManager(SourceManager):
             if not dashboard_details_response or "dashboard" not in dashboard_details_response:
                 raise Exception(f"Failed to fetch dashboard details for UID: {dashboard_uid}, {dashboard_details_response}")
             dashboard_dict = dashboard_details_response["dashboard"]
-            logger.info(f"Dashboard details kekw: {dashboard_dict}")
 
             # 2. Extract default template variable values and override with user-provided ones
             template_vars_dict = self._extract_template_variable_values(dashboard_dict)
-            logger.info(f"Template vars dict kekw: {template_vars_dict}")
 
             # Handle template_variables from the task
             override_template_vars = {}
