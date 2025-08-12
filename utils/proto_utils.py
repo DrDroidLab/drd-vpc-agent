@@ -4,7 +4,7 @@ from google.protobuf.json_format import MessageToJson, Parse, MessageToDict, Par
 from google.protobuf.message import Message
 from google.protobuf.wrappers_pb2 import BoolValue, UInt32Value
 
-from protos.base_pb2 import TimeRange, Page, Meta
+from drdroid_debug_toolkit.core.protos.base_pb2 import TimeRange, Page, Meta
 
 
 class ProtoException(ValueError):

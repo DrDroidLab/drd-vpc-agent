@@ -2,8 +2,8 @@ import logging
 
 from celery import shared_task
 
-from integrations.source_metadata_extractor import SourceMetadataExtractor
-from integrations.source_metadata_extractor_facade import source_metadata_extractor_facade
+from drdroid_debug_toolkit.core.integrations.source_metadata_extractor import SourceMetadataExtractor
+from drdroid_debug_toolkit.core.integrations.source_metadata_extractor_facade import source_metadata_extractor_facade
 
 logger = logging.getLogger(__name__)
 

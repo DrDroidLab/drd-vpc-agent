@@ -1,4 +1,4 @@
-FROM python:3.9.16-bullseye
+FROM python:3.12-bullseye
 
 RUN apt-get update \
   # dependencies for building Python packages \
