@@ -33,14 +33,12 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 # Set work directory
 WORKDIR /code
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install uv
-RUN uv pip sync requirements.txt --system
-
 # Copy project
 COPY . /code
 RUN chown -R www-data:www-data /code
+
+RUN pip install uv
+RUN uv pip sync requirements.txt --system
 
 COPY scripts/start-celery-worker.sh .
 RUN sed -i 's/\r$//g' start-celery-worker.sh
