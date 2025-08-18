@@ -1,4 +1,4 @@
-from protos.base_pb2 import Source, SourceKeyType, SourceModelType
+from drdroid_debug_toolkit.core.protos.base_pb2 import Source, SourceKeyType, SourceModelType
 
 integrations_connector_type_connector_keys_map = {
     Source.PAGER_DUTY: [

@@ -1,8 +1,8 @@
 from django.conf import settings
 from google.protobuf.wrappers_pb2 import StringValue, UInt64Value
 
-from protos.base_pb2 import Source, SourceKeyType
-from protos.connectors.connector_pb2 import Connector, ConnectorKey
+from drdroid_debug_toolkit.core.protos.base_pb2 import Source, SourceKeyType
+from drdroid_debug_toolkit.core.protos.connectors.connector_pb2 import Connector, ConnectorKey
 
 
 def generate_credentials_dict(connector_type, connector_keys):
