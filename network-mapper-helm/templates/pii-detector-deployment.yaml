@@ -1,0 +1,64 @@
+{{ if .Values.nodeagent.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "otterize.piidetector.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: pii-detector-deployment
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "otterize.piidetector.fullName" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "otterize.networkMapper.shared_labels" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_labels" . | nindent 8 }}
+        app.kubernetes.io/component: pii-detector
+        app: {{ template "otterize.piidetector.fullName" . }}
+      annotations:
+        {{- include "otterize.networkMapper.shared_annotations" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_annotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ template "otterize.piidetector.fullName" . }}
+      {{- with .Values.piidetector.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.piidetector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: piidetector
+          image: "{{ .Values.piidetector.repository }}/{{ .Values.piidetector.image }}:{{ .Values.piidetector.tag }}"
+          {{ if .Values.piidetector.pullPolicy }}
+          imagePullPolicy: {{ .Values.piidetector.pullPolicy }}
+          {{ end }}
+          ports:
+            - containerPort: 5000
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            {{- toYaml .Values.piidetector.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 5000
+            initialDelaySeconds: 1
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      nodeSelector:
+        {{- toYaml .Values.piidetector.nodeSelector | nindent 8 }}
+{{ end }}
