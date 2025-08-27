@@ -1,6 +1,10 @@
 # Override values for using locally built images
 # Use this file with: helm install/upgrade -f values-local.yaml
 
+global:
+  telemetry:
+    enabled: false
+
 mapper:
   repository: drdroidlab
   image: otterize-network-mapper

@@ -3,12 +3,18 @@
 # Script to deploy network-mapper with locally built images
 # Usage: ./deploy-local.sh [release-name] [namespace]
 
-RELEASE_NAME=${1:-network-mapper-local}
-NAMESPACE=droid-network-mapper
+RELEASE_NAME=network-mapper
+NAMESPACE=otterize-system
 
 echo "Deploying network-mapper with locally built images..."
 echo "Release name: $RELEASE_NAME"
 echo "Namespace: $NAMESPACE"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the network-mapper-helm directory
+cd "$SCRIPT_DIR"
 
 # Create namespace if it doesn't exist
 kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
