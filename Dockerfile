@@ -13,6 +13,11 @@ RUN apt-get update \
   && ARCH=$(dpkg --print-architecture) \
   && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl" \
   && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
+  # Install Otterize CLI
+  && curl -LJO https://get.otterize.com/otterize-cli/v2.0.3/otterize_linux_x86_64.tar.gz \
+  && tar xf otterize_linux_x86_64.tar.gz \
+  && install -o root -g root -m 0755 otterize /usr/local/bin/otterize \
+  && rm otterize_linux_x86_64.tar.gz \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/* \
