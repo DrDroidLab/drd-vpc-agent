@@ -1,0 +1,138 @@
+{{ if .Values.kafkawatcher.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "otterize.kafkawatcher.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafkawatcher-deployment
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "otterize.kafkawatcher.fullName" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "otterize.networkMapper.shared_labels" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_labels" . | nindent 8 }}
+        app: {{ template "otterize.kafkawatcher.fullName" . }}
+        app.kubernetes.io/component: kafkawatcher
+      annotations:
+        {{- include "otterize.networkMapper.shared_annotations" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_annotations" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.kafkawatcher.containerSecurityContext | nindent 10 }}
+      {{ if .Values.kafkawatcher.pullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.kafkawatcher.pullSecrets }}
+      {{ end }}
+      {{- with .Values.kafkawatcher.tolerations }}
+      tolerations:  {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafkawatcher.affinity }}
+      affinity:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ template "otterize.kafkawatcher.fullName" . }}
+          image: "{{ .Values.kafkawatcher.repository }}/{{ .Values.kafkawatcher.image }}:{{ default $.Chart.AppVersion .Values.kafkawatcher.tag }}"
+          {{ if .Values.kafkawatcher.pullPolicy }}
+          imagePullPolicy: {{ .Values.kafkawatcher.pullPolicy }}
+          {{ end }}
+          resources:
+            {{- toYaml .Values.kafkawatcher.resources | nindent 12 }}
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OTTERIZE_MAPPER_API_URL
+              value: http://{{ template "otterize.mapper.fullName" . }}:9090/query
+            - name: OTTERIZE_DEBUG
+              value: {{ .Values.debug | quote }}
+            {{ if .Values.kafkawatcher.kafkaServers }}
+            - name: OTTERIZE_KAFKA_SERVERS
+              value: {{ join " " .Values.kafkawatcher.kafkaServers }}
+            {{ end }}
+            {{ if .Values.global.serviceNameOverrideAnnotationName }}
+            - name: OTTERIZE_WORKLOAD_NAME_OVERRIDE_ANNOTATION
+              value: {{ .Values.global.serviceNameOverrideAnnotationName | quote }}
+            {{ else if .Values.global.workloadNameOverrideAnnotationName }}
+            - name: OTTERIZE_WORKLOAD_NAME_OVERRIDE_ANNOTATION
+              value: {{ .Values.global.workloadNameOverrideAnnotationName | quote }}
+            {{ end }}
+            {{ if .Values.kafkawatcher.kafkaReportInterval }}
+            - name: OTTERIZE_KAFKA_REPORT_INTERVAL
+              value: {{ .Values.kafkawatcher.kafkaReportInterval | quote }}
+            {{ end }}
+            {{ if .Values.kafkawatcher.kafkaCooldownInterval }}
+            - name: OTTERIZE_KAFKA_COOLDOWN_INTERVAL
+              value: {{ .Values.kafkawatcher.kafkaCooldownInterval | quote }}
+            {{ end }}
+            {{- if eq false .Values.global.telemetry.enabled }}
+            - name: OTTERIZE_TELEMETRY_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if eq false .Values.global.telemetry.usage.enabled }}
+            - name: OTTERIZE_TELEMETRY_USAGE_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_USAGE_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if eq false .Values.global.telemetry.errors.enabled }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.stage }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_STAGE
+              value: {{ .Values.global.telemetry.errors.stage | quote }}
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.endpointAddress }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ADDRESS
+              value: {{ .Values.global.telemetry.errors.endpointAddress | quote }}
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.networkMapperApiKey }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_API_KEY
+              value: {{ .Values.global.telemetry.errors.networkMapperApiKey | quote }}
+            {{- end }}
+            {{- if .Values.global.otterizeCloud.credentials.clientId }}
+            - name: OTTERIZE_CLIENT_ID
+              value: "{{ .Values.global.otterizeCloud.credentials.clientId }}"
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          securityContext:
+            {{- toYaml .Values.kafkawatcher.containerSecurityContext | nindent 10 }}
+          volumeMounts:
+            - mountPath: /etc/otterize
+              name: component-config
+              readOnly: true
+      serviceAccountName: {{ template "otterize.kafkawatcher.fullName" . }}
+      nodeSelector:
+        {{- toYaml .Values.kafkawatcher.nodeSelector | nindent 8 }}
+      volumes:
+        - name: component-config
+          configMap:
+            name: {{ template "otterize.mapper.componentConfigmap" . }}
+{{ end }}

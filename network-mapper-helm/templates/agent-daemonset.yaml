@@ -1,0 +1,186 @@
+{{ if .Values.nodeagent.enable }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "otterize.nodeagent.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: nodeagent-daemonset
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "otterize.nodeagent.fullName" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "otterize.networkMapper.shared_labels" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_labels" . | nindent 8 }}
+        app.kubernetes.io/component: nodeagent
+        app: {{ template "otterize.nodeagent.fullName" . }}
+      annotations:
+        {{- include "otterize.networkMapper.shared_annotations" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_annotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ template "otterize.nodeagent.fullName" . }}
+    {{- if .Values.nodeagent.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.nodeagent.podSecurityContext | nindent 8 }}
+    {{- end }}
+      {{ if .Values.nodeagent.pullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.nodeagent.pullSecrets }}
+      {{ end }}
+      {{- with .Values.nodeagent.tolerations }}
+      tolerations:  {{- toYaml . | nindent 8 }}
+     {{- end }}
+      {{- with .Values.nodeagent.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+     {{- with .Values.nodeagent.priorityClassName }}
+      priorityClassName:  {{ . }}
+     {{- end }}      
+      containers:
+      - name: {{ template "otterize.nodeagent.fullName" . }}
+        image: "{{ .Values.nodeagent.repository }}/{{ .Values.nodeagent.image }}:{{ .Values.nodeagent.tag }}"
+        {{ if .Values.nodeagent.pullPolicy }}
+        imagePullPolicy: {{ .Values.nodeagent.pullPolicy }}
+        {{ end }}
+        resources:
+          {{- toYaml .Values.nodeagent.resources | nindent 10 }}
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+
+          {{ if .Values.debug }}
+          - name: OTTERIZE_DEBUG
+            value: {{ .Values.debug | quote }}
+          {{ end }}
+
+          {{ if .Values.global.otterizeCloud.apiAddress }}
+          - name: OTTERIZE_API_ADDRESS
+            value: "{{ .Values.global.otterizeCloud.apiAddress }}"
+          {{ end }}
+
+          {{ if (and .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName .Values.global.otterizeCloud.credentials.clientSecretKeyRef.clientIdKey) }}
+          - name: OTTERIZE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName }}"
+                key: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.clientIdKey }}"
+          {{ else if .Values.global.otterizeCloud.credentials.clientId }}
+          - name: OTTERIZE_CLIENT_ID
+            value: "{{ .Values.global.otterizeCloud.credentials.clientId }}"
+          {{ end }}
+
+          {{ if (and .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretKey) }}
+          - name: OTTERIZE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName }}"
+                key: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretKey }}"
+          {{ else if .Values.global.otterizeCloud.credentials.clientSecret }}
+          - name: OTTERIZE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: mapper-otterize-cloud-client-secret
+                key: otterize-cloud-client-secret
+          {{ end }}
+
+          - name: OTTERIZE_PII_DETECTOR_API_URL
+            value: http://{{ template "otterize.piidetector.fullName" . }}:5000/
+
+          - name: OTTERIZE_MAPPER_API_URL
+            value: http://{{ template "otterize.mapper.fullName" . }}:9090
+
+          - name: OTTERIZE_HOST_PROC_DIR
+            value: /host/proc
+
+          {{ if .Values.nodeagent.telemetry.enable }}
+          - name: OTTERIZE_TELEMETRY_ENABLED
+            value: "true"
+          {{ end }}
+
+          {{ if .Values.nodeagent.telemetry.usageTelemetry }}
+          - name: OTTERIZE_USAGE_TELEMETRY_ENABLED
+            value: "true"
+          {{ end }}
+
+          {{ if .Values.nodeagent.telemetry.prometheus.enable }}
+          - name: OTTERIZE_PROMETHEUS_ENABLED
+            value: "true"
+          - name: OTTERIZE_PROMETHEUS_PORT
+            value: {{ .Values.nodeagent.telemetry.prometheus.port | quote }}
+          {{ end }}
+
+          {{- if .Values.nodeagent.extraEnvVars -}}
+          {{- toYaml .Values.nodeagent.extraEnvVars | nindent 10 -}}
+          {{- end }}
+
+        volumeMounts:
+          - name: host-proc
+            mountPath: /host/proc
+            readOnly: true
+
+          - name: host-socket-k3s
+            mountPath: /run/cri/k3s.sock
+          - name: host-socket-containerd
+            mountPath: /run/cri/containerd.sock
+
+          - name: host-bpffs
+            mountPath: /host/sys/fs/bpf
+            readOnly: false
+
+          - name: host-cgroup
+            mountPath: /host/sys/fs/cgroup
+            readOnly: true
+
+        securityContext:
+          privileged: true
+
+        {{ if .Values.nodeagent.telemetry.prometheus.enable }}
+        ports:
+          - containerPort: {{ .Values.nodeagent.telemetry.prometheus.port }}
+            name: http
+            protocol: TCP
+        {{ end }}
+
+      hostNetwork: true # use the host network for tracing network traffic
+      dnsPolicy: ClusterFirstWithHostNet # resolve kubernetes service names
+
+      nodeSelector:
+        {{- toYaml .Values.nodeagent.nodeSelector | nindent 8 }}
+
+      volumes:
+        - name: host-proc
+          hostPath:
+            path: /proc
+        - name: component-config
+          configMap:
+            name: {{ template "otterize.mapper.componentConfigmap" . }}
+        - name: host-socket-k3s
+          hostPath:
+            path: "/run/k3s/containerd/containerd.sock"
+        - name: host-socket-containerd
+          hostPath:
+            path: "/run/containerd/containerd.sock"
+        - name: host-bpffs
+          hostPath:
+            path: "/sys/fs/bpf"
+        - name: host-cgroup
+          hostPath:
+            path: "/sys/fs/cgroup"
+
+{{ end }}

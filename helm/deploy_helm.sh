@@ -12,6 +12,12 @@ fi
 
 DRD_CLOUD_API_TOKEN=$1
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the helm directory
+cd "$SCRIPT_DIR"
+
 # Create the namespace if it doesn't exist
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f configmap.yaml -n $NAMESPACE

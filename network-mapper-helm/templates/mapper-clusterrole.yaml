@@ -1,0 +1,121 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "otterize.mapper.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-mapper-clusterrole
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+rules:
+  - apiGroups:
+    - k8s.otterize.com
+    resources:
+    - clientintents/status
+    verbs:
+    - get
+    - list
+    - patch
+  - apiGroups:
+    - k8s.otterize.com
+    resources:
+    - clientintents
+    verbs:
+    - get
+    - list
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+    # used for network policies reporting
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - 'endpoints'
+      - 'pods'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
+      - ''
+    resources:
+    # used by Istio network mapping capability
+      - 'pods/exec'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+      - 'create'
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - 'get'
+  - apiGroups:
+      - 'apps'
+    resources:
+      - 'deployments'
+      - 'daemonsets'
+      - 'replicasets'
+      - 'statefulsets'
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - 'configmaps'
+    verbs:
+      - 'get'
+      - 'update'
+      - 'create'
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+{{ if or (and (eq .Values.global.allowGetAllResources nil) .Values.allowGetAllResources) .Values.global.allowGetAllResources}}
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
+{{ end }}

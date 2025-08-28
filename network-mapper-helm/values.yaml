@@ -1,0 +1,210 @@
+# Local configuration for network mapper chart
+opentelemetry:
+  enable: false
+  metricName: traces_service_graph_request_total
+enableInternetFacingTrafficReporting: true
+dnsClientIntentsUpdateEnabled: true
+enableIstioCollection: true
+mapper:
+  repository: drdroidlab
+  image: otterize-network-mapper
+  tag: droid-latest
+  pullPolicy: IfNotPresent
+  priorityClassName:
+  podSecurityContext:
+    fsGroup: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsGroup: 65532
+    runAsUser: 65532
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - "ALL"
+  pullSecrets:
+  resources: {}
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  extraEnvVars:
+  excludeNamespaces:
+    - 'istio-system'
+    - 'linkerd'
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+nodeagent:
+  enable: false
+  repository: otterize
+  image: agent
+  tag: v0.0.27
+  pullPolicy:
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  resources: {}
+  podSecurityContext:
+    runAsNonRoot: false
+  pullSecrets:
+  priorityClassName: ""
+  telemetry:
+    enable: false
+    usageTelemetry: true
+    prometheus:
+      enable: false
+      port: 9090
+  extraEnvVars:
+piidetector:
+  repository: otterize
+  image: piidetector
+  tag: v0.0.27
+  pullPolicy:
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  resources: {}
+sniffer:
+  enable: true # enable/disable entire installation of the network sniffer
+  repository: drdroidlab
+  image: otterize-sniffer
+  tag: droid-latest
+  pullPolicy: IfNotPresent
+  podSecurityContext:
+    runAsNonRoot: false
+  containerSecurityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      add:
+        - SYS_PTRACE
+        - NET_RAW
+  pullSecrets:
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  #The options to add tolerations
+  # tolerations:
+  # - operator: Exists
+  priorityClassName: ""
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  useExtendedProcfsResolution: false
+  healthProbesPort: 57921
+kafkawatcher:
+  enable: false # enable/disable entire installation of the kafka-watcher
+  repository: drdroidlab
+  image: otterize-kafka-watcher
+  tag: droid-latest
+  pullPolicy: IfNotPresent
+  podSecurityContext:
+    runAsNonRoot: true
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - "ALL"
+  pullSecrets:
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  resources: {}
+  # Kafka servers to watch, specified as `pod.namespace` items.
+  kafkaServers: []
+  # Interval between reports of watcher results to the network-mapper
+  kafkaReportInterval:
+  # Interval between watcher polls of its Kafka servers
+  kafkaCooldownInterval:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+webhook:
+  generateSelfSignedCert: true
+debug: false
+allowGetAllResources: true
+visibilitydns:
+  repository: coredns
+  image: coredns
+  tag: latest
+  pullPolicy:
+  podSecurityContext:
+  containerSecurityContext:
+  pullSecrets:
+  resources: {} # see comment under mapper.resources
+aws:
+  visibility:
+    enabled: false
+# Fields from All-in-one chart
+global:
+  # Extra annotations for deployed pods
+  podAnnotations: {}
+  # Extra labels for deployed pods
+  podLabels: {}
+  # Labels to add to all deployed objects
+  commonLabels: {}
+  # Annotations to add to all deployed objects
+  commonAnnotations: {}
+  # Specify an annotation name that by setting it, one can override otterize's workload name resolution.
+  workloadNameOverrideAnnotationName: intents.otterize.com/workload-name
+  # DEPRECATED: use `workloadNameOverrideAnnotationName` instead
+  serviceNameOverrideAnnotationName:
+  openshift: false
+  # The CIDR prefix length of the IPv4 address of the control plane. Used when we want to match workloads to the control plane.
+  # If you are using GKE, you might want to consider setting it to 28, as mentions here: https://cloud.google.com/kubernetes-engine/docs/best-practices/networking
+  controlPlaneIPv4CIDRPrefixLength:
+  # If defined overrides `allowGetAllResources`
+  allowGetAllResources:
+  otterizeCloud:
+    apiAddress:
+    credentials:
+      # fill clientId and clientSecret in order to connect to Otterize Cloud
+      clientId:
+      clientSecret:
+      # if specified, uses this Kubernetes SecretKeyRef instead of creating a secret with the value of clientSecret.
+      clientSecretKeyRef:
+        secretName:
+        secretKey:
+        clientIdKey: # (optional) specify client ID as additional key in the same secret
+    # (optional) The name of a secret containing a single `CA.pem` file for an extra root CA used to connect to Otterize Cloud.
+    # The secret should be placed in the same namespace as the Otterize deployment
+    apiExtraCAPEMSecret:
+  telemetry:
+    enabled:
+    usage:
+      enabled:
+    errors:
+      enabled:
+      stage:
+      endpointAddress:
+      networkMapperApiKey: d86195588a41fa03aa6711993bb1c765
+  azure:
+    enabled: false
+    subscriptionID:
+    resourceGroup:

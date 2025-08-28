@@ -1,0 +1,21 @@
+{{ if .Values.kafkawatcher.enable }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "otterize.kafkawatcher.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafkawatcher-clusterrole
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - 'pods'
+      - 'pods/log'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+{{ end }}

@@ -1,0 +1,223 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "otterize.mapper.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: network-mapper-deployment
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "otterize.mapper.fullName" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "otterize.networkMapper.shared_labels" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_labels" . | nindent 8 }}
+        app.kubernetes.io/component: network-mapper
+        app: {{ template "otterize.mapper.fullName" . }}
+      annotations:
+        {{- include "otterize.networkMapper.shared_annotations" . | nindent 8 }}
+        {{- include "otterize.networkMapper.shared_pod_annotations" . | nindent 8 }}
+    spec:
+      {{- if .Values.mapper.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.mapper.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{ if .Values.mapper.pullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.mapper.pullSecrets }}
+      {{ end }}
+      {{- with .Values.mapper.tolerations }}
+      tolerations:  {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mapper.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{ if .Values.mapper.priorityClassName }}
+      priorityClassName: {{ .Values.mapper.priorityClassName }}
+      {{ end }}
+      containers:
+        - name: {{ template "otterize.mapper.fullName" . }}
+          image: "{{ .Values.mapper.repository }}/{{ .Values.mapper.image }}:{{ default $.Chart.AppVersion .Values.mapper.tag }}"
+          {{ if .Values.mapper.pullPolicy }}
+          imagePullPolicy: {{ .Values.mapper.pullPolicy }}
+          {{ end }}
+          resources:
+            {{- toYaml .Values.mapper.resources | nindent 12 }}
+          ports:
+            - containerPort: 9090
+              name: graphql
+            - containerPort: 2112
+              name: metrics
+            - containerPort: 9443
+              name: webhook
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{ if .Values.opentelemetry.enable }}
+            - name: OTTERIZE_ENABLE_OTEL_EXPORT
+              value: "true"
+            {{ end }}
+            {{ if .Values.opentelemetry.metricName }}
+            - name: OTTERIZE_OTEL_METRIC_NAME
+              value: "{{ .Values.opentelemetry.metricName }}"
+            {{ end }}
+            - name: OTTERIZE_DEBUG
+              value: {{ .Values.debug | quote }}
+            {{ if .Values.global.otterizeCloud.apiAddress }}
+            - name: OTTERIZE_API_ADDRESS
+              value: "{{ .Values.global.otterizeCloud.apiAddress }}"
+            {{ end }}
+            {{ if .Values.enableInternetFacingTrafficReporting }}
+            - name: OTTERIZE_CAPTURE_EXTERNAL_TRAFFIC_ENABLED
+              value: "true"
+            {{ else }}
+            - name: OTTERIZE_CAPTURE_EXTERNAL_TRAFFIC_ENABLED
+              value: "false"
+            {{ end }}
+            {{ if .Values.global.serviceNameOverrideAnnotationName }}
+            - name: OTTERIZE_WORKLOAD_NAME_OVERRIDE_ANNOTATION
+              value: {{ .Values.global.serviceNameOverrideAnnotationName | quote }}
+            {{ else if .Values.global.workloadNameOverrideAnnotationName }}
+            - name: OTTERIZE_WORKLOAD_NAME_OVERRIDE_ANNOTATION
+              value: {{ .Values.global.workloadNameOverrideAnnotationName | quote }}
+            {{ end }}
+          {{ if (and .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName .Values.global.otterizeCloud.credentials.clientSecretKeyRef.clientIdKey) }}
+            - name: OTTERIZE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName }}"
+                  key: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.clientIdKey }}"
+          {{ else if .Values.global.otterizeCloud.credentials.clientId }}
+            - name: OTTERIZE_CLIENT_ID
+              value: "{{ .Values.global.otterizeCloud.credentials.clientId }}"
+          {{ end }}
+          {{ if (and .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretKey) }}
+            - name: OTTERIZE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretName }}"
+                  key: "{{ .Values.global.otterizeCloud.credentials.clientSecretKeyRef.secretKey }}"
+          {{ else if .Values.global.otterizeCloud.credentials.clientSecret }}
+            - name: OTTERIZE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mapper-otterize-cloud-client-secret
+                  key: otterize-cloud-client-secret
+          {{ end }}
+            {{ if .Values.global.otterizeCloud.apiExtraCAPEMSecret }}
+            - name: OTTERIZE_API_EXTRA_CA_PEM
+              value: {{ template "otterize.operator.apiExtraCAPEM" }}
+            {{ end }}
+            - name: OTTERIZE_UPLOAD_INTERVAL_SECONDS
+              value: {{ .Values.mapper.uploadIntervalSeconds | default "60" | quote }}
+            {{ if .Values.mapper.excludeNamespaces }}
+            - name: OTTERIZE_EXCLUDE_NAMESPACES
+              value: {{ join " " .Values.mapper.excludeNamespaces }}
+            {{ end }}
+            {{- if eq false .Values.global.telemetry.enabled }}
+            - name: OTTERIZE_TELEMETRY_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if eq false .Values.global.telemetry.usage.enabled }}
+            - name: OTTERIZE_TELEMETRY_USAGE_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_USAGE_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if eq false .Values.global.telemetry.errors.enabled }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.stage }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_STAGE
+              value: {{ .Values.global.telemetry.errors.stage | quote }}
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.endpointAddress }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_ADDRESS
+              value: {{ .Values.global.telemetry.errors.endpointAddress | quote }}
+            {{- end }}
+            {{- if .Values.global.telemetry.errors.networkMapperApiKey }}
+            - name: OTTERIZE_TELEMETRY_ERRORS_API_KEY
+              value: {{ .Values.global.telemetry.errors.networkMapperApiKey | quote }}
+            {{- end }}
+            {{- if .Values.webhook.generateSelfSignedCert }}
+            - name: OTTERIZE_CREATE_WEBHOOK_CERTIFICATE
+              value: "true"
+            {{- end }}
+            {{- if eq false .Values.dnsClientIntentsUpdateEnabled }}
+            - name: OTTERIZE_DNS_CLIENT_INTENTS_UPDATE_ENABLED
+              value: "false"
+            {{- else }}
+            - name: OTTERIZE_DNS_CLIENT_INTENTS_UPDATE_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if .Values.enableIstioCollection }}
+            - name: OTTERIZE_ENABLE_ISTIO_COLLECTION
+              value: "true"
+            {{- end }}
+            {{- if .Values.mapper.extraEnvVars -}}
+            {{- toYaml .Values.mapper.extraEnvVars | nindent 12 -}}
+            {{- end }}
+            {{- if .Values.global.experimentalUseDockerImageAsServiceNameForJobs }}
+            - name: OTTERIZE_USE_IMAGE_NAME_FOR_SERVICE_ID_FOR_JOBS
+              value: "true"
+            {{- end }}
+            {{- if .Values.global.controlPlaneIPv4CIDRPrefixLength }}
+            - name: OTTERIZE_CONTROL_PLANE_IPV4_CIDR_PREFIX_LENGTH
+              value: {{ .Values.global.controlPlaneIPv4CIDRPrefixLength | quote }}
+            {{- end }}
+          volumeMounts:
+            {{- if .Values.global.otterizeCloud.apiExtraCAPEMSecret }}
+            - mountPath: {{ template "otterize.operator.apiExtraCAPath" }}
+              name: api-extra-ca-pem
+              readOnly: true
+            {{- end }}
+            - mountPath: /etc/otterize
+              name: component-config
+              readOnly: false
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: webhook-cert
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          {{- if .Values.mapper.containerSecurityContext }}
+          securityContext:
+            {{- toYaml .Values.mapper.containerSecurityContext | nindent 12 }}
+          {{- end }}
+      serviceAccountName: {{ template "otterize.mapper.fullName" . }}
+      nodeSelector:
+        {{- toYaml .Values.mapper.nodeSelector | nindent 8 }}
+      volumes:
+        {{ if .Values.global.otterizeCloud.apiExtraCAPEMSecret }}
+        - name: api-extra-ca-pem
+          secret:
+            secretName: {{ .Values.global.otterizeCloud.apiExtraCAPEMSecret }}
+        {{ end }}
+        - name: component-config
+          configMap:
+            name: {{ template "otterize.mapper.componentConfigmap" . }}
+        - name: webhook-cert
