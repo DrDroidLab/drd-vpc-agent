@@ -10,7 +10,8 @@ RUN apt-get update \
   # Nginx
   && apt-get install -y nginx vim procps curl libpq-dev -y --no-install-recommends \
   # Install kubectl
-  && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+  && ARCH=$(dpkg --print-architecture) \
+  && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl" \
   && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
