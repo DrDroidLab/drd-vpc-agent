@@ -25,11 +25,7 @@ app.conf.beat_schedule = {
     'playbook-task-fetch-job-every-1-seconds': {
         'task': 'playbooks_engine.tasks.fetch_playbook_execution_tasks',
         'schedule': 1.0,  # Run every 1 seconds
-    },
-    'asset-refresh-fetch-job-every-30-seconds': {
-        'task': 'asset_manager.tasks.fetch_asset_refresh_requests',
-        'schedule': 30.0,  # Run every 30 seconds
-    },
+    }
 }
 
 app.autodiscover_tasks()

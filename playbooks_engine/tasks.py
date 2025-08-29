@@ -18,6 +18,100 @@ from drdroid_debug_toolkit.core.integrations.utils.executor_utils import check_m
 logger = logging.getLogger(__name__)
 
 
+def _execute_asset_refresh_task(playbook_task_execution_log):
+    """Execute asset refresh task using the playbook infrastructure"""
+    from drdroid_debug_toolkit.core.integrations.source_metadata_extractor_facade import source_metadata_extractor_facade
+    from utils.credentilal_utils import credential_yaml_to_connector_proto, generate_credentials_dict
+    
+    try:
+        # Extract asset refresh parameters from the new payload structure
+        request_id = playbook_task_execution_log.get('proxy_execution_request_id')
+        task_definition = playbook_task_execution_log.get('proxy_execution_task_definition', {})
+        connector_id = task_definition.get('connector_id')
+        extractor_method = task_definition.get('extractor_method')  # Optional field for specific method
+        
+        logger.info(f'_execute_asset_refresh_task:: Starting asset refresh for connector_id: {connector_id}, '
+                    f'request_id: {request_id}, method: {extractor_method}')
+        
+        if not request_id or not connector_id:
+            raise ValueError(f'Missing required fields: request_id={request_id}, connector_id={connector_id}')
+        
+        # Get connector credentials by connector_id
+        loaded_connections = settings.LOADED_CONNECTIONS
+        connector_proto = None
+        connector_name = None
+        for c, metadata in loaded_connections.items():
+            # Check if this connector matches the ID
+            if metadata.get('id') == connector_id:
+                connector_proto = credential_yaml_to_connector_proto(c, metadata)
+                connector_name = connector_proto.name.value
+                break
+                
+        if not connector_proto:
+            raise ValueError(f'Connector not found for connector_id: {connector_id}')
+            
+        credentials_dict = generate_credentials_dict(connector_proto.type, connector_proto.keys)
+        if not credentials_dict:
+            raise ValueError(f'No credentials found for connector: {connector_name}')
+        
+        # Get API credentials
+        drd_cloud_host = settings.DRD_CLOUD_API_HOST
+        drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+        
+        # Execute asset refresh
+        connector_type = connector_proto.type
+        if extractor_method:
+            # Execute specific extractor method
+            extractor_class = source_metadata_extractor_facade.get_connector_metadata_extractor_class(connector_type)
+            extractor = extractor_class(request_id=request_id, connector_name=connector_name, **credentials_dict)
+            # Set API credentials for metadata saving
+            extractor.api_host = drd_cloud_host
+            extractor.api_token = drd_cloud_api_token
+            
+            method = getattr(extractor, extractor_method)
+            method()
+            message = f'Successfully executed {extractor_method} for connector {connector_name}'
+        else:
+            # Execute full metadata population
+            from asset_manager.tasks import populate_connector_metadata
+            success = populate_connector_metadata(request_id, connector_name, connector_type, credentials_dict)
+            if not success:
+                raise ValueError('Full asset refresh failed')
+            message = f'Successfully executed full asset refresh for connector {connector_name}'
+        
+        # Create success result
+        result = PlaybookTaskResult(
+            output=StringValue(value=message),
+            error=StringValue(value="")
+        )
+        
+    except Exception as e:
+        logger.error(f'_execute_asset_refresh_task:: Error during asset refresh: {str(e)}')
+        result = PlaybookTaskResult(error=StringValue(value=str(e)))
+    
+    # Create processed log in the same format as normal playbook tasks
+    processed_log = copy.deepcopy(playbook_task_execution_log)
+    result_dict = proto_to_dict(result)
+    processed_log['result'] = result_dict
+    
+    # Send results using existing playbook infrastructure
+    drd_cloud_host = settings.DRD_CLOUD_API_HOST
+    drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+    
+    response = requests.post(
+        f'{drd_cloud_host}/playbooks-engine/proxy/execution/results',
+        headers={'Authorization': f'Bearer {drd_cloud_api_token}'},
+        json={'playbook_task_execution_logs': [processed_log]}
+    )
+    
+    if response.status_code != 200:
+        logger.error(f'_execute_asset_refresh_task:: Failed to send result to DRD Cloud: {response.json()}')
+    else:
+        logger.info(f'_execute_asset_refresh_task:: Successfully sent result for request_id: {request_id}')
+    
+    return True
+
+
 def _execute_playbook_task(task_proto, time_range, global_variable_set):
     """Execute a playbook task and return results."""
     # Ensure connections are loaded
@@ -132,7 +226,12 @@ def fetch_playbook_execution_tasks():
 @shared_task(max_retries=3, default_retry_delay=10)
 def execute_task_and_send_result(playbook_task_execution_log):
     try:
-        # Parse input data
+        # Check if this is an asset refresh task
+        task_definition = playbook_task_execution_log.get('proxy_execution_task_definition', {})
+        if task_definition.get('task_type') == 'ASSET_REFRESH':
+            return _execute_asset_refresh_task(playbook_task_execution_log)
+        
+        # Parse input data for normal playbook tasks
         task = playbook_task_execution_log.get('task', {})
         task_proto = dict_to_proto(task, PlaybookTask)
 
