@@ -1,5 +1,6 @@
 import logging
 
+import requests
 from celery import shared_task
 from django.conf import settings
 
@@ -62,3 +63,6 @@ def extractor_async_method_call(request_id, connector_name, connector_type, conn
                      f"request ID: {request_id}, with error: {e}")
         return False
     return True
+
+
+
