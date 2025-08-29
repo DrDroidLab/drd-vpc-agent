@@ -8,75 +8,66 @@ from google.protobuf.struct_pb2 import Struct
 from google.protobuf.wrappers_pb2 import StringValue
 
 from drdroid_debug_toolkit.core.integrations.source_facade import source_facade
-from drdroid_debug_toolkit.core.protos.base_pb2 import TimeRange
+from drdroid_debug_toolkit.core.protos.base_pb2 import TimeRange, Source
 from drdroid_debug_toolkit.core.protos.playbooks.playbook_commons_pb2 import PlaybookTaskResult
 from drdroid_debug_toolkit.core.protos.playbooks.playbook_pb2 import PlaybookTask
 from utils.proto_utils import dict_to_proto, proto_to_dict
 from utils.credentilal_utils import credential_yaml_to_connector_proto
 from drdroid_debug_toolkit.core.integrations.utils.executor_utils import check_multiple_task_results
+from utils.credentilal_utils import credential_yaml_to_connector_proto, generate_credentials_dict
 
 logger = logging.getLogger(__name__)
 
 
 def _execute_asset_refresh_task(playbook_task_execution_log):
     """Execute asset refresh task using the playbook infrastructure"""
-    from drdroid_debug_toolkit.core.integrations.source_metadata_extractor_facade import source_metadata_extractor_facade
-    from utils.credentilal_utils import credential_yaml_to_connector_proto, generate_credentials_dict
-    
     try:
-        # Extract asset refresh parameters from the new payload structure
+        # Extract asset refresh parameters from the payload
         request_id = playbook_task_execution_log.get('proxy_execution_request_id')
-        task_definition = playbook_task_execution_log.get('proxy_execution_task_definition', {})
-        connector_id = task_definition.get('connector_id')
-        extractor_method = task_definition.get('extractor_method')  # Optional field for specific method
+        task = playbook_task_execution_log.get('task', {})
+        drd_proxy_agent = task.get('drd_proxy_agent', {})
+
+        asset_refresh = drd_proxy_agent.get('asset_refresh', {})
+        connector_name = asset_refresh.get('connector_name')
+        connector_type = asset_refresh.get('connector_type')
+        extractor_method = asset_refresh.get('extractor_method')  # Optional field for specific method
         
-        logger.info(f'_execute_asset_refresh_task:: Starting asset refresh for connector_id: {connector_id}, '
-                    f'request_id: {request_id}, method: {extractor_method}')
+        logger.info(f'_execute_asset_refresh_task:: Starting asset refresh for connector: {connector_name}, '
+                    f'type: {connector_type}, request_id: {request_id}, method: {extractor_method}')
         
-        if not request_id or not connector_id:
-            raise ValueError(f'Missing required fields: request_id={request_id}, connector_id={connector_id}')
+        if not request_id or not connector_name or not connector_type:
+            raise ValueError(f'Missing required fields: request_id={request_id}, connector_name={connector_name}, connector_type={connector_type}')
         
-        # Get connector credentials by connector_id
-        loaded_connections = settings.LOADED_CONNECTIONS
-        connector_proto = None
-        connector_name = None
-        for c, metadata in loaded_connections.items():
-            # Check if this connector matches the ID
-            if metadata.get('id') == connector_id:
+        # Handle native kubernetes mode or find connector in loaded connections
+        loaded_connections = settings.LOADED_CONNECTIONS if settings.LOADED_CONNECTIONS else {}
+        credentials_dict = None
+        
+        # Check if this is a native kubernetes connector
+        if settings.NATIVE_KUBERNETES_API_MODE and connector_type == 'KUBERNETES':
+            # For native kubernetes, we don't need loaded connections
+            credentials_dict = {}
+            logger.info(f'Using native Kubernetes mode for connector: {connector_name}')
+        else:
+            # Find the specific connector in loaded connections
+            for c, metadata in loaded_connections.items():
                 connector_proto = credential_yaml_to_connector_proto(c, metadata)
-                connector_name = connector_proto.name.value
-                break
-                
-        if not connector_proto:
-            raise ValueError(f'Connector not found for connector_id: {connector_id}')
-            
-        credentials_dict = generate_credentials_dict(connector_proto.type, connector_proto.keys)
-        if not credentials_dict:
-            raise ValueError(f'No credentials found for connector: {connector_name}')
+                if connector_proto.name.value == connector_name:
+                    credentials_dict = generate_credentials_dict(connector_proto.type, connector_proto.keys)
+                    break
         
-        # Get API credentials
-        drd_cloud_host = settings.DRD_CLOUD_API_HOST
-        drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+        if credentials_dict is None:
+            raise ValueError(f'Connector not found or no credentials: {connector_name}')
         
-        # Execute asset refresh
-        connector_type = connector_proto.type
+        # Execute asset refresh for the specific connector
+        from asset_manager.tasks import populate_connector_metadata, extractor_async_method_call
+        
         if extractor_method:
             # Execute specific extractor method
-            extractor_class = source_metadata_extractor_facade.get_connector_metadata_extractor_class(connector_type)
-            extractor = extractor_class(request_id=request_id, connector_name=connector_name, **credentials_dict)
-            # Set API credentials for metadata saving
-            extractor.api_host = drd_cloud_host
-            extractor.api_token = drd_cloud_api_token
-            
-            method = getattr(extractor, extractor_method)
-            method()
+            extractor_async_method_call(request_id, connector_name, connector_type, credentials_dict, extractor_method)
             message = f'Successfully executed {extractor_method} for connector {connector_name}'
         else:
             # Execute full metadata population
-            from asset_manager.tasks import populate_connector_metadata
-            success = populate_connector_metadata(request_id, connector_name, connector_type, credentials_dict)
-            if not success:
-                raise ValueError('Full asset refresh failed')
+            populate_connector_metadata(request_id, connector_name, connector_type, credentials_dict)
             message = f'Successfully executed full asset refresh for connector {connector_name}'
         
         # Create success result
@@ -133,7 +124,6 @@ def _execute_playbook_task(task_proto, time_range, global_variable_set):
         raise ValueError(f"No source manager found for source {source}")
     
     # Extract task type and source name
-    from drdroid_debug_toolkit.core.protos.base_pb2 import Source
     source_name = Source.Name(source).lower()
     
     # Get task type from source-specific field
@@ -227,10 +217,20 @@ def fetch_playbook_execution_tasks():
 def execute_task_and_send_result(playbook_task_execution_log):
     try:
         # Check if this is an asset refresh task
-        task_definition = playbook_task_execution_log.get('proxy_execution_task_definition', {})
-        if task_definition.get('task_type') == 'ASSET_REFRESH':
+        task = playbook_task_execution_log.get('task', {})
+        drd_proxy_agent = task.get('drd_proxy_agent', {})
+        task_type = drd_proxy_agent.get('type')
+        
+
+        
+        if task_type == 'ASSET_REFRESH':
+            logger.info(f'execute_task_and_send_result:: Executing asset refresh task for request_id: '
+                        f'{playbook_task_execution_log.get("proxy_execution_request_id")}: RUNNING ASSET REFRESH TASK')
             return _execute_asset_refresh_task(playbook_task_execution_log)
         
+        logger.info(f'execute_task_and_send_result:: Executing playbook task for request_id: '
+                    f'{playbook_task_execution_log.get("proxy_execution_request_id")}: RUNNING PLAYBOOK TASK')
+
         # Parse input data for normal playbook tasks
         task = playbook_task_execution_log.get('task', {})
         task_proto = dict_to_proto(task, PlaybookTask)
