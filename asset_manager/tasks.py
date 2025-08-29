@@ -71,7 +71,7 @@ def fetch_asset_refresh_requests():
     drd_cloud_host = settings.DRD_CLOUD_API_HOST
     drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
 
-    response = requests.post(f'{drd_cloud_host}/connectors/proxy/connector/asset/refresh/requests',
+    response = requests.post(f'{drd_cloud_host}/connectors/proxy/connector/asset/refresh/tasks',
                              headers={'Authorization': f'Bearer {drd_cloud_api_token}'}, json={})
     if response.status_code != 200:
         logger.error(f'fetch_asset_refresh_requests:: Failed to get scheduled asset refresh requests with DRD '
@@ -117,14 +117,75 @@ def fetch_asset_refresh_requests():
             
             if extractor_method:
                 # Refresh specific method
-                extractor_async_method_call.delay(request_id, connector_name, connector_type, 
-                                                credentials_dict, extractor_method)
+                execute_asset_refresh_and_send_result.delay(request_id, connector_name, connector_type, 
+                                                          credentials_dict, extractor_method)
             else:
                 # Refresh all assets for this connector
-                populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
+                execute_asset_refresh_and_send_result.delay(request_id, connector_name, connector_type, 
+                                                          credentials_dict, None)
                 
         except Exception as e:
             logger.error(f'fetch_asset_refresh_requests:: Error while scheduling refresh: {str(e)}')
             continue
             
     return True
+
+
+@shared_task(max_retries=3, default_retry_delay=10)
+def execute_asset_refresh_and_send_result(request_id, connector_name, connector_type, credentials_dict, extractor_method=None):
+    """Execute asset refresh and send back results to prevent duplicate processing"""
+    logger.info(f'execute_asset_refresh_and_send_result:: Starting asset refresh for connector: {connector_name}, '
+                f'request_id: {request_id}, method: {extractor_method}')
+    
+    drd_cloud_host = settings.DRD_CLOUD_API_HOST
+    drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+    
+    result = {
+        'request_id': request_id,
+        'connector_name': connector_name,
+        'connector_type': connector_type,
+        'extractor_method': extractor_method,
+        'success': False,
+        'timestamp': int(__import__('time').time())
+    }
+    
+    try:
+        if extractor_method:
+            # Execute specific extractor method
+            extractor_class = source_metadata_extractor_facade.get_connector_metadata_extractor_class(connector_type)
+            extractor = extractor_class(request_id=request_id, connector_name=connector_name, **credentials_dict)
+            # Set API credentials for metadata saving
+            extractor.api_host = drd_cloud_host
+            extractor.api_token = drd_cloud_api_token
+            
+            method = getattr(extractor, extractor_method)
+            method()
+            result['success'] = True
+            result['message'] = f'Successfully executed {extractor_method}'
+        else:
+            # Execute full metadata population
+            success = populate_connector_metadata(request_id, connector_name, connector_type, credentials_dict)
+            result['success'] = success
+            result['message'] = 'Successfully executed full asset refresh' if success else 'Failed to execute full asset refresh'
+            
+    except Exception as e:
+        logger.error(f'execute_asset_refresh_and_send_result:: Error during asset refresh: {str(e)}')
+        result['success'] = False
+        result['error'] = str(e)
+        result['message'] = f'Failed with error: {str(e)}'
+    
+    # Send result back to prevent duplicate processing
+    try:
+        response = requests.post(f'{drd_cloud_host}/connectors/proxy/connector/asset/refresh/results',
+                                headers={'Authorization': f'Bearer {drd_cloud_api_token}'},
+                                json={'results': [result]})
+        
+        if response.status_code != 200:
+            logger.error(f'execute_asset_refresh_and_send_result:: Failed to send result to DRD Cloud: {response.json()}')
+        else:
+            logger.info(f'execute_asset_refresh_and_send_result:: Successfully sent result for request_id: {request_id}')
+            
+    except Exception as e:
+        logger.error(f'execute_asset_refresh_and_send_result:: Error sending result: {str(e)}')
+    
+    return result['success']
