@@ -43,7 +43,7 @@ WORKDIR /code
 COPY . /code
 RUN chown -R www-data:www-data /code
 
-# Install requirements
+# Install requirements whenever update available
 RUN pip install uv
 RUN uv pip sync requirements.txt --system
 
