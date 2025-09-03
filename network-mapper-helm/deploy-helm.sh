@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Script to deploy network-mapper with locally built images
+# Script to deploy network-mapper
 # Usage: ./deploy-local.sh [release-name] [namespace]
 
 RELEASE_NAME=network-mapper
 NAMESPACE=otterize-system
 
-echo "Deploying network-mapper with locally built images..."
+echo "Deploying network-mapper..."
 echo "Release name: $RELEASE_NAME"
 echo "Namespace: $NAMESPACE"
 
