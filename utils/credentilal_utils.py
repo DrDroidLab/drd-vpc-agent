@@ -778,6 +778,18 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml, connecto
             key_type=SourceKeyType.GCM_SERVICE_ACCOUNT_JSON,
             key=StringValue(value=credential_yaml['service_account_json'])
         ))
+    elif c_type == 'GKE':
+        if 'project_id' not in credential_yaml or 'service_account_json' not in credential_yaml:
+            raise Exception(f'Project id or service account json not found in credential yaml for gke source in connector: {connector_name}')
+        c_source = Source.GKE
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.GKE_PROJECT_ID,
+            key=StringValue(value=credential_yaml['project_id'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.GKE_SERVICE_ACCOUNT_JSON,
+            key=StringValue(value=credential_yaml['service_account_json'])
+        ))
     elif c_type == 'AZURE':
         if 'client_id' not in credential_yaml or 'client_secret' not in credential_yaml or 'tenant_id' not in credential_yaml or 'subscription_id' not in credential_yaml:
             raise Exception(f'Client id, client secret, tenant id or subscription id not found in credential yaml for azure source in connector: {connector_name}')
