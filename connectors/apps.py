@@ -43,9 +43,9 @@ class ConnectorsConfig(AppConfig):
                 credentials_dict = generate_credentials_dict(connector_type, connector_keys_proto)
                 if credentials_dict:
                     request_id = uuid.uuid4().hex
-                    # populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
+                    populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
                 elif settings.NATIVE_KUBERNETES_API_MODE:
                     request_id = uuid.uuid4().hex
-                    # populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
+                    populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
                 else:
                     logger.warning(f'No credentials found for connector {connector_name}')

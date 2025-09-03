@@ -1,0 +1,24 @@
+# Override values for using locally built images
+# Use this file with: helm install/upgrade -f values-local.yaml
+
+global:
+  telemetry:
+    enabled: false
+
+mapper:
+  repository: drdroidlab
+  image: otterize-network-mapper
+  tag: droid-latest-v2
+  pullPolicy: IfNotPresent
+
+sniffer:
+  repository: drdroidlab
+  image: otterize-sniffer
+  tag: droid-latest-v2
+  pullPolicy: IfNotPresent
+
+kafkawatcher:
+  repository: drdroidlab
+  image: otterize-kafka-watcher
+  tag: droid-latest-v2
+  pullPolicy: IfNotPresent

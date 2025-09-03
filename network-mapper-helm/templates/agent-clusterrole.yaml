@@ -1,0 +1,20 @@
+{{ if .Values.nodeagent.enable }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "otterize.nodeagent.fullName" . }}
+  labels:
+    {{- include "otterize.networkMapper.shared_labels" . | nindent 4 }}
+    app.kubernetes.io/component: nodeagent-clusterrole
+  annotations:
+    {{- include "otterize.networkMapper.shared_annotations" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
+{{ end }}
