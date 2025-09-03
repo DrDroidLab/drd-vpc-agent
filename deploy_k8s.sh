@@ -90,15 +90,19 @@ main() {
     # Initialize deployment status
     deployment_success=true
     
-    # Deploy core components
-    print_status $BLUE "Deploying core components..."
-    if ! run_deployment "Core Components" "helm/deploy_helm.sh" "$DRD_CLOUD_API_TOKEN"; then
+    # Deploy network mapper first (required for VPC agent)
+    print_status $BLUE "Deploying network mapper components..."
+    if ! run_deployment "Network Mapper" "network-mapper-helm/deploy-helm.sh"; then
         deployment_success=false
     fi
     
-    # Deploy additional components
-    print_status $BLUE "Deploying additional components..."
-    if ! run_deployment "Additional Components" "network-mapper-helm/deploy-helm.sh"; then
+    # Wait for network mapper to be ready before deploying VPC agent
+    print_status $YELLOW "Waiting for network mapper to be ready..."
+    sleep 10
+    
+    # Deploy VPC agent core components
+    print_status $BLUE "Deploying VPC agent core components..."
+    if ! run_deployment "VPC Agent Core Components" "helm/deploy_helm.sh" "$DRD_CLOUD_API_TOKEN"; then
         deployment_success=false
     fi
     

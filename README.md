@@ -65,8 +65,7 @@ For any update the agent, re-run the command.
 Command:
 
 ```shell
-cd helm
-./deploy_helm.sh <API_TOKEN>
+./deploy_k8s.sh <API_TOKEN>
 ```
 
 * The agent will be installed in the namespace 'drdroid' by default. This can be changed in the helm/deploy_helm.sh
