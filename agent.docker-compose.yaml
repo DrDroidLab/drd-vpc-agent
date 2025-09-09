@@ -28,6 +28,7 @@ services:
       - "CELERY_RESULT_BACKEND=redis://redis:6379/0"
       - "REDIS_URL=redis://redis:6379/0"
       - DRD_CLOUD_API_TOKEN=${DRD_CLOUD_API_TOKEN}
+      - VPC_AGENT_COMMIT_HASH=${COMMIT_HASH:-unknown}
     depends_on:
       - redis
       - fluentd
@@ -52,6 +53,7 @@ services:
       - "CELERY_RESULT_BACKEND=redis://redis:6379/0"
       - "REDIS_URL=redis://redis:6379/0"
       - DRD_CLOUD_API_TOKEN=${DRD_CLOUD_API_TOKEN}
+      - VPC_AGENT_COMMIT_HASH=${COMMIT_HASH:-unknown}
     depends_on:
       - redis
       - fluentd
