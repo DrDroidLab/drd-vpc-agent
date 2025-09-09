@@ -26,7 +26,10 @@ docker rm -f drd_agent 2>/dev/null || echo "No existing container to remove."
 echo "🗑️ Removing old Docker image (if exists)..."
 docker rmi drd_agent 2>/dev/null || echo "No existing image to remove."
 
-echo "🚀 Starting Docker Compose with new deployment..."
-DRD_CLOUD_API_TOKEN="$DRD_CLOUD_API_TOKEN" docker-compose -f agent.docker-compose.yaml up -d
+echo "📝 Capturing current commit hash..."
+COMMIT_HASH=$(git rev-parse HEAD)
+
+echo "🚀 Starting Docker Compose with new deployment... with commit hash: $COMMIT_HASH"
+DRD_CLOUD_API_TOKEN="$DRD_CLOUD_API_TOKEN" COMMIT_HASH="$COMMIT_HASH" docker-compose -f agent.docker-compose.yaml up -d
 
 echo "✅ Deployment complete."

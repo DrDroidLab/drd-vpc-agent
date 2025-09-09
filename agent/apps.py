@@ -24,12 +24,14 @@ class AgentConfig(AppConfig):
 
         drd_cloud_host = settings.DRD_CLOUD_API_HOST
         drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+        commit_hash = settings.VPC_AGENT_COMMIT_HASH
         if settings.NATIVE_KUBERNETES_API_MODE:
             logger.info('Native Kubernetes API mode is enabled')
 
         # Establish reachability with DRD Cloud
         response = requests.get(f'{drd_cloud_host}/connectors/proxy/ping',
-                                headers={'Authorization': f'Bearer {drd_cloud_api_token}'})
+                                headers={'Authorization': f'Bearer {drd_cloud_api_token}'},
+                                params={'commit_hash': commit_hash})
 
         if response.status_code != 200:
             raise ValueError(f'Failed to connect to DRD Cloud: {response.text}')

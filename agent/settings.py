@@ -208,6 +208,8 @@ SITE_ID = 1
 
 DRD_CLOUD_API_TOKEN = env.str("DRD_CLOUD_API_TOKEN")
 DRD_CLOUD_API_HOST = env.str("DRD_CLOUD_API_HOST", default="https://agent-api.drdroid.io")
+VPC_AGENT_COMMIT_HASH = env.str("VPC_AGENT_COMMIT_HASH", default="unknown")
+
 NATIVE_KUBERNETES_API_MODE = env.bool("NATIVE_KUBERNETES_API_MODE", default=False)
 
 SECRETS_FILE_PATH = BASE_DIR / 'credentials/secrets.yaml'

@@ -13,11 +13,13 @@ logger = logging.getLogger(__name__)
 def send_ping_to_drd_cloud():
     drd_cloud_host = settings.DRD_CLOUD_API_HOST
     drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
+    commit_hash = settings.VPC_AGENT_COMMIT_HASH
     current_epoch = current_epoch_timestamp()
 
     # Establish reachability with DRD Cloud
     response = requests.get(f'{drd_cloud_host}/connectors/proxy/ping',
-                            headers={'Authorization': f'Bearer {drd_cloud_api_token}'})
+                        headers={'Authorization': f'Bearer {drd_cloud_api_token}'},
+                        params={'commit_hash': commit_hash})
 
     if response.status_code != 200:
         logger.error(f'Failed to connect to DRD Cloud at {current_epoch} with code: {response.status_code} '
