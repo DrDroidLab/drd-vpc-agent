@@ -29,14 +29,14 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 # Accept build arguments
 ARG is_kubernetes
-ARG last_commit_hash
+ARG vpc_agent_commit_hash
 
 # Set environment variables
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV IS_KUBERNETES=${is_kubernetes}
-ENV LAST_COMMIT_HASH=${last_commit_hash}
+ENV VPC_AGENT_COMMIT_HASH=${vpc_agent_commit_hash}
 
 # Install Rust for building dependencies
 ENV PATH="/root/.cargo/bin:${PATH}"

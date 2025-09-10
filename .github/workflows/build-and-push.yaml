@@ -103,7 +103,7 @@ jobs:
             --tag ${REPO_NAME}:latest \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg is_kubernetes=True \
-            --build-arg last_commit_hash=${{ github.sha }} \
+            --build-arg vpc_agent_commit_hash=${{ github.sha }} \
             --file Dockerfile \
             $EXPORT_FLAG \
             .
