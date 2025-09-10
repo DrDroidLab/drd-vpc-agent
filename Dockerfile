@@ -27,10 +27,16 @@ COPY nginx.default /etc/nginx/sites-available/default
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
 
+# Accept build arguments
+ARG is_kubernetes
+ARG vpc_agent_commit_hash
+
 # Set environment variables
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV IS_KUBERNETES=${is_kubernetes}
+ENV VPC_AGENT_COMMIT_HASH=${vpc_agent_commit_hash}
 
 # Install Rust for building dependencies
 ENV PATH="/root/.cargo/bin:${PATH}"
