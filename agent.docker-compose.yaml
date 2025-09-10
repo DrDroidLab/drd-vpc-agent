@@ -20,6 +20,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - is_kubernetes=${IS_KUBERNETES:-False}
+        - last_commit_hash=${COMMIT_HASH:-}
     image: drd_agent
     command: ./start-celery-worker.sh
     environment:
@@ -29,6 +32,8 @@ services:
       - "REDIS_URL=redis://redis:6379/0"
       - DRD_CLOUD_API_TOKEN=${DRD_CLOUD_API_TOKEN}
       - VPC_AGENT_COMMIT_HASH=${COMMIT_HASH:-unknown}
+      - IS_KUBERNETES=${IS_KUBERNETES:-False}
+      - LAST_COMMIT_HASH=${COMMIT_HASH:-}
     depends_on:
       - redis
       - fluentd
@@ -45,6 +50,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - is_kubernetes=${IS_KUBERNETES:-False}
+        - last_commit_hash=${COMMIT_HASH:-}
     image: drd_agent
     command: ./start-celery-beat.sh
     environment:
@@ -54,6 +62,8 @@ services:
       - "REDIS_URL=redis://redis:6379/0"
       - DRD_CLOUD_API_TOKEN=${DRD_CLOUD_API_TOKEN}
       - VPC_AGENT_COMMIT_HASH=${COMMIT_HASH:-unknown}
+      - IS_KUBERNETES=${IS_KUBERNETES:-False}
+      - LAST_COMMIT_HASH=${COMMIT_HASH:-}
     depends_on:
       - redis
       - fluentd

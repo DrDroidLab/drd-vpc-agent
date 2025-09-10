@@ -30,6 +30,6 @@ echo "📝 Capturing current commit hash..."
 COMMIT_HASH=$(git rev-parse HEAD)
 
 echo "🚀 Starting Docker Compose with new deployment... with commit hash: $COMMIT_HASH"
-DRD_CLOUD_API_TOKEN="$DRD_CLOUD_API_TOKEN" COMMIT_HASH="$COMMIT_HASH" docker-compose -f agent.docker-compose.yaml up -d
+DRD_CLOUD_API_TOKEN="$DRD_CLOUD_API_TOKEN" COMMIT_HASH="$COMMIT_HASH" IS_KUBERNETES="False" docker-compose -f agent.docker-compose.yaml up -d
 
 echo "✅ Deployment complete."
