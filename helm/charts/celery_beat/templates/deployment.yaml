@@ -19,8 +19,8 @@ spec:
       serviceAccountName: drd-vpc-agent
       containers:
         - name: celery-beat
-          image: public.ecr.aws/y9s1f3r5/drdroid/drd-vpc-agent:latest
-          imagePullPolicy: Always
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["./start-celery-beat.sh"]
           env:
             - name: DJANGO_DEBUG
