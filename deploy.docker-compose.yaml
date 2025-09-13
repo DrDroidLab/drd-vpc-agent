@@ -19,7 +19,7 @@ services:
       - mynetwork
 
   celery_worker:
-    image: public.ecr.aws/y9s1f3r5/drdroid/drd-vpc-agent:latest
+    image: drdroid/drd-vpc-agent:latest
     command: ./start-celery-worker.sh
     environment:
       - "DJANGO_DEBUG=True"
@@ -41,7 +41,7 @@ services:
       - mynetwork
 
   celery_beat:
-    image: public.ecr.aws/y9s1f3r5/drdroid/drd-vpc-agent:latest
+    image: drdroid/drd-vpc-agent:latest
     command: ./start-celery-beat.sh
     environment:
       - "DJANGO_DEBUG=True"
