@@ -9,13 +9,13 @@ restartCron:
 
 celery-beat:
   image:
-    repository: drdroid/drd-vpc-agent
+    repository: drdroidlab/drd-vpc-agent
     tag: latest
     pullPolicy: Always
 
 celery-worker:
   image:
-    repository: drdroid/drd-vpc-agent
+    repository: drdroidlab/drd-vpc-agent
     tag: latest
     pullPolicy: Always
 
