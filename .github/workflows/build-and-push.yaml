@@ -91,6 +91,7 @@ jobs:
             --tag ${REPO_NAME}:$IMAGE_TAG_BRANCH \
             --tag ${REPO_NAME}:latest \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg COMMIT_HASH=$IMAGE_TAG_SHA \
             --file Dockerfile \
             $EXPORT_FLAG \
             .

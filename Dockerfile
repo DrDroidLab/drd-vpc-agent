@@ -32,6 +32,10 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# VCS metadata
+ARG COMMIT_HASH=unknown
+ENV VPC_AGENT_COMMIT_HASH=${COMMIT_HASH}
+
 # Install Rust for building dependencies
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
