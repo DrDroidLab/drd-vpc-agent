@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+
+# Use a small base image with sh and optionally bash
+FROM alpine:3.20
+
+# Set kubectl version (can be overridden at build time)
+ARG KUBECTL_VERSION=v1.31.0
+
+# Install dependencies (curl, bash optional) and kubectl
+RUN apk add --no-cache curl bash ca-certificates \
+    && curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/$(uname | tr '[:upper:]' '[:lower:]')/$(uname -m)/kubectl" \
+    && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
+    && rm kubectl
+
+# Verify kubectl works
+RUN kubectl version --client=true
+
+# Default shell
+CMD ["/bin/sh"]
