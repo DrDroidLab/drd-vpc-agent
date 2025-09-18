@@ -12,7 +12,7 @@ spec:
           serviceAccountName: drd-vpc-agent
           containers:
             - name: kubectl
-              image: registry.k8s.io/kubectl:v1.30.3
+              image: drdroidlab/kubectl:latest
               command:
                 - /bin/sh
                 - -c
