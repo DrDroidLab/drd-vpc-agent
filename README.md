@@ -62,16 +62,67 @@ For any update the agent, re-run the command.
    Refer to the image below for a sample:
    <img width="934" alt="Screenshot 2024-12-20 at 14 02 43" src="https://github.com/user-attachments/assets/cadb2b0a-db0c-4128-bef7-fe2a6288b79b" />
 
-Command:
+#### Basic Deployment
 
 ```shell
 ./deploy_k8s.sh <API_TOKEN>
 ```
 
-* The agent will be installed in the namespace 'drdroid' by default. This can be changed in the helm/deploy_helm.sh
-  file.
-* Agent updates the image automatically every day at 00:00 UTC.
-* Agent will have read access to the cluster and will be able to fetch the metrics from the cluster.
+#### Advanced Deployment Options
+
+The deployment script supports several CLI flags for enhanced control:
+
+```shell
+# Show help and available options
+./deploy_k8s.sh --help
+
+# Deploy without network mapper (not recommended)
+./deploy_k8s.sh <API_TOKEN> --no-network-mapper
+
+# Deploy in read-only mode (no write access to cluster)
+./deploy_k8s.sh <API_TOKEN> --no-write-access
+
+# Deploy with both network mapper and write access disabled
+./deploy_k8s.sh <API_TOKEN> --no-network-mapper --no-write-access
+```
+
+#### Configuration Flags
+
+| Flag | Description | Default | Impact |
+|------|-------------|---------|---------|
+| `--no-network-mapper` | Disable network mapper deployment | **Enabled** | ⚠️ **Limits service topology visibility** |
+| `--no-write-access` | Disable write access to cluster | **Enabled** | 🔒 **Read-only mode for enhanced security** |
+
+#### Why we recommend deploying the Network Mapper?
+
+The **Network Mapper** is a critical component that provides:
+
+- **Service Topology Visibility**: Maps the complete network topology of your Kubernetes cluster
+- **Network Insights**: Discovers service-to-service communication patterns
+- **Dependency Mapping**: Identifies which services depend on each other
+
+**⚠️ Important**: Deploying the network mapper will significantly improve the agent's ability to provide comprehensive insights about your infrastructure. It's strongly recommended to keep it enabled unless you have specific security or resource constraints.
+
+#### ArgoCD Integration
+
+The configuration flags are also available in `helm/values.yaml` for ArgoCD users:
+
+```yaml
+# Network Mapper Configuration
+networkMapper:
+  enabled: true  # Set to false to disable
+
+# Write Access Configuration  
+writeAccess:
+  enabled: true  # Set to false for read-only mode
+```
+
+#### Deployment Details
+* The agent will be installed in the namespace 'drdroid' by default
+* Network mapper components are deployed to 'otterize-system' namespace (when enabled)
+* Agent updates the image automatically every day at 00:00 UTC
+* Agent will have read access to the cluster and will be able to fetch the metrics from the cluster
+* Write access can be controlled via CLI flags or Helm values for enhanced security
 
 ## Support
 

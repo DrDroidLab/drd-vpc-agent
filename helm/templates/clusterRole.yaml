@@ -31,7 +31,15 @@ rules:
       - statefulsets
       - daemonsets
       - replicasets
-    verbs: ["get", "list", "watch", "patch", "update"]
+    verbs: 
+      - "get"
+      - "list"
+      - "watch"
+      {{- if .Values.writeAccess.enabled }}
+      - "patch"
+      - "update"
+      - "delete"
+      {{- end }}
 
   # Batch jobs
   - apiGroups: ["batch"]
