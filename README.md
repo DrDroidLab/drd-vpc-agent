@@ -103,6 +103,15 @@ The **Network Mapper** is a critical component that provides:
 
 **⚠️ Important**: Deploying the network mapper will significantly improve the agent's ability to provide comprehensive insights about your infrastructure. It's strongly recommended to keep it enabled unless you have specific security or resource constraints.
 
+#### Why we recommend the write access?
+The write access is only obtained on the deployments and replicasets within the cluster. It allows the agent to auto-update itself on a daily basis, thus bringing enhanced features and bug fixes without intervention of the developer. 
+
+If you don't give the write access, then execute the following commands each time you want to update the agent with latest features and fixes.
+```shell
+kubectl rollout restart deployment drd-vpc-agent-celery-beat -n drdroid
+kubectl rollout restart deployment drd-vpc-agent-celery-worker -n drdroid
+```
+
 #### ArgoCD Integration
 
 The configuration flags are also available in `helm/values.yaml` for ArgoCD users:
