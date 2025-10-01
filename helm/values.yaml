@@ -3,6 +3,20 @@ global:
   DRD_CLOUD_API_HOST: "https://agent-api.drdroid.io"
   NATIVE_KUBERNETES_API_MODE: "true"
 
+# Network Mapper Configuration
+# Controls whether the network mapper components are deployed
+# The network mapper provides service topology visibility and network insights
+# Default: enabled (recommended for full functionality)
+networkMapper:
+  enabled: false
+
+# Write Access Configuration  
+# Controls whether deployed pods get write access to the cluster
+# When disabled, pods run in read-only mode for enhanced security
+# Default: enabled (required for full agent functionality)
+writeAccess:
+  enabled: false
+
 restartCron:
   enabled: true
   schedule: "0 0 * * *"  # every day at 00:00 UTC
