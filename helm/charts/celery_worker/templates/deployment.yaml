@@ -43,10 +43,10 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "500m"
+              cpu: "750m"
               memory: "1Gi"
             limits:
-              cpu: "1500m"
+              cpu: "2000m"
               memory: "2Gi"
 
       volumes:
