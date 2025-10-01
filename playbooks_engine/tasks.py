@@ -197,7 +197,9 @@ def fetch_playbook_execution_tasks():
         return False
     playbook_task_executions = response.json().get('playbook_task_executions', [])
     num_playbook_task_executions = len(playbook_task_executions) if check_multiple_task_results(playbook_task_executions) else 1
-    logger.info(f'fetch_playbook_execution_tasks:: Found {num_playbook_task_executions} playbook task executions')
+    if num_playbook_task_executions > 0:
+        logger.info(f'fetch_playbook_execution_tasks:: Found {num_playbook_task_executions} playbook task executions')
+        logger.info(f'fetch_playbook_execution_tasks:: Playbook task executions: {playbook_task_executions}')
     for pet in playbook_task_executions:
         try:
             request_id = pet.get('proxy_execution_request_id', None)

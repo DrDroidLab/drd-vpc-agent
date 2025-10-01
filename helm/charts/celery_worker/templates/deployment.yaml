@@ -41,6 +41,13 @@ spec:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
               subPath: secrets.yaml
+          resources:
+            requests:
+              cpu: "750m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
 
       volumes:
         - name: credentials-volume
