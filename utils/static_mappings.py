@@ -420,6 +420,12 @@ integrations_connector_type_connector_keys_map = {
             SourceKeyType.SENTRY_ORG_SLUG
         ]
     ],
+    Source.SIGNOZ: [
+        [
+            SourceKeyType.SIGNOZ_API_URL,
+            SourceKeyType.SIGNOZ_API_TOKEN
+        ]
+    ],
 }
 integrations_connector_type_display_name_map = {
     Source.SLACK: 'SLACK',
@@ -460,6 +466,7 @@ integrations_connector_type_display_name_map = {
     Source.ARGOCD: 'ARGOCD',
     Source.ROLLBAR: 'ROLLBAR',
     Source.POSTHOG: 'POSTHOG',
+    Source.SIGNOZ: 'SIGNOZ',
 }
 
 model_type_display_name_maps = {
