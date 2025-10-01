@@ -24,13 +24,13 @@ restartCron:
 celery-beat:
   image:
     repository: drdroidlab/drd-vpc-agent
-    tag: dual-queue-v1
+    tag: latest
     pullPolicy: Always
 
 celery-worker:
   image:
     repository: drdroidlab/drd-vpc-agent
-    tag: dual-queue-v1
+    tag: latest
     pullPolicy: Always
 
 redis:
