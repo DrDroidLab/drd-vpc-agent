@@ -15,6 +15,7 @@ from pathlib import Path
 
 import yaml
 from environs import Env
+from kombu import Queue
 
 env = Env()
 env.read_env()
@@ -116,6 +117,18 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIME_ZONE = 'UTC'
+# Ensure tasks are acknowledged only after completion to avoid loss on worker crashes
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+# Define task queues and route critical execution task to a dedicated queue
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
+CELERY_TASK_QUEUES = (
+    Queue('celery'),
+    Queue('exec'),
+)
+CELERY_TASK_ROUTES = {
+    'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
+}
 
 # Celery Beat Configuration Options
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
