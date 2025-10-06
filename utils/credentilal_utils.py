@@ -684,10 +684,11 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml, connecto
             key_type=SourceKeyType.ELASTIC_SEARCH_HOST,
             key=StringValue(value=credential_yaml['host'])
         ))
-        c_keys.append(ConnectorKey(
-            key_type=SourceKeyType.KIBANA_HOST,
-            key=StringValue(value=credential_yaml['kibana_host'])
-        ))
+        if 'kibana_host' in credential_yaml:
+            c_keys.append(ConnectorKey(
+                key_type=SourceKeyType.KIBANA_HOST,
+                key=StringValue(value=credential_yaml['kibana_host'])
+            ))
         c_keys.append(ConnectorKey(
             key_type=SourceKeyType.ELASTIC_SEARCH_API_KEY_ID,
             key=StringValue(value=credential_yaml['api_key_id'])

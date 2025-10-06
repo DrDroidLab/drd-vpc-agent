@@ -133,6 +133,46 @@ writeAccess:
 * Agent will have read access to the cluster and will be able to fetch the metrics from the cluster
 * Write access can be controlled via CLI flags or Helm values for enhanced security
 
+## Pod Log Collection
+
+The project includes a Python script to collect logs from all pods in the drdroid namespace for troubleshooting and analysis purposes.
+
+### Basic Usage
+
+```bash
+# Collect logs from the last 15 minutes (default)
+python utils/collect_pod_logs.py
+
+# Collect logs from the last 30 minutes
+python utils/collect_pod_logs.py --minutes 30
+
+# Collect from a different namespace
+python utils/collect_pod_logs.py --namespace my-namespace
+
+# Save logs to a custom directory
+python utils/collect_pod_logs.py --output-dir /path/to/logs
+```
+
+### Command Line Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--minutes` | `-m` | Number of minutes of logs to collect | 15 |
+| `--namespace` | `-n` | Kubernetes namespace to collect from | drdroid |
+| `--output-dir` | `-o` | Output directory for log files | pod_logs |
+
+### Output
+
+The script creates:
+- Individual log files for each pod with standardized naming: `logs_{namespace}_{pod_name}_{timestamp}_past_{minutes}min.txt`
+- A summary report: `collection_summary_{timestamp}.txt`
+
+### Prerequisites
+
+- `kubectl` must be installed and configured
+- Access to the target Kubernetes cluster
+- Appropriate permissions to list pods and collect logs
+
 ## Support
 
 Go through our [documentation](https://docs.drdroid.io?utm_param=github-py) to learn more.
