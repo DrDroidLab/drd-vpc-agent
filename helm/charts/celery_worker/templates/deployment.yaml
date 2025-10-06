@@ -37,6 +37,8 @@ spec:
               value: {{ .Values.global.DRD_CLOUD_API_HOST | quote }}
             - name: NATIVE_KUBERNETES_API_MODE
               value: {{ .Values.global.NATIVE_KUBERNETES_API_MODE | quote }}
+            - name: CELERY_QUEUE
+              value: "celery"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
