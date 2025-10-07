@@ -4,8 +4,12 @@ Smart script to collect logs from all pods in the drdroid namespace.
 
 This script:
 1. Lists all pods in the drdroid namespace
-2. Collects logs for each pod for a specified time period
-3. Saves logs with standardized filenames for easy sharing
+2. Detects multi-container pods and collects logs from each container
+3. Collects logs for each pod/container for a specified time period
+4. Saves logs with standardized filenames including container names for easy sharing
+
+For multi-container pods (like celery-worker with celery-worker and celery-worker-task-executor containers),
+logs are collected separately for each container with container names in the filename.
 
 Usage:
     python collect_pod_logs.py [--minutes MINUTES] [--namespace NAMESPACE] [--output-dir OUTPUT_DIR]
@@ -67,10 +71,19 @@ class PodLogCollector:
             pods = []
             
             for pod in pods_data.get("items", []):
+                # Get container information
+                containers = []
+                for container in pod["spec"].get("containers", []):
+                    containers.append({
+                        "name": container["name"],
+                        "image": container.get("image", "unknown")
+                    })
+                
                 pod_info = {
                     "name": pod["metadata"]["name"],
                     "status": pod["status"]["phase"],
-                    "creation_timestamp": pod["metadata"]["creationTimestamp"]
+                    "creation_timestamp": pod["metadata"]["creationTimestamp"],
+                    "containers": containers
                 }
                 pods.append(pod_info)
             
@@ -79,18 +92,19 @@ class PodLogCollector:
             print(f"Error parsing kubectl output: {e}")
             sys.exit(1)
     
-    def collect_pod_logs(self, pod_name: str, minutes: int) -> str:
-        """Collect logs for a specific pod."""
-        print(f"Collecting logs for pod: {pod_name} (last {minutes} minutes)")
+    def collect_container_logs(self, pod_name: str, container_name: str, minutes: int) -> str:
+        """Collect logs for a specific container in a pod."""
+        print(f"  Collecting logs for container: {container_name}")
         
-        # Create standardized filename
-        filename = f"logs_{self.namespace}_{pod_name}_{self.timestamp}_past_{minutes}min.txt"
+        # Create standardized filename with container name
+        filename = f"logs_{self.namespace}_{pod_name}_{container_name}_{self.timestamp}_past_{minutes}min.txt"
         filepath = self.output_dir / filename
         
         command = [
             "kubectl", "logs",
             pod_name,
             "-n", self.namespace,
+            "-c", container_name,
             f"--since={minutes}m"
         ]
         
@@ -106,15 +120,41 @@ class PodLogCollector:
             
             # Check if file has content
             if filepath.stat().st_size == 0:
-                print(f"  Warning: No logs found for pod {pod_name}")
+                print(f"    Warning: No logs found for container {container_name}")
                 return str(filepath)
             
-            print(f"  Logs saved to: {filepath}")
+            print(f"    Logs saved to: {filepath}")
             return str(filepath)
             
         except subprocess.CalledProcessError as e:
-            print(f"  Error collecting logs for {pod_name}: {e.stderr}")
+            print(f"    Error collecting logs for container {container_name}: {e.stderr}")
             return ""
+    
+    def collect_pod_logs(self, pod_info: dict, minutes: int) -> List[str]:
+        """Collect logs for all containers in a specific pod."""
+        pod_name = pod_info['name']
+        containers = pod_info['containers']
+        
+        print(f"Collecting logs for pod: {pod_name} (last {minutes} minutes)")
+        
+        collected_files = []
+        
+        if len(containers) == 1:
+            # Single container pod - use original behavior
+            container_name = containers[0]['name']
+            filepath = self.collect_container_logs(pod_name, container_name, minutes)
+            if filepath:
+                collected_files.append(filepath)
+        else:
+            # Multi-container pod - collect logs from each container
+            print(f"  Found {len(containers)} containers: {[c['name'] for c in containers]}")
+            for container in containers:
+                container_name = container['name']
+                filepath = self.collect_container_logs(pod_name, container_name, minutes)
+                if filepath:
+                    collected_files.append(filepath)
+        
+        return collected_files
     
     def collect_all_logs(self, minutes: int = 15) -> List[str]:
         """Collect logs from all pods in the namespace."""
@@ -132,7 +172,8 @@ class PodLogCollector:
         
         print(f"Found {len(pods)} pods:")
         for pod in pods:
-            print(f"  - {pod['name']} (status: {pod['status']})")
+            container_info = f" ({len(pod['containers'])} containers)" if len(pod['containers']) > 1 else ""
+            print(f"  - {pod['name']} (status: {pod['status']}){container_info}")
         print("-" * 60)
         
         # Collect logs for each pod
@@ -140,11 +181,10 @@ class PodLogCollector:
         successful_collections = 0
         
         for pod in pods:
-            pod_name = pod['name']
-            filepath = self.collect_pod_logs(pod_name, minutes)
+            filepaths = self.collect_pod_logs(pod, minutes)
             
-            if filepath:
-                collected_files.append(filepath)
+            if filepaths:
+                collected_files.extend(filepaths)
                 successful_collections += 1
         
         print("-" * 60)
@@ -168,10 +208,28 @@ class PodLogCollector:
             f.write("\nCollected Files:\n")
             f.write("-" * 30 + "\n")
             
+            # Group files by pod for better organization
+            pod_files = {}
             for filepath in collected_files:
                 filename = Path(filepath).name
                 file_size = Path(filepath).stat().st_size
-                f.write(f"{filename} ({file_size} bytes)\n")
+                
+                # Extract pod name from filename (format: logs_namespace_podname_container_timestamp_past_Xmin.txt)
+                parts = filename.split('_')
+                if len(parts) >= 3:
+                    pod_name = parts[2]  # Assuming format: logs_namespace_podname_container_...
+                    if pod_name not in pod_files:
+                        pod_files[pod_name] = []
+                    pod_files[pod_name].append((filename, file_size))
+                else:
+                    # Fallback for unexpected filename format
+                    f.write(f"{filename} ({file_size} bytes)\n")
+            
+            # Write organized by pod
+            for pod_name, files in pod_files.items():
+                f.write(f"\nPod: {pod_name}\n")
+                for filename, file_size in files:
+                    f.write(f"  {filename} ({file_size} bytes)\n")
         
         print(f"Summary report created: {summary_file}")
 
@@ -183,10 +241,14 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python collect_pod_logs.py                    # Collect last 15 minutes of logs
+  python collect_pod_logs.py                    # Collect last 15 minutes of logs from all pods/containers
   python collect_pod_logs.py --minutes 30      # Collect last 30 minutes of logs
   python collect_pod_logs.py --namespace myns  # Collect from different namespace
   python collect_pod_logs.py --output-dir logs # Save to custom directory
+
+For multi-container pods (e.g., celery-worker), logs are collected separately:
+  - logs_drdroid_drd-vpc-agent-celery-worker_celery-worker_20250101_120000_past_15min.txt
+  - logs_drdroid_drd-vpc-agent-celery-worker_celery-worker-task-executor_20250101_120000_past_15min.txt
         """
     )
     
