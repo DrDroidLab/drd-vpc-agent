@@ -141,14 +141,20 @@ CELERY_TASK_MAX_RETRIES = 3
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
 
-# Define task queues and route critical execution task to a dedicated queue
+# Define task queues and route tasks to appropriate queues
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
 CELERY_TASK_QUEUES = (
     Queue('celery'),
     Queue('exec'),
+    Queue('asset_extraction'),
 )
 CELERY_TASK_ROUTES = {
+    # Regular playbook task execution - high priority, needs good resources
     'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
+    
+    # Asset extraction tasks - can run slower, dedicated resources
+    'asset_manager.tasks.populate_connector_metadata': {'queue': 'asset_extraction'},
+    'asset_manager.tasks.extractor_async_method_call': {'queue': 'asset_extraction'},
 }
 
 # Celery Beat Configuration Options

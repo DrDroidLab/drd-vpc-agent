@@ -18,7 +18,7 @@ spec:
     spec:
       serviceAccountName: drd-vpc-agent
       containers:
-        - name: celery-worker
+        - name: celery-worker-scheduler
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["./start-celery-worker.sh"]
@@ -39,17 +39,19 @@ spec:
               value: {{ .Values.global.NATIVE_KUBERNETES_API_MODE | quote }}
             - name: CELERY_QUEUE
               value: "celery"
+            - name: CELERY_WORKER_COUNT
+              value: "2"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "500m"
-              memory: "1Gi"
+              cpu: "200m"
+              memory: "256Mi"
             limits:
-              cpu: "1000m"
-              memory: "2Gi"
+              cpu: "500m"
+              memory: "512Mi"
 
         - name: celery-worker-task-executor
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -72,6 +74,43 @@ spec:
               value: {{ .Values.global.NATIVE_KUBERNETES_API_MODE | quote }}
             - name: CELERY_QUEUE
               value: "exec"
+            - name: CELERY_WORKER_COUNT
+              value: "4"
+          volumeMounts:
+            - name: credentials-volume
+              mountPath: /code/credentials/secrets.yaml
+              subPath: secrets.yaml
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+
+        - name: celery-worker-asset-extractor
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["./start-celery-worker.sh"]
+          env:
+            - name: DJANGO_DEBUG
+              value: "True"
+            - name: CELERY_BROKER_URL
+              value: "redis://redis-service:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://redis-service:6379/0"
+            - name: REDIS_URL
+              value: "redis://redis-service:6379/0"
+            - name: DRD_CLOUD_API_TOKEN
+              value: {{ .Values.global.DRD_CLOUD_API_TOKEN | quote }}
+            - name: DRD_CLOUD_API_HOST
+              value: {{ .Values.global.DRD_CLOUD_API_HOST | quote }}
+            - name: NATIVE_KUBERNETES_API_MODE
+              value: {{ .Values.global.NATIVE_KUBERNETES_API_MODE | quote }}
+            - name: CELERY_QUEUE
+              value: "asset_extraction"
+            - name: CELERY_WORKER_COUNT
+              value: "3"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
@@ -79,10 +118,10 @@ spec:
           resources:
             requests:
               cpu: "500m"
-              memory: "1Gi"
+              memory: "512Mi"
             limits:
               cpu: "1500m"
-              memory: "2Gi"
+              memory: "1.5Gi"
 
       volumes:
         - name: credentials-volume

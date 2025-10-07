@@ -24,7 +24,8 @@ def fetch_connector_connections_tests():
                      f'Cloud: {response.json()}')
         return False
     connection_test_requests = response.json().get('requests', [])
-    logger.info(f'fetch_connector_connections_tests:: Found {len(connection_test_requests)} connection test requests')
+    if len(connection_test_requests) > 0:
+        logger.info(f'fetch_connector_connections_tests:: Found {len(connection_test_requests)} connection test requests')
     for r in connection_test_requests:
         try:
             request_id = r.get('request_id', None)
