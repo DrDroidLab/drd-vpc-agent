@@ -32,7 +32,7 @@ def populate_connector_metadata(request_id, connector_name, connector_type, conn
     for extractor_method in extractor_methods:
         logger.info(f"Running method: {extractor_method} for connector: {connector_name}")
         try:
-            extractor_async_method_call.delay(request_id, connector_name, connector_type, connector_credentials_dict,
+            extractor_async_method_call(request_id, connector_name, connector_type, connector_credentials_dict,
                                               extractor_method)
         except Exception as e:
             logger.error(

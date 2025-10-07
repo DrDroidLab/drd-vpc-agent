@@ -117,17 +117,44 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIME_ZONE = 'UTC'
-# Ensure tasks are acknowledged only after completion to avoid loss on worker crashes
+
+# Connection and retry settings
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+CELERY_BROKER_HEARTBEAT = 30
+CELERY_BROKER_POOL_LIMIT = 10
+CELERY_BROKER_CONNECTION_TIMEOUT = 30
+CELERY_BROKER_SOCKET_TIMEOUT = 30
+CELERY_BROKER_SOCKET_KEEPALIVE = True
+CELERY_BROKER_SOCKET_KEEPALIVE_OPTIONS = {
+    1: 1,  # TCP_KEEPIDLE
+    2: 3,  # TCP_KEEPINTVL
+    3: 5,  # TCP_KEEPCNT
+}
+
+# Task execution settings
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
-# Define task queues and route critical execution task to a dedicated queue
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60
+CELERY_TASK_MAX_RETRIES = 3
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+
+# Define task queues and route tasks to appropriate queues
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
 CELERY_TASK_QUEUES = (
     Queue('celery'),
     Queue('exec'),
+    Queue('asset_extraction'),
 )
 CELERY_TASK_ROUTES = {
+    # Regular playbook task execution - high priority, needs good resources
     'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
+    
+    # Asset extraction tasks - can run slower, dedicated resources
+    'asset_manager.tasks.populate_connector_metadata': {'queue': 'asset_extraction'},
+    'asset_manager.tasks.extractor_async_method_call': {'queue': 'asset_extraction'},
 }
 
 # Celery Beat Configuration Options
