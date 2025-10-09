@@ -3,6 +3,22 @@ global:
   DRD_CLOUD_API_HOST: "https://agent-api.drdroid.io"
   NATIVE_KUBERNETES_API_MODE: "true"
 
+  # Global node scheduling configuration
+  # Applied to all services (redis, celery-beat, celery-worker)
+  # Example nodeSelector:
+  # nodeSelector:
+  #   "worker-type": "aux-pool"
+  #   "kubernetes.io/os": "linux"
+  nodeSelector: {}
+
+  # Example tolerations:
+  # tolerations:
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "infra"
+  #     effect: "NoSchedule"
+  tolerations: []
+
 # Network Mapper Configuration
 # Controls whether the network mapper components are deployed
 # The network mapper provides service topology visibility and network insights

@@ -17,8 +17,16 @@ spec:
         rollme: "{{ now | unixEpoch }}"
     spec:
       serviceAccountName: drd-vpc-agent
+      {{- if .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml .Values.global.tolerations | nindent 8 }}
+      {{- end }}
       containers:
-        - name: celery-worker-scheduler
+        - name: celery-worker-scheduler # Lightweight task scheduler
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["./start-celery-worker.sh"]
@@ -53,7 +61,7 @@ spec:
               cpu: "800m"
               memory: "896Mi"
 
-        - name: celery-worker-task-executor
+        - name: celery-worker-task-executor # Task executor for high-priority tasks
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["./start-celery-worker.sh"]
@@ -88,7 +96,7 @@ spec:
               cpu: "1500m"
               memory: "1Gi"
 
-        - name: celery-worker-asset-extractor
+        - name: celery-worker-asset-extractor # Task executor for asset extraction tasks, which run rarely and are long-running
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["./start-celery-worker.sh"]
