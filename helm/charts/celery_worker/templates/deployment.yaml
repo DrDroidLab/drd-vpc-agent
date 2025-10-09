@@ -82,11 +82,11 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: "250m"
+              memory: "256Mi"
             limits:
-              cpu: "2000m"
-              memory: "2Gi"
+              cpu: "1500m"
+              memory: "1Gi"
 
         - name: celery-worker-asset-extractor
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -117,11 +117,11 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "250m"
+              memory: "256Mi"
             limits:
               cpu: "1500m"
-              memory: "1.5Gi"
+              memory: "1Gi"
 
       volumes:
         - name: credentials-volume
