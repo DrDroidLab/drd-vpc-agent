@@ -55,11 +55,11 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.scheduler.requests.cpu | quote }}
+              memory: {{ .Values.resources.scheduler.requests.memory | quote }}
             limits:
-              cpu: "800m"
-              memory: "896Mi"
+              cpu: {{ .Values.resources.scheduler.limits.cpu | quote }}
+              memory: {{ .Values.resources.scheduler.limits.memory | quote }}
 
         - name: celery-worker-task-executor # Task executor for high-priority tasks
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -90,11 +90,11 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "250m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.taskExecutor.requests.cpu | quote }}
+              memory: {{ .Values.resources.taskExecutor.requests.memory | quote }}
             limits:
-              cpu: "1500m"
-              memory: "1Gi"
+              cpu: {{ .Values.resources.taskExecutor.limits.cpu | quote }}
+              memory: {{ .Values.resources.taskExecutor.limits.memory | quote }}
 
         - name: celery-worker-asset-extractor # Task executor for asset extraction tasks, which run rarely and are long-running
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -125,11 +125,11 @@ spec:
               subPath: secrets.yaml
           resources:
             requests:
-              cpu: "250m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.assetExtractor.requests.cpu | quote }}
+              memory: {{ .Values.resources.assetExtractor.requests.memory | quote }}
             limits:
-              cpu: "1500m"
-              memory: "1Gi"
+              cpu: {{ .Values.resources.assetExtractor.limits.cpu | quote }}
+              memory: {{ .Values.resources.assetExtractor.limits.memory | quote }}
 
       volumes:
         - name: credentials-volume
