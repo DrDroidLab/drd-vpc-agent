@@ -40,6 +40,7 @@ def load_yaml(filepath, native_k8s_connector_mode=False):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default='django-insecure-3-9*i+n@+)07+$lde6v%+705m+jz9_v9r6##qizm+0&x%)963g')
+NATIVE_KUBERNETES_API_MODE = env.bool("NATIVE_KUBERNETES_API_MODE", default=False)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", default=True)
@@ -141,6 +142,10 @@ CELERY_TASK_MAX_RETRIES = 3
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
 
+# Task timeout settings
+CELERY_TASK_TIME_LIMIT = 40  # Hard timeout: 100s (task will be killed, and worker respawned)
+CELERY_TASK_SOFT_TIME_LIMIT = 35
+
 # Define task queues and route tasks to appropriate queues
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
 CELERY_TASK_QUEUES = (
@@ -148,13 +153,35 @@ CELERY_TASK_QUEUES = (
     Queue('exec'),
     Queue('asset_extraction'),
 )
-CELERY_TASK_ROUTES = {
-    # Regular playbook task execution - high priority, needs good resources
-    'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
-    
-    # Asset extraction tasks - can run slower, dedicated resources
-    'asset_manager.tasks.populate_connector_metadata': {'queue': 'asset_extraction'},
-    'asset_manager.tasks.extractor_async_method_call': {'queue': 'asset_extraction'},
+if NATIVE_KUBERNETES_API_MODE:
+    CELERY_TASK_ROUTES = {
+        # Regular playbook task execution - high priority, needs good resources
+        'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
+        
+        # Asset extraction tasks - can run slower, dedicated resources
+        'asset_manager.tasks.populate_connector_metadata': {'queue': 'asset_extraction'},
+        'asset_manager.tasks.extractor_async_method_call': {'queue': 'asset_extraction'},
+    }
+
+else: 
+    CELERY_TASK_ROUTES = {
+        'playbooks_engine.tasks.execute_task_and_send_result': {'queue': 'exec'},
+    }
+
+# Queue-specific timeout settings
+CELERY_TASK_ANNOTATIONS = {
+    'playbooks_engine.tasks.execute_task_and_send_result': {
+        'time_limit': 40,
+        'soft_time_limit': 35,
+    },
+    'asset_manager.tasks.populate_connector_metadata': {
+        'time_limit': 40,
+        'soft_time_limit': 35,
+    },
+    'asset_manager.tasks.extractor_async_method_call': {
+        'time_limit': 40,
+        'soft_time_limit': 35,
+    },
 }
 
 # Celery Beat Configuration Options
@@ -249,8 +276,6 @@ SITE_ID = 1
 DRD_CLOUD_API_TOKEN = env.str("DRD_CLOUD_API_TOKEN")
 DRD_CLOUD_API_HOST = env.str("DRD_CLOUD_API_HOST", default="https://agent-api.drdroid.io")
 VPC_AGENT_COMMIT_HASH = env.str("VPC_AGENT_COMMIT_HASH", default="unknown")
-
-NATIVE_KUBERNETES_API_MODE = env.bool("NATIVE_KUBERNETES_API_MODE", default=False)
 
 SECRETS_FILE_PATH = BASE_DIR / 'credentials/secrets.yaml'
 LOADED_CONNECTIONS = load_yaml(SECRETS_FILE_PATH, NATIVE_KUBERNETES_API_MODE)
