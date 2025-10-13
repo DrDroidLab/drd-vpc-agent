@@ -88,7 +88,7 @@ The deployment script supports several CLI flags for enhanced control:
 | Flag | Description | Default | Impact |
 |------|-------------|---------|---------|
 | `--no-network-mapper` | Disable network mapper deployment | **Enabled** | ⚠️ **Limits service topology visibility** |
-| `--no-auto-update` | Disable auto-updation feature for agent | **Enabled** | 🔒 **Read-only mode for enhanced security** |
+| `--no-auto-update` | Disable auto-updation feature for agent | **Enabled** | 🔒 **Manual Updation of Agent Required** |
 
 #### Why we recommend deploying the Network Mapper?
 
@@ -117,10 +117,6 @@ The configuration flags are also available in `helm/values.yaml` for ArgoCD user
 # Network Mapper Configuration
 networkMapper:
   enabled: true  # Set to false to disable
-
-# Write Access Configuration  
-writeAccess:
-  enabled: true  # Set to false for read-only mode
 ```
 
 #### Deployment Details
