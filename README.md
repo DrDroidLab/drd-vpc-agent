@@ -79,7 +79,7 @@ The deployment script supports several CLI flags for enhanced control:
 # Deploy without network mapper (not recommended)
 ./deploy_k8s.sh <API_TOKEN> --no-network-mapper
 
-# Deploy in read-only mode (no auto-updation of agent)
+# Deploy with auto-updation of agent disabled
 ./deploy_k8s.sh <API_TOKEN> --no-auto-update
 
 # Deploy with both network mapper and auto-updation of agent disabled
