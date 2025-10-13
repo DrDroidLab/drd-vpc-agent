@@ -33,7 +33,11 @@ networkMapper:
 writeAccess:
   enabled: false
 
-restartCron:
+# Auto Update Configuration
+# Controls whether automatic deployment updates (restart cronjob) are enabled
+# When enabled, deployments are automatically restarted on schedule to pick up new images
+# Default: enabled (automatic updates for latest images)
+autoUpdate:
   enabled: true
   schedule: "0 0 * * *"  # every day at 00:00 UTC
 
