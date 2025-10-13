@@ -31,7 +31,7 @@ networkMapper:
 # When enabled, deployments are automatically restarted on schedule to pick up new images
 # Default: enabled (automatic updates for latest images)
 autoUpdate:
-  enabled: true
+  enabled: false
   schedule: "0 0 * * *"  # every day at 00:00 UTC
 
 celery-beat:
