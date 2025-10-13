@@ -79,11 +79,11 @@ The deployment script supports several CLI flags for enhanced control:
 # Deploy without network mapper (not recommended)
 ./deploy_k8s.sh <API_TOKEN> --no-network-mapper
 
-# Deploy in read-only mode (no write access to cluster)
-./deploy_k8s.sh <API_TOKEN> --no-write-access
+# Deploy in read-only mode (no auto-updation of agent)
+./deploy_k8s.sh <API_TOKEN> --no-auto-update
 
-# Deploy with both network mapper and write access disabled
-./deploy_k8s.sh <API_TOKEN> --no-network-mapper --no-write-access
+# Deploy with both network mapper and auto-updation of agent disabled
+./deploy_k8s.sh <API_TOKEN> --no-network-mapper --no-auto-update
 ```
 
 #### Configuration Flags
@@ -91,7 +91,7 @@ The deployment script supports several CLI flags for enhanced control:
 | Flag | Description | Default | Impact |
 |------|-------------|---------|---------|
 | `--no-network-mapper` | Disable network mapper deployment | **Enabled** | ⚠️ **Limits service topology visibility** |
-| `--no-write-access` | Disable write access to cluster | **Enabled** | 🔒 **Read-only mode for enhanced security** |
+| `--no-auto-update` | Disable auto-updation feature for agent | **Enabled** | 🔒 **Read-only mode for enhanced security** |
 
 #### Why we recommend deploying the Network Mapper?
 
