@@ -79,7 +79,7 @@ The deployment script supports several CLI flags for enhanced control:
 # Deploy without network mapper (not recommended)
 ./deploy_k8s.sh <API_TOKEN> --no-network-mapper
 
-# Deploy with both network mapper and auto-updation of agent disabled
+# Deploy with both network mapper and auto-updation of agent disabled (not recommended)
 ./deploy_k8s.sh <API_TOKEN> --no-network-mapper --no-auto-update
 ```
 
@@ -88,7 +88,7 @@ The deployment script supports several CLI flags for enhanced control:
 | Flag | Description | Default | Impact |
 |------|-------------|---------|---------|
 | `--no-network-mapper` | Disable network mapper deployment | **Enabled** | ⚠️ **Limits service topology visibility** |
-| `--no-auto-update` | Disable auto-updation feature for agent | **Enabled** | 🔒 **Manual Updation of Agent Required** |
+| `--no-auto-update` | Disable auto-updation feature for agent | **Enabled** | 🔒 **Manual Updation of Agent Required - NOT RECOMMENDED** |
 
 #### Why we recommend deploying the Network Mapper?
 
