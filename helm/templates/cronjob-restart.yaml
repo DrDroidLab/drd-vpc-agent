@@ -1,10 +1,10 @@
-{{- if .Values.restartCron.enabled }}
+{{- if .Values.autoUpdate.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: agent-restart
 spec:
-  schedule: "{{ .Values.restartCron.schedule }}"
+  schedule: "{{ .Values.autoUpdate.schedule }}"
   jobTemplate:
     spec:
       template:
