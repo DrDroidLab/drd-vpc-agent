@@ -1,0 +1,24 @@
+{{- if .Values.restartCron.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: agent-restart
+spec:
+  schedule: "{{ .Values.restartCron.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: drd-vpc-agent-restart
+          containers:
+            - name: kubectl
+              image: drdroidlab/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Restarting celery components..."
+                  kubectl rollout restart deployment drd-vpc-agent-celery-beat -n {{ .Release.Namespace }}
+                  kubectl rollout restart deployment drd-vpc-agent-celery-worker -n {{ .Release.Namespace }}
+          restartPolicy: OnFailure
+{{- end }}
