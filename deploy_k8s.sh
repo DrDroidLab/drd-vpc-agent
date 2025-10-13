@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Deploy K8s - Main deployment script for DRD VPC Agent and Network Mapper
-# Usage: ./deploy_k8s.sh <DRD_CLOUD_API_TOKEN> [--no-network-mapper] [--no-write-access]
+# Usage: ./deploy_k8s.sh <DRD_CLOUD_API_TOKEN> [--no-network-mapper] [--no-auto-update]
 
 set -e
 
@@ -97,35 +97,35 @@ update_helm_values() {
         fi
     fi
     
-    # Update write access configuration
-    if [ "$ENABLE_WRITE_ACCESS" = false ]; then
-        # Update or add write access disable flag
-        if grep -q "writeAccess:" "$values_file" && grep -q "enabled:" "$values_file"; then
+    # Update auto update configuration
+    if [ "$ENABLE_AUTO_UPDATE" = false ]; then
+        # Update or add auto update disable flag
+        if grep -q "autoUpdate:" "$values_file" && grep -q "enabled:" "$values_file"; then
             # Update existing enabled value
-            sed -i.bak '/writeAccess:/,/^[^[:space:]]/ s/enabled:.*/enabled: false/' "$values_file"
+            sed -i.bak '/autoUpdate:/,/^[^[:space:]]/ s/enabled:.*/enabled: false/' "$values_file"
         else
-            # Add new writeAccess section
-            if grep -q "writeAccess:" "$values_file"; then
+            # Add new autoUpdate section
+            if grep -q "autoUpdate:" "$values_file"; then
                 # Section exists but no enabled field, add it
-                sed -i.bak '/writeAccess:/a\  enabled: false' "$values_file"
+                sed -i.bak '/autoUpdate:/a\  enabled: false' "$values_file"
             else
                 # Section doesn't exist, add it
-                echo -e "\nwriteAccess:\n  enabled: false" >> "$values_file"
+                echo -e "\nautoUpdate:\n  enabled: false" >> "$values_file"
             fi
         fi
     else
-        # Ensure write access is enabled (default)
-        if grep -q "writeAccess:" "$values_file" && grep -q "enabled:" "$values_file"; then
+        # Ensure auto update is enabled (default)
+        if grep -q "autoUpdate:" "$values_file" && grep -q "enabled:" "$values_file"; then
             # Update existing enabled value
-            sed -i.bak '/writeAccess:/,/^[^[:space:]]/ s/enabled:.*/enabled: true/' "$values_file"
+            sed -i.bak '/autoUpdate:/,/^[^[:space:]]/ s/enabled:.*/enabled: true/' "$values_file"
         else
-            # Add new writeAccess section
-            if grep -q "writeAccess:" "$values_file"; then
+            # Add new autoUpdate section
+            if grep -q "autoUpdate:" "$values_file"; then
                 # Section exists but no enabled field, add it
-                sed -i.bak '/writeAccess:/a\  enabled: true' "$values_file"
+                sed -i.bak '/autoUpdate:/a\  enabled: true' "$values_file"
             else
                 # Section doesn't exist, add it
-                echo -e "\nwriteAccess:\n  enabled: true" >> "$values_file"
+                echo -e "\nautoUpdate:\n  enabled: true" >> "$values_file"
             fi
         fi
     fi
@@ -175,7 +175,7 @@ EOF
 parse_arguments() {
     DRD_CLOUD_API_TOKEN=""
     ENABLE_NETWORK_MAPPER=true
-    ENABLE_WRITE_ACCESS=true
+    ENABLE_AUTO_UPDATE=true
     
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -183,8 +183,8 @@ parse_arguments() {
                 ENABLE_NETWORK_MAPPER=false
                 shift
                 ;;
-            --no-write-access)
-                ENABLE_WRITE_ACCESS=false
+            --no-auto-update)
+                ENABLE_AUTO_UPDATE=false
                 shift
                 ;;
             --help|-h)
@@ -192,14 +192,14 @@ parse_arguments() {
                 echo ""
                 echo "Options:"
                 echo "  --no-network-mapper    Disable network mapper deployment (not recommended)"
-                echo "  --no-write-access      Disable write access to cluster (read-only mode)"
+                echo "  --no-auto-update      Disable automatic deployment updates (restart cronjob)"
                 echo "  --help, -h             Show this help message"
                 echo ""
                 echo "Examples:"
                 echo "  $0 your-api-token"
                 echo "  $0 your-api-token --no-network-mapper"
-                echo "  $0 your-api-token --no-write-access"
-                echo "  $0 your-api-token --no-network-mapper --no-write-access"
+                echo "  $0 your-api-token --no-auto-update"
+                echo "  $0 your-api-token --no-network-mapper --no-auto-update"
                 exit 0
                 ;;
             *)
@@ -256,7 +256,7 @@ main() {
     # Display deployment configuration
     print_status $BLUE "Deployment Configuration:"
     print_status $BLUE "  - Network Mapper: $([ "$ENABLE_NETWORK_MAPPER" = true ] && echo "ENABLED" || echo "DISABLED")"
-    print_status $BLUE "  - Write Access: $([ "$ENABLE_WRITE_ACCESS" = true ] && echo "ENABLED" || echo "DISABLED (Read-only)")"
+    print_status $BLUE "  - Auto Update: $([ "$ENABLE_AUTO_UPDATE" = true ] && echo "ENABLED" || echo "DISABLED")"
     
     # Update values.yaml with the configuration flags
     print_status $BLUE "Updating Helm values configuration..."
@@ -301,8 +301,8 @@ main() {
         else
             print_status $YELLOW "  - Network Mapper: DISABLED (service topology will be limited)"
         fi
-        if [ "$ENABLE_WRITE_ACCESS" = false ]; then
-            print_status $YELLOW "  - Write Access: DISABLED (read-only mode)"
+        if [ "$ENABLE_AUTO_UPDATE" = false ]; then
+            print_status $YELLOW "  - Auto Update: DISABLED (manual updates required)"
         fi
         exit 0
     else

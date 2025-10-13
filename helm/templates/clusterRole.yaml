@@ -35,11 +35,6 @@ rules:
       - "get"
       - "list"
       - "watch"
-      {{- if .Values.writeAccess.enabled }}
-      - "patch"
-      - "update"
-      - "delete"
-      {{- end }}
 
   # Batch jobs
   - apiGroups: ["batch"]

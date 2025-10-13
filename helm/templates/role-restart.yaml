@@ -1,0 +1,16 @@
+{{- if .Values.autoUpdate.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: drd-vpc-agent-restart-role
+  namespace: {{ .Release.Namespace }}
+rules:
+  # Minimal permissions needed for rollout restart
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+    verbs: 
+      - "get"
+      - "patch"
+      - "update"
+{{- end }}

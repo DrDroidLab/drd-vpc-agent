@@ -1,15 +1,15 @@
-{{- if .Values.restartCron.enabled }}
+{{- if .Values.autoUpdate.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: agent-restart
 spec:
-  schedule: "{{ .Values.restartCron.schedule }}"
+  schedule: "{{ .Values.autoUpdate.schedule }}"
   jobTemplate:
     spec:
       template:
         spec:
-          serviceAccountName: drd-vpc-agent
+          serviceAccountName: drd-vpc-agent-restart
           containers:
             - name: kubectl
               image: drdroidlab/kubectl:latest
