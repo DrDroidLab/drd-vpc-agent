@@ -5,7 +5,7 @@ metadata:
   name: drd-vpc-agent-restart-role
   namespace: {{ .Release.Namespace }}
 rules:
-  # Minimal permissions needed for rollout restart in the release namespace only.
+  # Minimal permissions needed for rollout restart
   - apiGroups: ["apps"]
     resources:
       - deployments
