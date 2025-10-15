@@ -166,6 +166,34 @@ The script creates:
 - Access to the target Kubernetes cluster
 - Appropriate permissions to list pods and collect logs
 
+### Enabling write access
+In order to explicitly enable write access in the cluster to the agent. 
+In the file helm/templates/clusterRole.yaml:
+Within the rules.apiGroups["apps"].verbs section add the following:
+```
+- "patch"
+- "update"
+- "delete"
+``` 
+
+The apps rule will then look like:
+```
+- apiGroups: ["apps"]
+  resources:
+    - deployments
+    - statefulsets
+    - daemonsets
+    - replicasets
+  verbs: 
+    - "get"
+    - "list"
+    - "watch"
+    - "patch"
+    - "update"
+    - "delete"
+```
+
+
 ## Support
 
 Go through our [documentation](https://docs.drdroid.io?utm_param=github-py) to learn more.

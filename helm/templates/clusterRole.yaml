@@ -31,6 +31,9 @@ rules:
       - statefulsets
       - daemonsets
       - replicasets
+      - pods
+      - services
+      - ingresses
     verbs: 
       - "get"
       - "list"
