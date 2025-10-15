@@ -31,13 +31,13 @@ rules:
       - statefulsets
       - daemonsets
       - replicasets
+      - pods
+      - services
+      - ingresses
     verbs: 
       - "get"
       - "list"
       - "watch"
-      - "patch"
-      - "update"
-      - "delete"
 
   # Batch jobs
   - apiGroups: ["batch"]
