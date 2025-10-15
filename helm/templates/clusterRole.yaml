@@ -35,6 +35,9 @@ rules:
       - "get"
       - "list"
       - "watch"
+      - "patch"
+      - "update"
+      - "delete"
 
   # Batch jobs
   - apiGroups: ["batch"]
