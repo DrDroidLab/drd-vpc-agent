@@ -3,10 +3,14 @@ kind: ClusterRole
 metadata:
   name: drdroid-k8s-cluster-role
 rules:
-  # Core API group
+  # Core API group - pods with write access, others read-only
   - apiGroups: [""]
     resources:
       - pods
+    verbs: ["get", "list", "watch"]
+
+  - apiGroups: [""]
+    resources:
       - services
       - endpoints
       - events
