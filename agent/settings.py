@@ -125,8 +125,8 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
 CELERY_BROKER_HEARTBEAT = 30
 CELERY_BROKER_POOL_LIMIT = 10
-CELERY_BROKER_CONNECTION_TIMEOUT = 30
-CELERY_BROKER_SOCKET_TIMEOUT = 30
+CELERY_BROKER_CONNECTION_TIMEOUT = 3000
+CELERY_BROKER_SOCKET_TIMEOUT = 300
 CELERY_BROKER_SOCKET_KEEPALIVE = True
 CELERY_BROKER_SOCKET_KEEPALIVE_OPTIONS = {
     1: 1,  # TCP_KEEPIDLE
@@ -175,12 +175,12 @@ CELERY_TASK_ANNOTATIONS = {
         'soft_time_limit': 35,
     },
     'asset_manager.tasks.populate_connector_metadata': {
-        'time_limit': 40,
-        'soft_time_limit': 35,
+        'time_limit': 1200,
+        'soft_time_limit': 1190,
     },
     'asset_manager.tasks.extractor_async_method_call': {
-        'time_limit': 40,
-        'soft_time_limit': 35,
+        'time_limit': 1200,
+        'soft_time_limit': 1190,
     },
 }
 
