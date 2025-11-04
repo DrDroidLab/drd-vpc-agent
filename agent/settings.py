@@ -175,12 +175,12 @@ CELERY_TASK_ANNOTATIONS = {
         'soft_time_limit': 35,
     },
     'asset_manager.tasks.populate_connector_metadata': {
-        'time_limit': 1200,
-        'soft_time_limit': 1190,
+        'time_limit': 3600,
+        'soft_time_limit': 3590,
     },
     'asset_manager.tasks.extractor_async_method_call': {
-        'time_limit': 1200,
-        'soft_time_limit': 1190,
+        'time_limit': 3600,
+        'soft_time_limit': 3590,
     },
 }
 
