@@ -40,7 +40,7 @@ Releasing soon (reach out to us if you need support for these or any other sourc
 
 ## Installation
 
-To get started create an agent authentication token by visiting [site](https://playbooks.drdroid.io/agent-tokens)
+To get started create an agent authentication token by visiting [site](https://aiops.drdroid.io/api-keys)
 
 ### Docker Compose
 
