@@ -143,8 +143,8 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
 
 # Task timeout settings
-CELERY_TASK_TIME_LIMIT = 40  # Hard timeout: 100s (task will be killed, and worker respawned)
-CELERY_TASK_SOFT_TIME_LIMIT = 35
+# CELERY_TASK_TIME_LIMIT = 40  # Hard timeout: 100s (task will be killed, and worker respawned)
+# CELERY_TASK_SOFT_TIME_LIMIT = 35
 
 # Define task queues and route tasks to appropriate queues
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
@@ -169,20 +169,20 @@ else:
     }
 
 # Queue-specific timeout settings
-CELERY_TASK_ANNOTATIONS = {
-    'playbooks_engine.tasks.execute_task_and_send_result': {
-        'time_limit': 40,
-        'soft_time_limit': 35,
-    },
-    'asset_manager.tasks.populate_connector_metadata': {
-        'time_limit': 3600,
-        'soft_time_limit': 3590,
-    },
-    'asset_manager.tasks.extractor_async_method_call': {
-        'time_limit': 3600,
-        'soft_time_limit': 3590,
-    },
-}
+# CELERY_TASK_ANNOTATIONS = {
+#     'playbooks_engine.tasks.execute_task_and_send_result': {
+#         'time_limit': 40,
+#         'soft_time_limit': 35,
+#     },
+#     'asset_manager.tasks.populate_connector_metadata': {
+#         'time_limit': 3600,
+#         'soft_time_limit': 3590,
+#     },
+#     'asset_manager.tasks.extractor_async_method_call': {
+#         'time_limit': 3600,
+#         'soft_time_limit': 3590,
+#     },
+# }
 
 # Celery Beat Configuration Options
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
