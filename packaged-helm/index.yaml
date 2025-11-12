@@ -1,0 +1,22 @@
+apiVersion: v1
+entries:
+  drd-vpc-agent:
+  - apiVersion: v2
+    created: "2025-11-12T19:24:26.380714+05:30"
+    dependencies:
+    - name: celery-beat
+      repository: file://charts/celery_beat
+      version: 0.1.0
+    - name: celery-worker
+      repository: file://charts/celery_worker
+      version: 0.1.0
+    - name: redis
+      repository: file://charts/redis
+      version: 0.1.0
+    description: Celery-only deployment
+    digest: bc545d579f38a3bb5058bea91ee30f26ce83fb93ed52efd88dca6378140a151f
+    name: drd-vpc-agent
+    urls:
+    - https://github.com/DrDroidLab/drd-vpc-agent/drd-vpc-agent-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-11-12T19:24:26.379932+05:30"
