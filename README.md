@@ -40,7 +40,7 @@ Releasing soon (reach out to us if you need support for these or any other sourc
 
 ## Installation
 
-To get started create an agent authentication token by visiting [site](https://playbooks.drdroid.io/agent-tokens)
+To get started create an agent authentication token by visiting [site](https://aiops.drdroid.io/api-keys)
 
 ### Docker Compose
 
@@ -165,6 +165,79 @@ The script creates:
 - `kubectl` must be installed and configured
 - Access to the target Kubernetes cluster
 - Appropriate permissions to list pods and collect logs
+
+### Enabling Write Access
+
+The agent runs in **read-only mode by default** for enhanced security. To enable write access for specific resources, you need to modify the `helm/templates/clusterRole.yaml` file.
+
+#### Current Permission Structure
+
+The cluster role is organized into two main sections:
+
+1. **Section A** (First API group rule):
+   ```yaml
+   - apiGroups: [""]
+     resources:
+       - pods
+     verbs: ["get", "list", "watch"]
+   ```
+
+2. **Section B** (All other rules):
+   ```yaml
+   - apiGroups: [""]
+     resources:
+       - services
+       - endpoints
+       - events
+       - configmaps
+       - secrets
+       - namespaces
+       - nodes
+       - persistentvolumes
+       - persistentvolumeclaims
+     verbs: ["get", "list", "watch"]
+   ```
+
+#### How to Add Write Access
+
+**To enable write access for pods:**
+1. Add the write verbs to the first API group rule:
+   ```yaml
+   - apiGroups: [""]
+     resources:
+       - pods
+     verbs: ["get", "list", "watch", "patch", "update", "delete"]
+   ```
+
+**To enable write access for any other resource:**
+1. **Move the resource** from the read-only section to the write access section
+2. **Add the write verbs** to that section
+
+**Example - Adding write access for deployments:**
+```yaml
+# Write Access Section (add deployments here)
+- apiGroups: [""]
+  resources:
+    - pods
+    - deployments  # Moved from apps section
+  verbs: ["get", "list", "watch", "patch", "update", "delete"]
+
+# Read-Only Section (remove deployments from here)
+- apiGroups: ["apps"]
+  resources:
+    - statefulsets
+    - daemonsets
+    - replicasets
+    # deployments removed from here
+  verbs: ["get", "list", "watch"]
+```
+
+#### Key Rules:
+- **Resources in the first section** get write access (patch, update, delete)
+- **Resources in other sections** are read-only (get, list, watch)
+- **To give write access**: Move the resource to the first section and add write verbs
+- **To remove write access**: Move the resource to a read-only section
+
 
 ## Support
 
