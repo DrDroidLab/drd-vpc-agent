@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   drd-vpc-agent:
   - apiVersion: v2
-    created: "2025-11-12T19:24:26.380714+05:30"
+    created: "2025-11-12T19:55:48.724712+05:30"
     dependencies:
     - name: celery-beat
       repository: file://charts/celery_beat
@@ -17,6 +17,6 @@ entries:
     digest: bc545d579f38a3bb5058bea91ee30f26ce83fb93ed52efd88dca6378140a151f
     name: drd-vpc-agent
     urls:
-    - https://github.com/DrDroidLab/drd-vpc-agent/drd-vpc-agent-0.1.0.tgz
+    - https://drdroidlab.github.io/drd-vpc-agent/packaged-helm/drd-vpc-agent-0.1.0.tgz
     version: 0.1.0
-generated: "2025-11-12T19:24:26.379932+05:30"
+generated: "2025-11-12T19:55:48.72348+05:30"
