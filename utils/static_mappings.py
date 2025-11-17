@@ -281,6 +281,32 @@ integrations_connector_type_connector_keys_map = {
             SourceKeyType.X_SCOPE_ORG_ID
         ]
     ],
+    Source.VICTORIA_LOGS: [
+        [
+            SourceKeyType.VICTORIA_LOGS_PROTOCOL,
+            SourceKeyType.VICTORIA_LOGS_HOST,
+            SourceKeyType.VICTORIA_LOGS_PORT,
+            SourceKeyType.VICTORIA_LOGS_HEADERS,
+            SourceKeyType.SSL_VERIFY,
+        ],
+        [
+            SourceKeyType.VICTORIA_LOGS_PROTOCOL,
+            SourceKeyType.VICTORIA_LOGS_HOST,
+            SourceKeyType.VICTORIA_LOGS_PORT,
+            SourceKeyType.VICTORIA_LOGS_HEADERS,
+        ],
+        [
+            SourceKeyType.VICTORIA_LOGS_PROTOCOL,
+            SourceKeyType.VICTORIA_LOGS_HOST,
+            SourceKeyType.VICTORIA_LOGS_PORT,
+            SourceKeyType.SSL_VERIFY,
+        ],
+        [
+            SourceKeyType.VICTORIA_LOGS_PROTOCOL,
+            SourceKeyType.VICTORIA_LOGS_HOST,
+            SourceKeyType.VICTORIA_LOGS_PORT,
+        ],
+    ],
     Source.KUBERNETES: [
         [
             SourceKeyType.KUBERNETES_CLUSTER_NAME,
