@@ -978,6 +978,45 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml, connecto
             key_type=SourceKeyType.DATADOG_API_DOMAIN,
             key=StringValue(value=credential_yaml['dd_api_domain'])
         ))
+    elif c_type == 'CORALOGIX':
+        if 'api_key' not in credential_yaml or 'endpoint' not in credential_yaml or 'domain' not in credential_yaml:
+            raise Exception(f'Api key, endpoint or domain not found in credential yaml for coralogix source in connector: {connector_name}')
+        c_source = Source.CORALOGIX
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.CORALOGIX_API_KEY,
+            key=StringValue(value=credential_yaml['api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.CORALOGIX_ENDPOINT,
+            key=StringValue(value=credential_yaml['endpoint'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.CORALOGIX_DOMAIN,
+            key=StringValue(value=credential_yaml['domain'])
+        ))
+        if credential_yaml.get('ssl_verify', None):
+            ssl_verify_flag = credential_yaml['ssl_verify']
+            if isinstance(ssl_verify_flag, str):
+                ssl_verify_flag = ssl_verify_flag.lower()
+            if isinstance(ssl_verify_flag, bool):
+                ssl_verify_flag = str(ssl_verify_flag).lower()
+            c_keys.append(ConnectorKey(
+                key_type=SourceKeyType.SSL_VERIFY,
+                key=StringValue(value=ssl_verify_flag)
+            ))
+    elif c_type == 'MCP_SERVER':
+        if 'mcp_server_base_url' not in credential_yaml:
+            raise Exception(f'MCP server base url not found in credential yaml for mcp server source in connector: {connector_name}')
+        c_source = Source.MCP_SERVER
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.MCP_SERVER_BASE_URL,
+            key=StringValue(value=credential_yaml['mcp_server_base_url'])
+        ))
+        if credential_yaml.get('mcp_server_auth_headers', None):
+            c_keys.append(ConnectorKey(
+                key_type=SourceKeyType.MCP_SERVER_AUTH_HEADERS,
+                key=StringValue(value=credential_yaml['mcp_server_auth_headers'])
+            ))
     else:
         raise Exception(f'Invalid type in credential yaml for connector: {connector_name}')
     
