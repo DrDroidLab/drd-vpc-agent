@@ -1,15 +1,15 @@
 apiVersion: v2
 name: drd-vpc-agent
 description: Celery-only deployment
-version: 0.1.1
+version: 0.1.2
 
 dependencies:
   - name: celery-beat
-    version: 0.1.1
+    version: 0.1.2
     repository: "file://charts/celery_beat"
   - name: celery-worker
-    version: 0.1.1
+    version: 0.1.2
     repository: "file://charts/celery_worker"
   - name: redis
-    version: 0.1.1
+    version: 0.1.2
     repository: "file://charts/redis"
