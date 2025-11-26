@@ -9,7 +9,7 @@ from google.protobuf.wrappers_pb2 import StringValue
 
 from drdroid_debug_toolkit.core.integrations.source_facade import source_facade
 from drdroid_debug_toolkit.core.protos.base_pb2 import TimeRange, Source
-from drdroid_debug_toolkit.core.protos.playbooks.playbook_commons_pb2 import PlaybookTaskResult
+from drdroid_debug_toolkit.core.protos.playbooks.playbook_commons_pb2 import PlaybookTaskResult, TextResult
 from drdroid_debug_toolkit.core.protos.playbooks.playbook_pb2 import PlaybookTask
 from utils.proto_utils import dict_to_proto, proto_to_dict
 from utils.credentilal_utils import credential_yaml_to_connector_proto
@@ -70,10 +70,9 @@ def _execute_asset_refresh_task(playbook_task_execution_log):
             populate_connector_metadata(request_id, connector_name, connector_type, credentials_dict)
             message = f'Successfully executed full asset refresh for connector {connector_name}'
         
-        # Create success result
+        # Create success result using TextResult
         result = PlaybookTaskResult(
-            output=StringValue(value=message),
-            error=StringValue(value="")
+            text=TextResult(output=StringValue(value=message))
         )
         
     except Exception as e:
