@@ -55,11 +55,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_TEAM_NAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -71,10 +79,11 @@ jobs:
           IMAGE_TAG_BRANCH_ORIG: ${{ needs.setup.outputs.CLEAN_BRANCH_NAME }}
           IMAGE_TAG_EPOCH_TIMESTAMP: ${{ needs.setup.outputs.EPOCH_TIMESTAMP }}
           REPO_NAME: ${{ secrets.DOCKERHUB_TEAM_NAME }}/drd-vpc-agent
+          GHCR_REPO: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
           EVENT_NAME: ${{ github.event_name }}
         run: |
           echo "Building for repository"
-      
+
           if [ "$EVENT_NAME" = "push" ]; then
             EXPORT_FLAG="--push"
             PLATFORMS="linux/amd64,linux/arm64"
@@ -82,7 +91,7 @@ jobs:
             EXPORT_FLAG="--load"
             PLATFORMS="linux/amd64"
           fi
-      
+
           docker buildx build \
             --platform $PLATFORMS \
             --tag ${REPO_NAME}:$IMAGE_TAG_SHA \
@@ -90,15 +99,13 @@ jobs:
             --tag ${REPO_NAME}:$IMAGE_TAG_BRANCH_ORIG \
             --tag ${REPO_NAME}:$IMAGE_TAG_BRANCH \
             --tag ${REPO_NAME}:latest \
+            --tag ${GHCR_REPO}:$IMAGE_TAG_SHA \
+            --tag ${GHCR_REPO}:$IMAGE_TAG_EPOCH_TIMESTAMP \
+            --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH_ORIG \
+            --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH \
+            --tag ${GHCR_REPO}:latest \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg COMMIT_HASH=$IMAGE_TAG_SHA \
             --file Dockerfile \
             $EXPORT_FLAG \
             .
-
-      # - name: Push to ECR
-      #   if: github.event_name == 'push'
-      #   run: |
-      #     echo "Pushing to repository"
-      #     REPO_NAME=${{ secrets.REPO_NAME }}
-      #     docker push ${REPO_NAME} --all-tags
