@@ -1,13 +1,10 @@
 import logging
-import uuid
 
 from django.apps import AppConfig
 from django.conf import settings
 
-from asset_manager.tasks import populate_connector_metadata
 from connectors.tasks import register_connectors
-from drdroid_debug_toolkit.core.protos.base_pb2 import Source
-from utils.credentilal_utils import credential_yaml_to_connector_proto, generate_credentials_dict
+from utils.credentilal_utils import credential_yaml_to_connector_proto
 from utils.static_mappings import integrations_connector_type_connector_keys_map
 
 logger = logging.getLogger(__name__)
@@ -25,7 +22,9 @@ class ConnectorsConfig(AppConfig):
         drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
         loaded_connections = settings.LOADED_CONNECTIONS if settings.LOADED_CONNECTIONS else {}
         if loaded_connections:
+            # Register connectors with DRD Cloud - asset refresh will be triggered by backend
             register_connectors(drd_cloud_host, drd_cloud_api_token, loaded_connections)
+            # Validate connector keys
             for c, metadata in loaded_connections.items():
                 connector_proto = credential_yaml_to_connector_proto(c, metadata)
                 connector_name = connector_proto.name.value
@@ -39,13 +38,4 @@ class ConnectorsConfig(AppConfig):
                         break
                 if not all_keys_found:
                     raise ValueError(f'Missing required connector keys for {connector_name}')
-                connector_type: Source = connector_proto.type
-                credentials_dict = generate_credentials_dict(connector_type, connector_keys_proto)
-                if credentials_dict:
-                    request_id = uuid.uuid4().hex
-                    populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
-                elif settings.NATIVE_KUBERNETES_API_MODE:
-                    request_id = uuid.uuid4().hex
-                    populate_connector_metadata.delay(request_id, connector_name, connector_type, credentials_dict)
-                else:
-                    logger.warning(f'No credentials found for connector {connector_name}')
+            logger.info(f'Registered {len(loaded_connections)} connectors. Asset refresh will be triggered by backend.')

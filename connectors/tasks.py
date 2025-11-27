@@ -96,8 +96,14 @@ def register_connectors(drd_cloud_host, drd_cloud_api_token, loaded_connections)
         connector_proto = credential_yaml_to_connector_proto(c, metadata)
         connectors.append(proto_to_dict(Connector(name=connector_proto.name, type=connector_proto.type)))
 
-    response = requests.post(f'{drd_cloud_host}/connectors/proxy/register',
+    commit_hash = settings.VPC_AGENT_COMMIT_HASH
+    url = f'{drd_cloud_host}/connectors/proxy/register?commit_hash={commit_hash}'
+    logger.info(f'register_connectors:: Registering {len(connectors)} connectors with commit_hash: {commit_hash}')
+
+    response = requests.post(url,
                              headers={'Authorization': f'Bearer {drd_cloud_api_token}'},
                              json={'connectors': connectors})
     if response.status_code != 200:
         logger.error(f'Failed to register connectors with DRD Cloud: {response.json()}')
+    else:
+        logger.info(f'register_connectors:: Successfully registered connectors')
