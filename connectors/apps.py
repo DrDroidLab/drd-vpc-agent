@@ -1,4 +1,5 @@
 import logging
+import os
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -22,9 +23,15 @@ class ConnectorsConfig(AppConfig):
         drd_cloud_api_token = settings.DRD_CLOUD_API_TOKEN
         loaded_connections = settings.LOADED_CONNECTIONS if settings.LOADED_CONNECTIONS else {}
         if loaded_connections:
-            # Register connectors with DRD Cloud - asset refresh will be triggered by backend
-            register_connectors(drd_cloud_host, drd_cloud_api_token, loaded_connections)
-            # Validate connector keys
+            # Only register connectors from the 'exec' queue worker to avoid duplicate registrations
+            celery_queue = os.environ.get('CELERY_QUEUE', '')
+            if celery_queue == 'exec':
+                register_connectors(drd_cloud_host, drd_cloud_api_token, loaded_connections)
+                logger.info(f'Registered {len(loaded_connections)} connectors from exec queue worker.')
+            else:
+                logger.info(f'Skipping connector registration on queue: {celery_queue}')
+
+            # Validate connector keys (always run validation)
             for c, metadata in loaded_connections.items():
                 connector_proto = credential_yaml_to_connector_proto(c, metadata)
                 connector_name = connector_proto.name.value
@@ -38,4 +45,3 @@ class ConnectorsConfig(AppConfig):
                         break
                 if not all_keys_found:
                     raise ValueError(f'Missing required connector keys for {connector_name}')
-            logger.info(f'Registered {len(loaded_connections)} connectors. Asset refresh will be triggered by backend.')
