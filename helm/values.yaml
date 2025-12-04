@@ -62,7 +62,7 @@ celery-worker:
         memory: "256Mi"
       limits:
         cpu: "1500m"
-        memory: "1Gi"
+        memory: "2Gi"
     assetExtractor:
       # Asset extraction worker - handles long-running asset discovery and extraction tasks
       requests:
@@ -70,7 +70,7 @@ celery-worker:
         memory: "256Mi"
       limits:
         cpu: "1500m"
-        memory: "1Gi"
+        memory: "2Gi"
 
 redis:
   image: redis:7.2
