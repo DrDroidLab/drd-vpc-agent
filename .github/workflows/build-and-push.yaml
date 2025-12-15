@@ -69,6 +69,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to AWS ECR Public
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # ECR Public requires us-east-1 for authentication
+
+      - name: Login to ECR Public
+        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -80,6 +90,7 @@ jobs:
           IMAGE_TAG_EPOCH_TIMESTAMP: ${{ needs.setup.outputs.EPOCH_TIMESTAMP }}
           REPO_NAME: ${{ secrets.DOCKERHUB_TEAM_NAME }}/drd-vpc-agent
           GHCR_REPO: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
+          ECR_REPO: public.ecr.aws/drdroid/drd-vpc-agent
           EVENT_NAME: ${{ github.event_name }}
         run: |
           echo "Building for repository"
@@ -104,6 +115,11 @@ jobs:
             --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH_ORIG \
             --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH \
             --tag ${GHCR_REPO}:latest \
+            --tag ${ECR_REPO}:$IMAGE_TAG_SHA \
+            --tag ${ECR_REPO}:$IMAGE_TAG_EPOCH_TIMESTAMP \
+            --tag ${ECR_REPO}:$IMAGE_TAG_BRANCH_ORIG \
+            --tag ${ECR_REPO}:$IMAGE_TAG_BRANCH \
+            --tag ${ECR_REPO}:latest \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg COMMIT_HASH=$IMAGE_TAG_SHA \
             --file Dockerfile \
