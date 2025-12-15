@@ -29,9 +29,9 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Set environment variables
-ENV PIP_DISABLE_PIP_VERSION_CHECK 1
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # VCS metadata
 ARG COMMIT_HASH=unknown
