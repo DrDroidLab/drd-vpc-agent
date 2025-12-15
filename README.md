@@ -127,12 +127,12 @@ By default, the Helm chart pulls images from Docker Hub (`drdroidlab/drd-vpc-age
 ```yaml
 celery-beat:
   image:
-    repository: public.ecr.aws/drdroid/drd-vpc-agent
+    repository: public.ecr.aws/o0o7n0a4/drdroid/drd-vpc-agent
     tag: latest
 
 celery-worker:
   image:
-    repository: public.ecr.aws/drdroid/drd-vpc-agent
+    repository: public.ecr.aws/o0o7n0a4/drdroid/drd-vpc-agent
     tag: latest
 ```
 
