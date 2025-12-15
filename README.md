@@ -119,6 +119,38 @@ networkMapper:
   enabled: true  # Set to false to disable
 ```
 
+#### Using Alternative Image Registries
+
+By default, the Helm chart pulls images from Docker Hub (`drdroidlab/drd-vpc-agent`). If you prefer to use AWS ECR Public or GitHub Container Registry, modify `helm/values.yaml` before deploying:
+
+**For AWS ECR Public:**
+```yaml
+celery-beat:
+  image:
+    repository: public.ecr.aws/drdroid/drd-vpc-agent
+    tag: latest
+
+celery-worker:
+  image:
+    repository: public.ecr.aws/drdroid/drd-vpc-agent
+    tag: latest
+```
+
+**For GitHub Container Registry (GHCR):**
+```yaml
+celery-beat:
+  image:
+    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
+    tag: latest
+
+celery-worker:
+  image:
+    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
+    tag: latest
+```
+
+All three registries contain identical images and are updated simultaneously.
+
 #### Deployment Details
 * The agent will be installed in the namespace 'drdroid' by default
 * Network mapper components are deployed to 'otterize-system' namespace (when enabled)
