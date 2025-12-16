@@ -25,6 +25,26 @@ spec:
       tolerations:
         {{- toYaml .Values.global.tolerations | nindent 8 }}
       {{- end }}
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis to be ready..."
+              until nc -z redis-service 6379; do
+                echo "Redis is unavailable - sleeping"
+                sleep 2
+              done
+              echo "Redis is ready!"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
       containers:
         - name: celery-worker-scheduler # Lightweight task scheduler
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -49,6 +69,10 @@ spec:
               value: "celery"
             - name: CELERY_WORKER_COUNT
               value: "4"
+            - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
+              value: "true"
+            - name: CELERY_BROKER_CONNECTION_MAX_RETRIES
+              value: "10"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
@@ -60,6 +84,26 @@ spec:
             limits:
               cpu: {{ .Values.resources.scheduler.limits.cpu | quote }}
               memory: {{ .Values.resources.scheduler.limits.memory | quote }}
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
 
         - name: celery-worker-task-executor # Task executor for high-priority tasks
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -84,6 +128,10 @@ spec:
               value: "exec"
             - name: CELERY_WORKER_COUNT
               value: "4"
+            - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
+              value: "true"
+            - name: CELERY_BROKER_CONNECTION_MAX_RETRIES
+              value: "10"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
@@ -95,6 +143,26 @@ spec:
             limits:
               cpu: {{ .Values.resources.taskExecutor.limits.cpu | quote }}
               memory: {{ .Values.resources.taskExecutor.limits.memory | quote }}
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
 
         - name: celery-worker-asset-extractor # Task executor for asset extraction tasks, which run rarely and are long-running
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -119,6 +187,10 @@ spec:
               value: "asset_extraction"
             - name: CELERY_WORKER_COUNT
               value: "3"
+            - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
+              value: "true"
+            - name: CELERY_BROKER_CONNECTION_MAX_RETRIES
+              value: "10"
           volumeMounts:
             - name: credentials-volume
               mountPath: /code/credentials/secrets.yaml
@@ -130,6 +202,26 @@ spec:
             limits:
               cpu: {{ .Values.resources.assetExtractor.limits.cpu | quote }}
               memory: {{ .Values.resources.assetExtractor.limits.memory | quote }}
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "celery -A agent inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
 
       volumes:
         - name: credentials-volume
