@@ -6,4 +6,4 @@ set -o nounset
 rm -f './celerybeat.pid'
 
 python manage.py migrate
-celery -A agent beat -l INFO
+celery -A agent beat -l INFO --pidfile=/code/celerybeat.pid

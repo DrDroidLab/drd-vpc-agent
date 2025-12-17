@@ -114,6 +114,20 @@ DATABASES = {
 # Celery Configuration Options
 CELERY_BROKER_URL = env.str('CELERY_BROKER_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = env.str('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+
+# Broker connection reliability settings
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = env.bool('CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP', default=True)
+CELERY_BROKER_CONNECTION_MAX_RETRIES = env.int('CELERY_BROKER_CONNECTION_MAX_RETRIES', default=10)
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_POOL_LIMIT = 10
+CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS = {
+    'master_name': 'mymaster',
+    'socket_keepalive': True,
+    'socket_connect_timeout': 5,
+    'socket_timeout': 5,
+    'retry_on_timeout': True,
+    'health_check_interval': 30,
+}
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'

@@ -15,7 +15,7 @@ data:
     timeout 300
     
     # Memory management
-    maxmemory 400mb
+    maxmemory 900mb
     maxmemory-policy allkeys-lru
     
     # Persistence settings
