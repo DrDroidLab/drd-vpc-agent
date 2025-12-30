@@ -19,6 +19,15 @@ from utils.credentilal_utils import credential_yaml_to_connector_proto, generate
 logger = logging.getLogger(__name__)
 
 
+def _extract_proto_value(field):
+    """Extract value from protobuf wrapper types (StringValue, UInt32Value, etc.) when serialized to dict."""
+    if field is None:
+        return None
+    if isinstance(field, dict):
+        return field.get('value')
+    return field
+
+
 def _execute_asset_refresh_task(playbook_task_execution_log):
     """Execute asset refresh task using the playbook infrastructure"""
     try:
@@ -28,22 +37,25 @@ def _execute_asset_refresh_task(playbook_task_execution_log):
         drd_proxy_agent = task.get('drd_proxy_agent', {})
 
         asset_refresh = drd_proxy_agent.get('asset_refresh', {})
-        connector_name = asset_refresh.get('connector_name')
-        connector_type = asset_refresh.get('connector_type')
-        extractor_method = asset_refresh.get('extractor_method')  # Optional field for specific method
-        
+        # Extract values from protobuf wrapper types (they become {'value': 'x'} in JSON)
+        connector_name = _extract_proto_value(asset_refresh.get('connector_name'))
+        connector_type = _extract_proto_value(asset_refresh.get('connector_type'))
+        extractor_method = _extract_proto_value(asset_refresh.get('extractor_method'))
+
         logger.info(f'_execute_asset_refresh_task:: Starting asset refresh for connector: {connector_name}, '
                     f'type: {connector_type}, request_id: {request_id}, method: {extractor_method}')
-        
+
         if not request_id or not connector_name or not connector_type:
             raise ValueError(f'Missing required fields: request_id={request_id}, connector_name={connector_name}, connector_type={connector_type}')
         
         # Handle native kubernetes mode or find connector in loaded connections
         loaded_connections = settings.LOADED_CONNECTIONS if settings.LOADED_CONNECTIONS else {}
         credentials_dict = None
-        
+
         # Check if this is a native kubernetes connector
-        if settings.NATIVE_KUBERNETES_API_MODE and connector_type == 'KUBERNETES':
+        # connector_type is now an integer (Source enum value) - KUBERNETES = 47
+        is_kubernetes = connector_type == 47 or connector_type == 'KUBERNETES' or str(connector_type) == '47'
+        if settings.NATIVE_KUBERNETES_API_MODE and is_kubernetes:
             # For native kubernetes, we don't need loaded connections
             credentials_dict = {}
             logger.info(f'Using native Kubernetes mode for connector: {connector_name}')
@@ -56,7 +68,10 @@ def _execute_asset_refresh_task(playbook_task_execution_log):
                     break
         
         if credentials_dict is None:
-            raise ValueError(f'Connector not found or no credentials: {connector_name}')
+            available_connectors = list(loaded_connections.keys()) if loaded_connections else []
+            raise ValueError(f'Connector not found or no credentials: {connector_name}. '
+                           f'Available connectors in config: {available_connectors}. '
+                           f'Please ensure the connector is configured in the VPC agent credentials.')
         
         # Execute asset refresh for the specific connector
         from asset_manager.tasks import populate_connector_metadata, extractor_async_method_call
