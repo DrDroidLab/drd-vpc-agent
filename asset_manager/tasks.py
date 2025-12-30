@@ -27,8 +27,10 @@ def populate_connector_metadata(request_id, connector_name, connector_type, conn
     # Set API credentials for metadata saving
     extractor.api_host = drd_cloud_host
     extractor.api_token = drd_cloud_api_token
+    # Only include extract_* methods that actually persist data (not get_*_data helper methods)
     extractor_methods = [method for method in dir(extractor) if
-                         callable(getattr(extractor, method)) and method not in dir(SourceMetadataExtractor)]
+                         callable(getattr(extractor, method)) and method not in dir(SourceMetadataExtractor)
+                         and method.startswith('extract_')]
     for extractor_method in extractor_methods:
         logger.info(f"Running method: {extractor_method} for connector: {connector_name}")
         try:
