@@ -62,13 +62,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_TEAM_NAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Login to AWS ECR Public
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -89,7 +82,6 @@ jobs:
           IMAGE_TAG_BRANCH_ORIG: ${{ needs.setup.outputs.CLEAN_BRANCH_NAME }}
           IMAGE_TAG_EPOCH_TIMESTAMP: ${{ needs.setup.outputs.EPOCH_TIMESTAMP }}
           REPO_NAME: ${{ secrets.DOCKERHUB_TEAM_NAME }}/drd-vpc-agent
-          GHCR_REPO: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
           ECR_REPO: public.ecr.aws/o0o7n0a4/drdroid/drd-vpc-agent
           EVENT_NAME: ${{ github.event_name }}
         run: |
@@ -110,11 +102,6 @@ jobs:
             --tag ${REPO_NAME}:$IMAGE_TAG_BRANCH_ORIG \
             --tag ${REPO_NAME}:$IMAGE_TAG_BRANCH \
             --tag ${REPO_NAME}:latest \
-            --tag ${GHCR_REPO}:$IMAGE_TAG_SHA \
-            --tag ${GHCR_REPO}:$IMAGE_TAG_EPOCH_TIMESTAMP \
-            --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH_ORIG \
-            --tag ${GHCR_REPO}:$IMAGE_TAG_BRANCH \
-            --tag ${GHCR_REPO}:latest \
             --tag ${ECR_REPO}:$IMAGE_TAG_SHA \
             --tag ${ECR_REPO}:$IMAGE_TAG_EPOCH_TIMESTAMP \
             --tag ${ECR_REPO}:$IMAGE_TAG_BRANCH_ORIG \
