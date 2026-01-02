@@ -83,15 +83,38 @@ jobs:
         with:
           version: v3.14.0
 
-      - name: Update Helm chart version
+      - name: Update Helm chart versions
         run: |
-          # Update Chart.yaml with the release version
-          sed -i "s/^version:.*/version: ${{ steps.version.outputs.version }}/" ${{ env.HELM_CHART_PATH }}/Chart.yaml
-          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.version }}\"/" ${{ env.HELM_CHART_PATH }}/Chart.yaml
+          VERSION="${{ steps.version.outputs.version }}"
 
-          # Display updated Chart.yaml
-          echo "Updated Chart.yaml:"
+          # Update subchart versions
+          sed -i "s/^version:.*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/charts/redis/Chart.yaml
+          sed -i "s/^version:.*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/charts/celery_beat/Chart.yaml
+          sed -i "s/^version:.*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/charts/celery_worker/Chart.yaml
+
+          # Update redis dependency version in celery-beat and celery-worker
+          sed -i "s/version: 0\..*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/charts/celery_beat/Chart.yaml
+          sed -i "s/version: 0\..*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/charts/celery_worker/Chart.yaml
+
+          # Update parent Chart.yaml version and appVersion
+          sed -i "s/^version:.*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" ${{ env.HELM_CHART_PATH }}/Chart.yaml
+
+          # Update dependency versions in parent Chart.yaml
+          sed -i "/dependencies:/,$ s/version:.*/version: ${VERSION}/" ${{ env.HELM_CHART_PATH }}/Chart.yaml
+
+          # Display updated Chart files
+          echo "=== Parent Chart.yaml ==="
           cat ${{ env.HELM_CHART_PATH }}/Chart.yaml
+          echo ""
+          echo "=== redis/Chart.yaml ==="
+          cat ${{ env.HELM_CHART_PATH }}/charts/redis/Chart.yaml
+          echo ""
+          echo "=== celery_beat/Chart.yaml ==="
+          cat ${{ env.HELM_CHART_PATH }}/charts/celery_beat/Chart.yaml
+          echo ""
+          echo "=== celery_worker/Chart.yaml ==="
+          cat ${{ env.HELM_CHART_PATH }}/charts/celery_worker/Chart.yaml
 
       - name: Package Helm chart
         run: |
