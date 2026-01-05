@@ -24,14 +24,14 @@ global:
 # The network mapper provides service topology visibility and network insights
 # Default: enabled (recommended for full functionality)
 networkMapper:
-  enabled: false
+  enabled: true
 
 # Auto Update Configuration
 # Controls whether automatic deployment updates (restart cronjob) are enabled
 # When enabled, deployments are automatically restarted on schedule to pick up new images
 # Default: enabled (automatic updates for latest images)
 autoUpdate:
-  enabled: false
+  enabled: true
   schedule: "0 0 * * *"  # every day at 00:00 UTC
 
 celery-beat:
@@ -48,29 +48,29 @@ celery-worker:
   # Resource configuration for celery worker containers
   resources:
     scheduler:
-      # Lightweight task scheduler - handles task distribution and scheduling
+      # Lightweight task scheduler - handles polling tasks (reduced from 4 to 2 workers)
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "1000Mi"
+    taskExecutor:
+      # Task executor for high-priority tasks - handles execution of critical tasks (reduced from 4 to 3 workers)
       requests:
         cpu: "200m"
-        memory: "256Mi"
+        memory: "512Mi"
       limits:
-        cpu: "800m"
-        memory: "896Mi"
-    taskExecutor:
-      # Task executor for high-priority tasks - handles execution of critical tasks
-      requests:
-        cpu: "250m"
-        memory: "256Mi"
-      limits:
-        cpu: "1500m"
-        memory: "2Gi"
+        cpu: "1000m"
+        memory: "1536Mi"
     assetExtractor:
-      # Asset extraction worker - handles long-running asset discovery and extraction tasks
+      # Asset extraction worker - handles long-running asset discovery (reduced from 3 to 1 worker)
       requests:
-        cpu: "250m"
-        memory: "256Mi"
+        cpu: "200m"
+        memory: "512Mi"
       limits:
-        cpu: "1500m"
-        memory: "2Gi"
+        cpu: "1000m"
+        memory: "1536Mi"
 
 redis:
   image: redis:7.2
