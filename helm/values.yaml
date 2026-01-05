@@ -24,14 +24,14 @@ global:
 # The network mapper provides service topology visibility and network insights
 # Default: enabled (recommended for full functionality)
 networkMapper:
-  enabled: true
+  enabled: false
 
 # Auto Update Configuration
 # Controls whether automatic deployment updates (restart cronjob) are enabled
 # When enabled, deployments are automatically restarted on schedule to pick up new images
 # Default: enabled (automatic updates for latest images)
 autoUpdate:
-  enabled: true
+  enabled: false
   schedule: "0 0 * * *"  # every day at 00:00 UTC
 
 celery-beat:
