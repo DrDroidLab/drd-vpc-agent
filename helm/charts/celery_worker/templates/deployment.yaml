@@ -68,7 +68,7 @@ spec:
             - name: CELERY_QUEUE
               value: "celery"
             - name: CELERY_WORKER_COUNT
-              value: "4"
+              value: "2"
             - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
               value: "true"
             - name: CELERY_BROKER_CONNECTION_MAX_RETRIES
@@ -127,7 +127,7 @@ spec:
             - name: CELERY_QUEUE
               value: "exec"
             - name: CELERY_WORKER_COUNT
-              value: "4"
+              value: "3"
             - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
               value: "true"
             - name: CELERY_BROKER_CONNECTION_MAX_RETRIES
@@ -186,7 +186,7 @@ spec:
             - name: CELERY_QUEUE
               value: "asset_extraction"
             - name: CELERY_WORKER_COUNT
-              value: "3"
+              value: "1"
             - name: CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP
               value: "true"
             - name: CELERY_BROKER_CONNECTION_MAX_RETRIES

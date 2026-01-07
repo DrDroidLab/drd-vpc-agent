@@ -1,5 +1,4 @@
 import logging
-import copy
 
 import requests
 from celery import shared_task
@@ -94,10 +93,9 @@ def _execute_asset_refresh_task(playbook_task_execution_log):
         logger.error(f'_execute_asset_refresh_task:: Error during asset refresh: {str(e)}')
         result = PlaybookTaskResult(error=StringValue(value=str(e)))
     
-    # Create processed log in the same format as normal playbook tasks
-    processed_log = copy.deepcopy(playbook_task_execution_log)
+    # Create processed log in the same format as normal playbook tasks (shallow copy is sufficient)
     result_dict = proto_to_dict(result)
-    processed_log['result'] = result_dict
+    processed_log = {**playbook_task_execution_log, 'result': result_dict}
     
     # Send results using existing playbook infrastructure
     drd_cloud_host = settings.DRD_CLOUD_API_HOST
@@ -261,19 +259,17 @@ def execute_task_and_send_result(playbook_task_execution_log):
         try:
             # Execute task
             results = _execute_playbook_task(task_proto, time_range, global_variable_set)
-            
-            # Create processed logs
+
+            # Create processed logs (using shallow copy - deep copy is unnecessary since we only add 'result')
             for result in results:
-                current_log_copy = copy.deepcopy(playbook_task_execution_log)
                 result_dict = proto_to_dict(result)
-                current_log_copy['result'] = result_dict
+                current_log_copy = {**playbook_task_execution_log, 'result': result_dict}
                 processed_logs.append(current_log_copy)
-                
+
         except Exception as e:
             logger.error(f'execute_task_and_send_result:: Error while executing tasks: {str(e)}')
-            current_log_copy = copy.deepcopy(playbook_task_execution_log)
             error_result = PlaybookTaskResult(error=StringValue(value=str(e)))
-            current_log_copy['result'] = proto_to_dict(error_result)
+            current_log_copy = {**playbook_task_execution_log, 'result': proto_to_dict(error_result)}
             processed_logs.append(current_log_copy)
 
         # Send results

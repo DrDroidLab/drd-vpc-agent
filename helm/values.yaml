@@ -48,29 +48,29 @@ celery-worker:
   # Resource configuration for celery worker containers
   resources:
     scheduler:
-      # Lightweight task scheduler - handles task distribution and scheduling
+      # Lightweight task scheduler - handles polling tasks (reduced from 4 to 2 workers)
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "1000Mi"
+    taskExecutor:
+      # Task executor for high-priority tasks - handles execution of critical tasks (reduced from 4 to 3 workers)
       requests:
         cpu: "200m"
-        memory: "256Mi"
+        memory: "512Mi"
       limits:
-        cpu: "800m"
-        memory: "896Mi"
-    taskExecutor:
-      # Task executor for high-priority tasks - handles execution of critical tasks
-      requests:
-        cpu: "250m"
-        memory: "256Mi"
-      limits:
-        cpu: "1500m"
-        memory: "2Gi"
+        cpu: "1000m"
+        memory: "1536Mi"
     assetExtractor:
-      # Asset extraction worker - handles long-running asset discovery and extraction tasks
+      # Asset extraction worker - handles long-running asset discovery (reduced from 3 to 1 worker)
       requests:
-        cpu: "250m"
-        memory: "256Mi"
+        cpu: "200m"
+        memory: "512Mi"
       limits:
-        cpu: "1500m"
-        memory: "2Gi"
+        cpu: "1000m"
+        memory: "1536Mi"
 
 redis:
   image: redis:7.2
