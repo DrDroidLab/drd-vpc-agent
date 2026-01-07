@@ -6,6 +6,7 @@ from django.conf import settings
 
 from drdroid_debug_toolkit.core.integrations.source_metadata_extractor import SourceMetadataExtractor
 from drdroid_debug_toolkit.core.integrations.source_metadata_extractor_facade import source_metadata_extractor_facade
+from agent.shutdown import is_shutting_down
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,11 @@ def populate_connector_metadata(request_id, connector_name, connector_type, conn
                          callable(getattr(extractor, method)) and method not in dir(SourceMetadataExtractor)
                          and method.startswith('extract_')]
     for extractor_method in extractor_methods:
+        # Check for shutdown between extraction methods
+        if is_shutting_down():
+            logger.info(f"Shutdown in progress - stopping asset extraction for {connector_name} at method {extractor_method}")
+            break
+
         logger.info(f"Running method: {extractor_method} for connector: {connector_name}")
         try:
             extractor_async_method_call(request_id, connector_name, connector_type, connector_credentials_dict,
