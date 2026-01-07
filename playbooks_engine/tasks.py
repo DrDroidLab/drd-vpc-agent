@@ -15,6 +15,7 @@ from utils.proto_utils import dict_to_proto, proto_to_dict
 from utils.credentilal_utils import credential_yaml_to_connector_proto
 from drdroid_debug_toolkit.core.integrations.utils.executor_utils import check_multiple_task_results
 from utils.credentilal_utils import credential_yaml_to_connector_proto, generate_credentials_dict
+from agent.shutdown import is_shutting_down
 
 logger = logging.getLogger(__name__)
 
@@ -230,6 +231,12 @@ def fetch_playbook_execution_tasks():
 
 @shared_task(max_retries=3, default_retry_delay=10)
 def execute_task_and_send_result(playbook_task_execution_log):
+    # Check if worker is shutting down
+    if is_shutting_down():
+        request_id = playbook_task_execution_log.get('proxy_execution_request_id', 'unknown')
+        logger.info(f"Worker shutting down - task {request_id} will be requeued")
+        return False  # Task will be requeued due to CELERY_TASK_REJECT_ON_WORKER_LOST
+
     try:
         # Check if this is an asset refresh task
         task = playbook_task_execution_log.get('task', {})

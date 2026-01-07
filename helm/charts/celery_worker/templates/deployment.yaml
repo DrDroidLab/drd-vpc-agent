@@ -25,6 +25,7 @@ spec:
       tolerations:
         {{- toYaml .Values.global.tolerations | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: 30
       initContainers:
         - name: wait-for-redis
           image: busybox:1.36
@@ -104,6 +105,10 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
 
         - name: celery-worker-task-executor # Task executor for high-priority tasks
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -163,6 +168,10 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
 
         - name: celery-worker-asset-extractor # Task executor for asset extraction tasks, which run rarely and are long-running
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -222,6 +231,10 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
 
       volumes:
         - name: credentials-volume
