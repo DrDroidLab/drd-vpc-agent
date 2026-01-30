@@ -452,6 +452,17 @@ integrations_connector_type_connector_keys_map = {
             SourceKeyType.SIGNOZ_API_TOKEN
         ]
     ],
+    Source.BITBUCKET: [
+        [
+            SourceKeyType.BITBUCKET_API_KEY,
+            SourceKeyType.BITBUCKET_WORKSPACE,
+        ],
+        [
+            SourceKeyType.BITBUCKET_API_KEY,
+            SourceKeyType.BITBUCKET_WORKSPACE,
+            SourceKeyType.BITBUCKET_REPO,
+        ],
+    ],
 }
 integrations_connector_type_display_name_map = {
     Source.SLACK: 'SLACK',
@@ -493,6 +504,7 @@ integrations_connector_type_display_name_map = {
     Source.ROLLBAR: 'ROLLBAR',
     Source.POSTHOG: 'POSTHOG',
     Source.SIGNOZ: 'SIGNOZ',
+    Source.BITBUCKET: 'BITBUCKET',
 }
 
 model_type_display_name_maps = {
@@ -514,6 +526,8 @@ model_type_display_name_maps = {
     SourceModelType.SSH_SERVER: "SSH Server",
     SourceModelType.OPEN_SEARCH_INDEX: "Open Search Index",
     SourceModelType.GITHUB_REPOSITORY: "Repository",
+    SourceModelType.BITBUCKET_REPOSITORY: "Repository",
+    SourceModelType.BITBUCKET_WORKSPACE_MEMBER: "Workspace Member",
 }
 
 masked_keys_types = [SourceKeyType.DATADOG_APP_KEY,
@@ -564,6 +578,7 @@ masked_keys_types = [SourceKeyType.DATADOG_APP_KEY,
                      SourceKeyType.KUBERNETES_CLUSTER_CERTIFICATE_AUTHORITY_DATA,
                      SourceKeyType.REMOTE_SERVER_PEM,
                      SourceKeyType.POSTHOG_API_KEY,
+                     SourceKeyType.BITBUCKET_API_KEY,
                      ]
 
 

@@ -1017,6 +1017,25 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml, connecto
                 key_type=SourceKeyType.MCP_SERVER_AUTH_HEADERS,
                 key=StringValue(value=credential_yaml['mcp_server_auth_headers'])
             ))
+    elif c_type == 'BITBUCKET':
+        if 'api_key' not in credential_yaml:
+            raise Exception(f'api_key not found for bitbucket connector: {connector_name}')
+        if 'workspace' not in credential_yaml:
+            raise Exception(f'workspace not found for bitbucket connector: {connector_name}')
+        c_source = Source.BITBUCKET
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.BITBUCKET_API_KEY,
+            key=StringValue(value=credential_yaml['api_key'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.BITBUCKET_WORKSPACE,
+            key=StringValue(value=credential_yaml['workspace'])
+        ))
+        if credential_yaml.get('repo'):
+            c_keys.append(ConnectorKey(
+                key_type=SourceKeyType.BITBUCKET_REPO,
+                key=StringValue(value=credential_yaml['repo'])
+            ))
     else:
         raise Exception(f'Invalid type in credential yaml for connector: {connector_name}')
     
