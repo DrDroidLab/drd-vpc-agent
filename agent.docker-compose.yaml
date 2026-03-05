@@ -3,6 +3,7 @@ version: "3.9"
 services:
   redis:
     image: "redis:alpine"
+    command: redis-server --maxmemory 900mb --maxmemory-policy allkeys-lru
     networks:
       - mynetwork
 
