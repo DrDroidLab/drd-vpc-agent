@@ -336,6 +336,12 @@ def generate_credentials_dict(connector_type, connector_keys):
                 credentials_dict['argocd_server'] = conn_key.key.value
             if conn_key.key_type == SourceKeyType.ARGOCD_TOKEN:
                 credentials_dict['argocd_token'] = conn_key.key.value
+    elif connector_type == Source.ARGO_WORKFLOWS:
+        for conn_key in connector_keys:
+            if conn_key.key_type == SourceKeyType.ARGO_WORKFLOWS_SERVER:
+                credentials_dict['argo_workflows_server'] = conn_key.key.value
+            if conn_key.key_type == SourceKeyType.ARGO_WORKFLOWS_TOKEN:
+                credentials_dict['argo_workflows_token'] = conn_key.key.value
     elif connector_type == Source.JIRA_CLOUD:
         for conn_key in connector_keys:
             if conn_key.key_type == SourceKeyType.JIRA_CLOUD_API_KEY:
@@ -775,6 +781,19 @@ def credential_yaml_to_connector_proto(connector_name, credential_yaml, connecto
         c_keys.append(ConnectorKey(
             key_type=SourceKeyType.ARGOCD_TOKEN,
             key=StringValue(value=credential_yaml['argocd_token'])
+        ))
+    elif c_type == 'ARGO_WORKFLOWS':
+        if 'argo_workflows_server' not in credential_yaml or 'argo_workflows_token' not in credential_yaml:
+            raise Exception(f'Server or Token not found in credential yaml for Argo Workflows source in '
+                            f'connector: {connector_name}')
+        c_source = Source.ARGO_WORKFLOWS
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.ARGO_WORKFLOWS_SERVER,
+            key=StringValue(value=credential_yaml['argo_workflows_server'])
+        ))
+        c_keys.append(ConnectorKey(
+            key_type=SourceKeyType.ARGO_WORKFLOWS_TOKEN,
+            key=StringValue(value=credential_yaml['argo_workflows_token'])
         ))
     elif c_type == 'JIRA_CLOUD':
         if 'jira_cloud_api_key' not in credential_yaml or 'jira_domain' not in credential_yaml or 'jira_email' not in credential_yaml:

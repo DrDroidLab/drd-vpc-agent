@@ -421,6 +421,12 @@ integrations_connector_type_connector_keys_map = {
             SourceKeyType.ARGOCD_TOKEN,
         ]
     ],
+    Source.ARGO_WORKFLOWS: [
+        [
+            SourceKeyType.ARGO_WORKFLOWS_SERVER,
+            SourceKeyType.ARGO_WORKFLOWS_TOKEN,
+        ]
+    ],
     Source.POSTHOG: [
         [
             SourceKeyType.POSTHOG_API_KEY,
@@ -490,6 +496,7 @@ integrations_connector_type_display_name_map = {
     Source.LINEAR: 'LINEAR',
     Source.GITHUB_ACTIONS: 'GITHUB ACTIONS',
     Source.ARGOCD: 'ARGOCD',
+    Source.ARGO_WORKFLOWS: 'ARGO WORKFLOWS',
     Source.ROLLBAR: 'ROLLBAR',
     Source.POSTHOG: 'POSTHOG',
     Source.SIGNOZ: 'SIGNOZ',
@@ -558,6 +565,7 @@ masked_keys_types = [SourceKeyType.DATADOG_APP_KEY,
                      SourceKeyType.GITHUB_ACTIONS_TOKEN,
                      SourceKeyType.SMTP_PASSWORD,
                      SourceKeyType.ARGOCD_TOKEN,
+                     SourceKeyType.ARGO_WORKFLOWS_TOKEN,
                      SourceKeyType.ROLLBAR_ACCESS_TOKEN,
                      SourceKeyType.CUSTOM_STRATEGIES_ACCOUNT_ID,
                      SourceKeyType.KUBERNETES_CLUSTER_TOKEN,
