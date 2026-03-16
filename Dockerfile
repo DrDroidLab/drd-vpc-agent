@@ -1,6 +1,7 @@
-FROM python:3.12-bullseye
+FROM python:3.12-bookworm
 
 RUN apt-get update \
+  && apt-get upgrade -y \
   # dependencies for building Python packages \
   && apt-get install -y build-essential \
   # psycopg2 dependencies
