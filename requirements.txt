@@ -87,7 +87,7 @@ jmespath==1.0.1
 kombu==5.3.4
 kubernetes==26.1.0
 lz4==4.3.3
-marshmallow>=3.26.2
+marshmallow>=3.26.2,<4
 msal>=1.35.0
 msal-extensions==1.2.0
 msrest==0.7.1
