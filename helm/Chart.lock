@@ -1,0 +1,12 @@
+dependencies:
+- name: celery-beat
+  repository: file://charts/celery_beat
+  version: 0.1.0
+- name: celery-worker
+  repository: file://charts/celery_worker
+  version: 0.1.0
+- name: redis
+  repository: file://charts/redis
+  version: 0.1.0
+digest: sha256:89a974ed81461af8cfc9b3a96f26ac961a1124cee6c5f291a1cd2ba73601557c
+generated: "2026-03-16T16:16:53.729664+05:30"
