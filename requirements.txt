@@ -150,4 +150,4 @@ websocket-client==1.8.0
 yarl==1.12.1
 zstandard==0.23.0
 # Latest version of drdroid-debug-toolkit -> added logql cleanup
-git+https://github.com/DrDroidLab/drdroid-debug-toolkit.git@feat/bumps-django-version
+git+https://github.com/DrDroidLab/drdroid-debug-toolkit.git@master
