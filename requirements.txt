@@ -37,7 +37,7 @@ distro==1.9.0
 dj-database-url==1.2.0
 dj-email-url==1.0.6
 dj-rest-auth==2.2.7
-Django>=4.2.14,<5
+Django>=5.2,<5.3
 django-allauth>=65.14.1
 django-appconf==1.0.5
 django-cache-url==3.4.4
@@ -100,7 +100,7 @@ oauthlib==3.2.2
 openai==1.35.15
 opsgenie-sdk==2.1.5
 packaging==24.1
-pandas==2.3.1
+pandas>=2.3.3,<2.4
 paramiko==3.4.1
 pdpyras==5.2.0
 portalocker==2.10.1
@@ -150,4 +150,4 @@ websocket-client==1.8.0
 yarl==1.12.1
 zstandard==0.23.0
 # Latest version of drdroid-debug-toolkit -> added logql cleanup
-git+https://github.com/DrDroidLab/drdroid-debug-toolkit.git@master
+git+https://github.com/DrDroidLab/drdroid-debug-toolkit.git@feat/django-5-introduced
