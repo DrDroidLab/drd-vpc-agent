@@ -60,7 +60,10 @@ spec:
             - name: REDIS_URL
               value: "redis://redis-service:6379/0"
             - name: DRD_CLOUD_API_TOKEN
-              value: {{ .Values.global.DRD_CLOUD_API_TOKEN | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: drd-cloud-secret
+                  key: DRD_CLOUD_API_TOKEN
             - name: DRD_CLOUD_API_HOST
               value: {{ .Values.global.DRD_CLOUD_API_HOST | quote }}
             - name: NATIVE_KUBERNETES_API_MODE
@@ -102,5 +105,5 @@ spec:
             failureThreshold: 12
       volumes:
         - name: credentials-volume
-          configMap:
-            name: credentials-config
+          secret:
+            secretName: credentials-secret

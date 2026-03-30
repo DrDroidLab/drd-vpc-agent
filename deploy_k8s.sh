@@ -149,8 +149,8 @@ deploy_vpc_agent() {
     # Create the namespace if it doesn't exist
     kubectl create namespace "$namespace" --dry-run=client -o yaml | kubectl apply -f -
     
-    # Apply configmap
-    kubectl apply -f configmap.yaml -n "$namespace"
+    # Apply credentials secret
+    kubectl apply -f credentials-secret.yaml -n "$namespace"
     
     # Create a values.override.yaml file to override the global API token
     cat <<EOF > values.override.yaml
