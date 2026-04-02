@@ -44,9 +44,10 @@ To get started create an agent authentication token by visiting [site](https://a
 
 ### Docker Compose
 
-1. Create credentials/secret.yaml file with valid credentials. Secrets format for different connections can be
+1. Create `credentials/secrets.yaml` file with valid credentials. Secrets format for different connections can be
    referenced
    from: [credentials/credentials_template.yaml.](https://github.com/DrDroidLab/drd-vpc-agent/blob/main/credentials/credentials_template.yaml)
+   - For Sentry connectors, use `org_slug` (not `org`).
 
 Command:
 
@@ -58,7 +59,14 @@ For any update the agent, re-run the command.
 
 ### Helm
 
-1. Add the secrets for the integrations in helm/configmap.yaml file.
+1. Add integration credentials in `credentials/secrets.yaml`.
+   For Sentry connectors, use:
+   ```yaml
+   connector_name:
+     type: "SENTRY"
+     api_key: <sentry_api_key>
+     org_slug: <sentry_org_slug>
+   ```
    Refer to the image below for a sample:
    <img width="934" alt="Screenshot 2024-12-20 at 14 02 43" src="https://github.com/user-attachments/assets/cadb2b0a-db0c-4128-bef7-fe2a6288b79b" />
 
