@@ -4,8 +4,23 @@ import logging
 import os
 
 from celery import Celery, shared_task
+from celery.signals import worker_shutting_down, worker_shutdown
 
 logger = logging.getLogger(__name__)
+
+
+@worker_shutting_down.connect
+def handle_worker_shutting_down(sig, how, exitcode, **kwargs):
+    """Called when worker receives shutdown signal."""
+    from agent.shutdown import set_shutdown
+    logger.info(f"Celery worker shutting down (signal={sig}, how={how})")
+    set_shutdown()
+
+
+@worker_shutdown.connect
+def handle_worker_shutdown(sender, **kwargs):
+    """Called after worker has shut down."""
+    logger.info("Celery worker shutdown complete")
 
 # Set the default Django settings mode for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'agent.settings')
