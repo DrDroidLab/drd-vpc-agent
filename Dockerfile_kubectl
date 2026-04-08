@@ -8,7 +8,9 @@ ARG KUBECTL_VERSION=v1.31.0
 
 # Install dependencies (curl, bash optional) and kubectl
 RUN apk add --no-cache curl bash ca-certificates \
-    && curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/$(uname | tr '[:upper:]' '[:lower:]')/$(uname -m)/kubectl" \
+    && ARCH=$(uname -m) \
+    && case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac \
+    && curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \
     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
     && rm kubectl
 
