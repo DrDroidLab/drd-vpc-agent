@@ -129,7 +129,20 @@ networkMapper:
 
 #### Using Alternative Image Registries
 
-By default, the Helm chart pulls images from Docker Hub (`drdroidlab/drd-vpc-agent`). If you prefer to use AWS ECR Public or GitHub Container Registry, modify `helm/values.yaml` before deploying:
+By default, the Helm chart pulls images from GitHub Container Registry (`ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent`). If you prefer to use Docker Hub or AWS ECR Public, modify `helm/values.yaml` before deploying:
+
+**For Docker Hub:**
+```yaml
+celery-beat:
+  image:
+    repository: drdroidlab/drd-vpc-agent
+    tag: latest
+
+celery-worker:
+  image:
+    repository: drdroidlab/drd-vpc-agent
+    tag: latest
+```
 
 **For AWS ECR Public:**
 ```yaml
@@ -141,19 +154,6 @@ celery-beat:
 celery-worker:
   image:
     repository: public.ecr.aws/o0o7n0a4/drdroid/drd-vpc-agent
-    tag: latest
-```
-
-**For GitHub Container Registry (GHCR):**
-```yaml
-celery-beat:
-  image:
-    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
-    tag: latest
-
-celery-worker:
-  image:
-    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
     tag: latest
 ```
 

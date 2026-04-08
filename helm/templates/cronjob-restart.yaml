@@ -12,7 +12,7 @@ spec:
           serviceAccountName: drd-vpc-agent-restart
           containers:
             - name: kubectl
-              image: drdroidlab/kubectl:latest
+              image: ghcr.io/drdroidlab/drd-vpc-agent/kubectl:latest
               command:
                 - /bin/sh
                 - -c

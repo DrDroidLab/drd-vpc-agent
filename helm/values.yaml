@@ -36,13 +36,13 @@ autoUpdate:
 
 celery-beat:
   image:
-    repository: drdroidlab/drd-vpc-agent
+    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
     tag: latest
     pullPolicy: Always
 
 celery-worker:
   image:
-    repository: drdroidlab/drd-vpc-agent
+    repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
     tag: latest
     pullPolicy: Always
   # Resource configuration for celery worker containers
