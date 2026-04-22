@@ -1,0 +1,136 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      push_latest:
+        description: 'Also tag images as :latest'
+        required: false
+        default: true
+        type: boolean
+      push_helm_chart:
+        description: 'Package and push Helm chart'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: manual-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  DOCKERHUB_TEAM_NAME: drdroidlab
+  IMAGE_NAME: drd-vpc-agent
+  GHCR_REGISTRY: ghcr.io
+  GHCR_IMAGE: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
+  HELM_CHART_PATH: helm
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Validate version input
+        id: version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.\-]+)?$ ]]; then
+            echo "::error::Version must match X.Y.Z or vX.Y.Z (with optional -suffix). Got: '$VERSION'"
+            exit 1
+          fi
+          SEMVER="${VERSION#v}"
+          echo "tag=v${SEMVER}"          >> $GITHUB_OUTPUT
+          echo "semver=${SEMVER}"        >> $GITHUB_OUTPUT
+          echo "Releasing: v${SEMVER} (image tag: ${SEMVER})"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_TEAM_NAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_TEAM_NAME }}/${{ env.IMAGE_NAME }}
+            ${{ env.GHCR_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ steps.version.outputs.tag }}
+            type=raw,value=latest,enable=${{ inputs.push_latest }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set up Helm
+        if: ${{ inputs.push_helm_chart }}
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Update Helm chart versions
+        if: ${{ inputs.push_helm_chart }}
+        run: |
+          VERSION="${{ steps.version.outputs.semver }}"
+          CHART_PATH="${{ env.HELM_CHART_PATH }}"
+          find ${CHART_PATH} -name "Chart.yaml" -exec sed -i "s/\(version:\s*\)[0-9][0-9.]*/\1${VERSION}/g" {} \;
+          sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" ${CHART_PATH}/Chart.yaml
+
+      - name: Package and push Helm chart
+        if: ${{ inputs.push_helm_chart }}
+        run: |
+          helm dependency update ${{ env.HELM_CHART_PATH }}
+          helm package ${{ env.HELM_CHART_PATH }} --destination .helm-packages
+          helm push .helm-packages/${{ env.IMAGE_NAME }}-${{ steps.version.outputs.semver }}.tgz \
+            oci://${{ env.GHCR_REGISTRY }}/drdroidlab/charts
+
+      - name: Summary
+        run: |
+          {
+            echo "### Released \`${{ steps.version.outputs.tag }}\`"
+            echo ""
+            echo "**Image tag to use in deployments:** \`${{ steps.version.outputs.semver }}\` (no \`v\` prefix)"
+            echo ""
+            echo "**Docker images pushed:**"
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            if [ "${{ inputs.push_helm_chart }}" = "true" ]; then
+              echo ""
+              echo "**Helm chart:** \`oci://${{ env.GHCR_REGISTRY }}/drdroidlab/charts/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.semver }}\`"
+            fi
+          } >> $GITHUB_STEP_SUMMARY
