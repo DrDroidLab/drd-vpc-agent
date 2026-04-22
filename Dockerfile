@@ -16,6 +16,23 @@ COPY requirements.txt /build/
 RUN pip install uv
 RUN uv pip install --system --target /build/deps -r requirements.txt
 
+# Scrub unused/unreachable files to shrink the image and drop false-positive
+# secret matches in third-party source that is never loaded at runtime.
+#   - allauth*: django-allauth is not imported and not in INSTALLED_APPS
+#   - botocore examples-*.json: documentation data, not loaded by botocore
+#   - azure/common/client_factory.py: no consumers in the dep graph
+#   - oauthlib/requests_oauthlib docstring tokens: RFC-6749 examples flagged
+#     as hardcoded secrets; replacing in docstrings is runtime-safe
+RUN rm -rf /build/deps/allauth /build/deps/allauth-*.dist-info \
+    && find /build/deps/botocore/data -type f -name 'examples-*.json' -delete \
+    && rm -f /build/deps/azure/common/client_factory.py \
+    && sed -i \
+         -e 's/2YotnFZFEjr1zCsicMWpAA/EXAMPLE_ACCESS_TOKEN/g' \
+         -e 's/tGzv3JOkF0XG5Qx2TlKWIA/EXAMPLE_REFRESH_TOKEN/g' \
+         /build/deps/oauthlib/oauth2/rfc6749/parameters.py \
+    && sed -i "s/client_secret='secret'/client_secret='EXAMPLE_SECRET'/g" \
+         /build/deps/requests_oauthlib/oauth1_session.py
+
 # ---- Runtime stage ----
 FROM python:3.12-slim-trixie
 

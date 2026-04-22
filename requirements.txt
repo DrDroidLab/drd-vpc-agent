@@ -38,7 +38,6 @@ dj-database-url==1.2.0
 dj-email-url==1.0.6
 dj-rest-auth==2.2.7
 Django>=5.2,<5.3
-django-allauth>=65.14.1
 django-appconf==1.0.5
 django-cache-url==3.4.4
 django-celery-beat>=2.5.0
