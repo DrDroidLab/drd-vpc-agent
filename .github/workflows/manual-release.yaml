@@ -41,13 +41,14 @@ jobs:
         id: version
         run: |
           VERSION="${{ inputs.version }}"
-          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.\-]+)?$ ]]; then
-            echo "::error::Version must match vX.Y.Z or vX.Y.Z-suffix (got: '$VERSION')"
+          if [[ ! "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.\-]+)?$ ]]; then
+            echo "::error::Version must match X.Y.Z or vX.Y.Z (with optional -suffix). Got: '$VERSION'"
             exit 1
           fi
-          echo "tag=$VERSION"            >> $GITHUB_OUTPUT
-          echo "semver=${VERSION#v}"     >> $GITHUB_OUTPUT
-          echo "Releasing: $VERSION"
+          SEMVER="${VERSION#v}"
+          echo "tag=v${SEMVER}"          >> $GITHUB_OUTPUT
+          echo "semver=${SEMVER}"        >> $GITHUB_OUTPUT
+          echo "Releasing: v${SEMVER} (image tag: ${SEMVER})"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -121,6 +122,8 @@ jobs:
         run: |
           {
             echo "### Released \`${{ steps.version.outputs.tag }}\`"
+            echo ""
+            echo "**Image tag to use in deployments:** \`${{ steps.version.outputs.semver }}\` (no \`v\` prefix)"
             echo ""
             echo "**Docker images pushed:**"
             echo '```'
