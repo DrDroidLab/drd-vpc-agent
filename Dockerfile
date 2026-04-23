@@ -26,11 +26,19 @@ RUN uv pip install --system --target /build/deps -r requirements.txt
 RUN rm -rf /build/deps/allauth /build/deps/allauth-*.dist-info \
     && find /build/deps/botocore/data -type f -name 'examples-*.json' -delete \
     && rm -f /build/deps/azure/common/client_factory.py \
+    && rm -f /build/deps/drdroid_debug_toolkit/credentials_example.yaml \
     && sed -i \
          -e 's/2YotnFZFEjr1zCsicMWpAA/EXAMPLE_ACCESS_TOKEN/g' \
          -e 's/tGzv3JOkF0XG5Qx2TlKWIA/EXAMPLE_REFRESH_TOKEN/g' \
          /build/deps/oauthlib/oauth2/rfc6749/parameters.py \
-    && sed -i "s/client_secret='secret'/client_secret='EXAMPLE_SECRET'/g" \
+    && sed -i \
+         -e "s/client_secret='secret'/client_secret='EXAMPLE_SECRET'/g" \
+         -e 's/kjerht2309uf/EXAMPLE_TOKEN_A/g' \
+         -e 's/kjerht2309u/EXAMPLE_TOKEN_A/g' \
+         -e 's/lsdajfh923874/EXAMPLE_TOKEN_SECRET_A/g' \
+         -e 's/w34o8967345/EXAMPLE_VERIFIER/g' \
+         -e 's/sdf0o9823sjdfsdf/EXAMPLE_TOKEN_B/g' \
+         -e 's/2kjshdfp92i34asdasd/EXAMPLE_TOKEN_SECRET_B/g' \
          /build/deps/requests_oauthlib/oauth1_session.py
 
 # ---- Runtime stage ----
@@ -61,6 +69,14 @@ RUN apt-get update \
 COPY nginx.default /etc/nginx/sites-available/default
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
+
+# Upgrade the base image's bundled pip to a version without known CVEs
+# (CVE-2018-20225, CVE-2025-8869, CVE-2026-1703 — all fixed by >= 26.0).
+# Also drop the ensurepip-bundled pip-25.0.1 wheel — Xray flags the wheel even
+# though the installed pip is patched, and virtualenv bootstrapping isn't used
+# at runtime in this image.
+RUN pip install --no-cache-dir --upgrade "pip>=26.0" \
+    && rm -f /usr/local/lib/python3.12/ensurepip/_bundled/pip-*.whl
 
 # Set environment variables
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
