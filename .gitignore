@@ -177,3 +177,8 @@ media/csv_files/*
 media/text_files/*
 env
 static/
+helm/values.local.yaml
+
+# Local copy of debug toolkit for testing
+drdroid-debug-toolkit/
+deploy_local.sh

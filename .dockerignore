@@ -1,0 +1,69 @@
+# --- VCS, editor, CI metadata ---
+.git
+.github
+.gitignore
+.gitattributes
+.agent
+.claude
+.DS_Store
+*.swp
+
+# --- Docker + compose meta (read by builder, not needed inside image) ---
+Dockerfile
+Dockerfile_kubectl
+.dockerignore
+agent.docker-compose.yaml
+deploy.docker-compose.yaml
+
+# --- Deploy-time-only artifacts (rendered by helm/CI, not used at container runtime) ---
+helm
+network-mapper-helm
+packaged-helm
+deploy_docker.sh
+deploy_k8s.sh
+deploy_k8s_custom.sh
+deploy_local.sh
+
+# --- Docs and local-only security notes ---
+README.md
+*.md
+security
+
+# --- Local / dev-only scripts and credentials ---
+scripts/local-build.sh
+scripts/proto_codegen.sh
+credentials
+**/credentials_example.yaml
+**/credentials_template.yaml
+**/*.local.yaml
+**/*.local.conf
+dev_scripts
+redeploy.sh
+start_celery.sh
+start_server.sh
+start_celery_beat.sh
+env
+web/.env
+
+# --- Python build/test caches + virtualenvs (never needed at runtime) ---
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+**/venv
+**/.venv
+# The toolkit is pip-installed from its git URL (see requirements.txt);
+# CI never ships the source tree. Excluding entirely for CI parity.
+drdroid-debug-toolkit
+**/*.env
+**/env.sh
+
+# --- Runtime-generated media/static (re-created on boot) ---
+media/images
+media/csv_files
+media/text_files
+static
