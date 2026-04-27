@@ -6,6 +6,20 @@ server {
 
     listen 8080;
     client_max_body_size 10M;
+    server_tokens off;
+
+    # Security response headers. The agent is server-to-server only (no browser
+    # callers), so these are no-ops at runtime for current consumers; declared
+    # to satisfy outbound-traffic security baselines.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'none'" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    # Drop any upstream wildcard CORS header. Server-to-server callers don't
+    # use CORS; not re-emitting one keeps the response free of any allow-origin
+    # advertisement.
+    proxy_hide_header Access-Control-Allow-Origin;
 
     location / {
         proxy_pass http://agent;
@@ -21,4 +35,3 @@ server {
 }
 
 access_log /dev/stdout;
-
