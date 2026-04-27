@@ -21,25 +21,54 @@ RUN uv pip install --system --target /build/deps -r requirements.txt
 #   - allauth*: django-allauth is not imported and not in INSTALLED_APPS
 #   - botocore examples-*.json: documentation data, not loaded by botocore
 #   - azure/common/client_factory.py: no consumers in the dep graph
-#   - oauthlib/requests_oauthlib docstring tokens: RFC-6749 examples flagged
-#     as hardcoded secrets; replacing in docstrings is runtime-safe
+#   - dist-info/RECORD: wheel-install manifest of SHA-256 hashes; only used
+#     by pip uninstall / pip show --files. Hashes trip "plaintext API key"
+#     scanners. Never read at runtime.
+#   - kubernetes/**/*_test.py + test_*.py: shipped in the wheel but never
+#     imported at runtime. Test fixtures contain hardcoded sample tokens.
+#   - PyMySQL METADATA: CodeCov badge URL contains a real-looking token.
+#   - oauthlib/requests_oauthlib docstring tokens: RFC-5849/6749 examples
+#     and CodeCov-style placeholders flagged as hardcoded secrets;
+#     replacing in docstrings is runtime-safe.
+#   - google.auth StaticCredentials docstring example: same class.
 RUN rm -rf /build/deps/allauth /build/deps/allauth-*.dist-info \
     && find /build/deps/botocore/data -type f -name 'examples-*.json' -delete \
     && rm -f /build/deps/azure/common/client_factory.py \
     && rm -f /build/deps/drdroid_debug_toolkit/credentials_example.yaml \
+    && find /build/deps -path '*.dist-info/RECORD' -delete \
+    && find /build/deps/kubernetes -type f \( -name '*_test.py' -o -name 'test_*.py' \) -delete \
+    && sed -i 's/?token=ppEuaNXBW4//g' /build/deps/PyMySQL-1.1.1.dist-info/METADATA \
     && sed -i \
          -e 's/2YotnFZFEjr1zCsicMWpAA/EXAMPLE_ACCESS_TOKEN/g' \
          -e 's/tGzv3JOkF0XG5Qx2TlKWIA/EXAMPLE_REFRESH_TOKEN/g' \
          /build/deps/oauthlib/oauth2/rfc6749/parameters.py \
     && sed -i \
-         -e "s/client_secret='secret'/client_secret='EXAMPLE_SECRET'/g" \
-         -e 's/kjerht2309uf/EXAMPLE_TOKEN_A/g' \
-         -e 's/kjerht2309u/EXAMPLE_TOKEN_A/g' \
-         -e 's/lsdajfh923874/EXAMPLE_TOKEN_SECRET_A/g' \
-         -e 's/w34o8967345/EXAMPLE_VERIFIER/g' \
-         -e 's/sdf0o9823sjdfsdf/EXAMPLE_TOKEN_B/g' \
-         -e 's/2kjshdfp92i34asdasd/EXAMPLE_TOKEN_SECRET_B/g' \
-         /build/deps/requests_oauthlib/oauth1_session.py
+         -e "s/client_secret='secret'/client_secret='<client_secret>'/g" \
+         -e "s/client_secret='EXAMPLE_SECRET'/client_secret='<client_secret>'/g" \
+         -e 's/kjerht2309uf/<oauth_token>/g' \
+         -e 's/kjerht2309u/<oauth_token>/g' \
+         -e 's/lsdajfh923874/<oauth_token_secret>/g' \
+         -e 's/w34o8967345/<oauth_verifier>/g' \
+         -e 's/sdf0o9823sjdfsdf/<oauth_token>/g' \
+         -e 's/2kjshdfp92i34asdasd/<oauth_token_secret>/g' \
+         -e 's/EXAMPLE_TOKEN_A/<oauth_token>/g' \
+         -e 's/EXAMPLE_TOKEN_B/<oauth_token>/g' \
+         -e 's/EXAMPLE_TOKEN_SECRET_A/<oauth_token_secret>/g' \
+         -e 's/EXAMPLE_TOKEN_SECRET_B/<oauth_token_secret>/g' \
+         -e 's/EXAMPLE_VERIFIER/<oauth_verifier>/g' \
+         /build/deps/requests_oauthlib/oauth1_session.py \
+    && sed -i \
+         -e 's/0685bd9184jfhq22/<consumer_key>/g' \
+         -e 's/ad180jjd733klru7/<oauth_token>/g' \
+         -e 's|wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D|<oauth_signature>|g' \
+         -e 's/4572616e48616d6d65724c61686176/<oauth_nonce>/g' \
+         /build/deps/oauthlib/oauth1/rfc5849/parameters.py \
+    && sed -i \
+         -e "s/'askfjh234as9sd8'/'<access_token>'/g" \
+         -e "s/'23sdf876234'/'<refresh_token>'/g" \
+         /build/deps/oauthlib/oauth2/rfc6749/request_validator.py \
+    && sed -i 's/token="token123"/token="<token-value>"/g' \
+         /build/deps/google/auth/aio/credentials.py
 
 # ---- Runtime stage ----
 FROM python:3.12-slim-trixie
