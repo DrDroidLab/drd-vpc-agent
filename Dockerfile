@@ -68,7 +68,23 @@ RUN rm -rf /build/deps/allauth /build/deps/allauth-*.dist-info \
          -e "s/'23sdf876234'/'<refresh_token>'/g" \
          /build/deps/oauthlib/oauth2/rfc6749/request_validator.py \
     && sed -i 's/token="token123"/token="<token-value>"/g' \
-         /build/deps/google/auth/aio/credentials.py
+         /build/deps/google/auth/aio/credentials.py \
+    && find /build/deps -type f -name '*.pyi' -delete \
+    && rm -rf /build/deps/dj_rest_auth/tests \
+    && find /build/deps -path '*.dist-info/METADATA' -exec sh -c \
+         'awk "/^\$/{exit} {print}" "$1" > "$1.tmp" && mv "$1.tmp" "$1"' \
+         _ {} \; \
+    && sed -i \
+         -e 's|"-----BEGIN EC PRIVATE KEY-----\\n<key bytes>\\n-----END EC PRIVATE KEY-----\\n"|"<private-key-pem>"|g' \
+         /build/deps/google/oauth2/gdch_credentials.py \
+    && sed -i \
+         -e 's|http://169.254.169.254/latest/meta-data/placement/availability-zone|<aws-imds-region-url>|g' \
+         -e 's|http://169.254.169.254/latest/meta-data/iam/security-credentials|<aws-imds-credentials-url>|g' \
+         -e 's|http://169.254.169.254/latest/api/token|<aws-imds-token-url>|g' \
+         /build/deps/google/auth/aws.py \
+    && sed -i \
+         -e 's|"https://database.windows.net/"|"<azure-sql-token-url>"|g' \
+         /build/deps/sqlalchemy/dialects/mssql/pyodbc.py
 
 # ---- Runtime stage ----
 FROM python:3.12-slim-trixie
