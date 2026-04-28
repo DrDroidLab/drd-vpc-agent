@@ -1,0 +1,69 @@
+{
+  "$schema_note": "Loaded by seed_scenarios.py. Each item is sent through the matching /admin/queues/* endpoint after the mock comes up. Edit freely — no code change needed.",
+
+  "connection_tests": [
+    {
+      "connector_name": "connector_name_1",
+      "_doc": "Should match a connector key in credentials/secrets.yaml. Agent will run a real test against the configured creds and post the result back. Drop or replace if your secrets.yaml is empty."
+    }
+  ],
+
+  "playbook_tasks": [
+    {
+      "_doc": "ASSET_REFRESH: works with NATIVE_KUBERNETES_API_MODE=true (helm default) — no connector_name needed in secrets.yaml. Pulls every extract_* method from the kubernetes metadata extractor.",
+      "task": {
+        "drd_proxy_agent": {
+          "type": "ASSET_REFRESH",
+          "asset_refresh": {
+            "connector_name": {"value": "native_k8s"},
+            "connector_type": {"value": 47}
+          }
+        }
+      }
+    },
+
+    {
+      "_doc": "Kubectl: list all pods in the drdroid namespace. e2e.py asserts the JSON parses, includes the mock backend's pod, and matches the host's kubectl snapshot.",
+      "task": {
+        "source": "KUBERNETES",
+        "kubernetes": {
+          "type": "COMMAND",
+          "command": {"command": "kubectl get pods -n drdroid -o json"}
+        }
+      }
+    },
+
+    {
+      "_doc": "Kubectl: list services in drdroid namespace. e2e.py asserts the mock's service shows up.",
+      "task": {
+        "source": "KUBERNETES",
+        "kubernetes": {
+          "type": "COMMAND",
+          "command": {"command": "kubectl get svc -n drdroid -o json"}
+        }
+      }
+    },
+
+    {
+      "_doc": "Kubectl: list cluster namespaces. e2e.py asserts drdroid is present and the set matches the host's view.",
+      "task": {
+        "source": "KUBERNETES",
+        "kubernetes": {
+          "type": "COMMAND",
+          "command": {"command": "kubectl get namespaces -o json"}
+        }
+      }
+    },
+
+    {
+      "_doc": "Kubectl: list events in drdroid namespace. e2e.py asserts the JSON parses and events list is non-empty (a fresh deploy always emits events).",
+      "task": {
+        "source": "KUBERNETES",
+        "kubernetes": {
+          "type": "COMMAND",
+          "command": {"command": "kubectl get events -n drdroid -o json"}
+        }
+      }
+    }
+  ]
+}

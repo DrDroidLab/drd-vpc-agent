@@ -1,0 +1,70 @@
+# Mock backend deployed inside the drdroid namespace alongside the agent.
+# Agent pods reach it via in-cluster DNS at:
+#   http://drd-vpc-agent-mock.drdroid.svc.cluster.local:8080
+# The host reaches its admin API by `kubectl port-forward`.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drd-vpc-agent-mock
+  namespace: drdroid
+  labels:
+    app: drd-vpc-agent-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drd-vpc-agent-mock
+  template:
+    metadata:
+      labels:
+        app: drd-vpc-agent-mock
+    spec:
+      containers:
+        - name: mock
+          image: drd-vpc-agent-mock:local-latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drd-vpc-agent-mock
+  namespace: drdroid
+  labels:
+    app: drd-vpc-agent-mock
+spec:
+  type: ClusterIP
+  selector:
+    app: drd-vpc-agent-mock
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
