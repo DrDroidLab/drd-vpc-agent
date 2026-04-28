@@ -182,3 +182,8 @@ helm/values.local.yaml
 # Local copy of debug toolkit for testing
 drdroid-debug-toolkit/
 deploy_local.sh
+
+# Per-user Claude Code settings (project-scoped slash commands under
+# .claude/commands/ should be committed; this file holds local permission
+# allowlists that vary by machine).
+.claude/settings.local.json
