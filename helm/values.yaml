@@ -156,14 +156,14 @@ celery-worker:
 redis:
   image:
     repository: redis
-    tag: 7.2.8-alpine
+    tag: 8-alpine
     pullPolicy: IfNotPresent
   # Image pull secrets for the redis pod (merged with global.imagePullSecrets).
   # Example:
   # imagePullSecrets:
   #   - name: dockerhub-pull-secret
   imagePullSecrets: []
-  # redis:7.2.8-alpine ships a `redis` user with UID/GID 999.
+  # redis:8-alpine ships a `redis` user with UID/GID 999.
   podSecurityContext:
     runAsNonRoot: true
     runAsUser: 999

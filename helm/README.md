@@ -93,7 +93,7 @@ celery-worker:
 redis:
   image:
     repository: my-registry.example.com/drd/redis
-    tag: 7.2.8-alpine
+    tag: 8-alpine
   imagePullSecrets:
     - name: dockerhub-mirror   # additional secret only for redis; merged with global
 
@@ -118,7 +118,7 @@ The chart ships defaults that satisfy the common "must run as non-root" and "no 
 | Component | Default `runAsUser` | Reason |
 |---|---|---|
 | `celery-beat`, `celery-worker` | `33` | matches the `www-data` user the agent image chowns `/code` to |
-| `redis` | `999` | matches the `redis` user baked into `redis:7.2.8-alpine` |
+| `redis` | `999` | matches the `redis` user baked into `redis:8-alpine` |
 | `autoUpdate` (kubectl CronJob) | `1000` | non-root, no filesystem requirements |
 
 If your policy is stricter (e.g. requires `runAsUser` inside a specific UID range), override per-component:

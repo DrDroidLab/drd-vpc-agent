@@ -3,13 +3,20 @@
 # Use a small base image with sh and optionally bash
 FROM alpine:3.20
 
-# Set kubectl version (can be overridden at build time)
-ARG KUBECTL_VERSION=v1.31.0
+# kubectl version to install. Default `stable` fetches the latest stable release
+# via https://dl.k8s.io/release/stable.txt, which is built with a supported Go
+# toolchain. Override at build time (e.g. --build-arg KUBECTL_VERSION=v1.36.0)
+# only if you must pin, and ensure the pinned kubectl is built with Go >= 1.25.9
+# (or >= 1.26.2) to avoid CVE-2026-27143 and CVE-2025-22871.
+ARG KUBECTL_VERSION=stable
 
 # Install dependencies (curl, bash optional) and kubectl
 RUN apk add --no-cache curl bash ca-certificates \
     && ARCH=$(uname -m) \
     && case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac \
+    && if [ "${KUBECTL_VERSION}" = "stable" ]; then \
+         KUBECTL_VERSION="$(curl -L -s https://dl.k8s.io/release/stable.txt)"; \
+       fi \
     && curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \
     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
     && rm kubectl

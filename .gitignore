@@ -182,3 +182,8 @@ static/
 helm/charts/*.tgz
 # Helm values backup files (created by some local tooling)
 helm/values.yaml.backup.*
+helm/values.local.yaml
+
+# Local copy of debug toolkit for testing
+drdroid-debug-toolkit/
+deploy_local.sh

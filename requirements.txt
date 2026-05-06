@@ -38,7 +38,6 @@ dj-database-url==1.2.0
 dj-email-url==1.0.6
 dj-rest-auth==2.2.7
 Django>=5.2,<5.3
-django-allauth>=65.14.1
 django-appconf==1.0.5
 django-cache-url==3.4.4
 django-celery-beat>=2.5.0
@@ -121,7 +120,7 @@ PyNaCl>=1.6.2
 pyparsing==3.1.4
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv>=1.2.2
 python3-openid==3.2.0
 pytz==2024.2
 PyYAML==6.0.2
