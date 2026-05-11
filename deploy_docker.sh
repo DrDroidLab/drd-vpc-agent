@@ -8,6 +8,13 @@ fi
 
 DRD_CLOUD_API_TOKEN=$1
 
+echo "🔐 Ensuring credentials/secrets.yaml exists..."
+mkdir -p credentials
+if [ ! -s credentials/secrets.yaml ]; then
+  echo "{}" > credentials/secrets.yaml
+  echo "   → created empty credentials/secrets.yaml (edit this file to add connectors)"
+fi
+
 echo "🔽 Bringing down Docker Compose stack..."
 docker-compose -f agent.docker-compose.yaml down
 
