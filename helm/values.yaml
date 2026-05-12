@@ -10,7 +10,6 @@ global:
   #   "worker-type": "aux-pool"
   #   "kubernetes.io/os": "linux"
   nodeSelector: {}
-
   # Example tolerations:
   # tolerations:
   #   - key: "dedicated"
@@ -18,6 +17,14 @@ global:
   #     value: "infra"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # Global image pull secrets applied to every pod (celery-beat, celery-worker,
+  # redis, init containers, restart cronjob). Per-component imagePullSecrets are
+  # merged on top of this list.
+  # Example:
+  # imagePullSecrets:
+  #   - name: jfrog-pull-secret
+  imagePullSecrets: []
 
 # Network Mapper Configuration
 # Controls whether the network mapper components are deployed
@@ -33,18 +40,92 @@ networkMapper:
 autoUpdate:
   enabled: true
   schedule: "0 0 * * *"  # every day at 00:00 UTC
+  image:
+    repository: ghcr.io/drdroidlab/drd-vpc-agent/kubectl
+    tag: latest
+    pullPolicy: Always
+  # Image pull secrets for the kubectl image used by the restart CronJob.
+  # These are merged with global.imagePullSecrets.
+  # Example:
+  # imagePullSecrets:
+  #   - name: ghcr-pull-secret
+  imagePullSecrets: []
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 1000
+    capabilities:
+      drop:
+        - ALL
 
 celery-beat:
   image:
     repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
     tag: latest
     pullPolicy: Always
+  # Image pull secrets for the celery-beat pod (merged with global.imagePullSecrets).
+  # Example:
+  # imagePullSecrets:
+  #   - name: jfrog-pull-secret
+  imagePullSecrets: []
+  # Init container that waits for redis. Image is fully configurable.
+  initContainer:
+    image:
+      repository: busybox
+      tag: "1.36"
+      pullPolicy: IfNotPresent
+  # Pod-level security context (applies to all containers in the pod).
+  # UID/GID 33 = www-data (the user the drd-vpc-agent image chowns /code to).
+  # Defaults satisfy PSP/Gatekeeper "runAsNonRoot or runAsUser != 0" policies.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    fsGroup: 33
+  # Container-level security context (applied to celery-beat container and
+  # init container). Override runAsUser to match the UID baked into your image.
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 33
+    capabilities:
+      drop:
+        - ALL
 
 celery-worker:
   image:
     repository: ghcr.io/drdroidlab/drd-vpc-agent/drd-vpc-agent
     tag: latest
     pullPolicy: Always
+  # Image pull secrets for the celery-worker pod (merged with global.imagePullSecrets).
+  # Applies to all worker containers (scheduler, task-executor, asset-extractor).
+  # Example:
+  # imagePullSecrets:
+  #   - name: jfrog-pull-secret
+  imagePullSecrets: []
+  initContainer:
+    image:
+      repository: busybox
+      tag: "1.36"
+      pullPolicy: IfNotPresent
+  # UID/GID 33 = www-data (the user the drd-vpc-agent image chowns /code to).
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    fsGroup: 33
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 33
+    capabilities:
+      drop:
+        - ALL
   # Resource configuration for celery worker containers
   resources:
     scheduler:
@@ -73,4 +154,25 @@ celery-worker:
         memory: "1536Mi"
 
 redis:
-  image: redis:8-alpine
+  image:
+    repository: redis
+    tag: 8-alpine
+    pullPolicy: IfNotPresent
+  # Image pull secrets for the redis pod (merged with global.imagePullSecrets).
+  # Example:
+  # imagePullSecrets:
+  #   - name: dockerhub-pull-secret
+  imagePullSecrets: []
+  # redis:8-alpine ships a `redis` user with UID/GID 999.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 999
+    capabilities:
+      drop:
+        - ALL
