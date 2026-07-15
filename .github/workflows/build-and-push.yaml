@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   setup:
-    runs-on: warp-ubuntu-latest-x64-16x-spot
+    runs-on: warp-ubuntu-latest-x64-16x
     outputs:
       SHORT_SHA: ${{ steps.setup.outputs.SHORT_SHA }}
       EPOCH_TIMESTAMP: ${{ steps.setup.outputs.EPOCH_TIMESTAMP }}
