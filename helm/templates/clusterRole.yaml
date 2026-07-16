@@ -43,6 +43,12 @@ rules:
       - "list"
       - "watch"
 
+  # Autoscaling
+  - apiGroups: ["autoscaling"]
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch"]
+
   # Batch jobs
   - apiGroups: ["batch"]
     resources:
