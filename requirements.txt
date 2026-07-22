@@ -148,5 +148,5 @@ wcwidth==0.2.13
 websocket-client==1.8.0
 yarl==1.12.1
 zstandard==0.23.0
-# Latest version of drdroid-debug-toolkit -> feat(logs): 60s LOG_QUERY_TIMEOUT for log-query calls
+# Latest version of drdroid-debug-toolkit -> fix(grafana): treat multiple default datasources as ambiguous
 git+https://github.com/DrDroidLab/drdroid-debug-toolkit.git@master
